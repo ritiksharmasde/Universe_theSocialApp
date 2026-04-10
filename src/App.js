@@ -200,14 +200,16 @@ function App() {
           email: post.email,
           author: post.author_name,
           subtitle: `${post.author_course || ""} • Year ${post.author_year || ""}`,
-          avatar: post.author_profile_image_url
-            ? post.author_profile_image_url.startsWith("http")
-              ? post.author_profile_image_url
-              : `${SERVER_BASE_URL}${post.author_profile_image_url}`
-            : "https://picsum.photos/50?default-user",
+          avatar: post.profile_image_url
+  ? post.profile_image_url.startsWith("http")
+    ? post.profile_image_url
+    : `${SERVER_BASE_URL}${post.profile_image_url}`
+  : "https://picsum.photos/50?default-user",
           image: post.image_url
-            ? `${SERVER_BASE_URL}${post.image_url}`
-            : "",
+  ? post.image_url.startsWith("http")
+    ? post.image_url
+    : `${SERVER_BASE_URL}${post.image_url}`
+  : "",
           likes: post.likes_count || 0,
           comments: post.comments_count || 0,
           caption: post.caption,
@@ -223,7 +225,7 @@ function App() {
     };
 
     fetchPosts();
-    const intervalId = setInterval(fetchPosts, 5000);
+    const intervalId = setInterval(fetchPosts, 15000);
 
     return () => clearInterval(intervalId);
   }, [email]);
@@ -505,14 +507,16 @@ function App() {
               email: newPost.email,
               author: newPost.author_name,
               subtitle: `${newPost.author_course || ""} • Year ${newPost.author_year || ""}`,
-              avatar: newPost.author_profile_image_url
-                ? newPost.author_profile_image_url.startsWith("http")
-                  ? newPost.author_profile_image_url
-                  : `${SERVER_BASE_URL}${newPost.author_profile_image_url}`
-                : "https://picsum.photos/50?default-user",
+              avatar: newPost.profile_image_url
+  ? newPost.profile_image_url.startsWith("http")
+    ? newPost.profile_image_url
+    : `${SERVER_BASE_URL}${newPost.profile_image_url}`
+  : (profileData?.profileImage || "https://picsum.photos/50?default-user"),
               image: newPost.image_url
-                ? `${SERVER_BASE_URL}${newPost.image_url}`
-                : "",
+  ? newPost.image_url.startsWith("http")
+    ? newPost.image_url
+    : `${SERVER_BASE_URL}${newPost.image_url}`
+  : "",
               likes: newPost.likes_count || 0,
               comments: newPost.comments_count || 0,
               caption: newPost.caption,
