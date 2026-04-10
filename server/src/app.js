@@ -19,7 +19,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "https://joinuniverse.co.in",
-      "https://www.joinuniverse.co.in"
+      "https://www.joinuniverse.co.in",
       process.env.CLIENT_URL,
     ].filter(Boolean),
     credentials: true,
