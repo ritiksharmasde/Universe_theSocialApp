@@ -1,5 +1,4 @@
 const express = require("express");
-// const { saveProfile } = require("../controllers/userController");
 const {
   saveProfile,
   uploadProfileImage,
@@ -10,15 +9,16 @@ const {
   acceptFriendRequest,
   rejectFriendRequest,
   blockUser,
-    unblockUser,
+  unblockUser,
   getBlockStatus,
   getAllUsers,
   getRandomSuggestions,
 } = require("../controllers/userController");
-const upload = require("../middleware/upload");
-// const { uploadProfileImage } = require("../controllers/userController");
-const router = express.Router();
 const { createPost } = require("../controllers/postController");
+const upload = require("../middleware/upload");
+
+const router = express.Router();
+
 router.post("/save-profile", saveProfile);
 router.post("/upload-profile-image", upload.single("image"), uploadProfileImage);
 router.post("/create-post", upload.single("image"), createPost);
@@ -33,4 +33,5 @@ router.get("/", getAllUsers);
 router.get("/random-suggestions", getRandomSuggestions);
 router.get("/public/:email", getPublicUserByEmail);
 router.get("/:email", getUserByEmail);
+
 module.exports = router;
