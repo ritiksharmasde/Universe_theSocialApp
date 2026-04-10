@@ -26,8 +26,8 @@ app.use(
 
 app.use(express.json());
 
-// Serve uploaded files
-const uploadsPath = path.join(__dirname, "../uploads");
+// Serve uploaded files from backend/uploads
+const uploadsPath = path.join(__dirname, "uploads");
 app.use("/uploads", express.static(uploadsPath));
 
 app.get("/", async (req, res) => {
@@ -36,7 +36,6 @@ app.get("/", async (req, res) => {
     res.json({
       message: "Backend + DB working",
       time: result.rows[0].now,
-      uploadsPath,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
