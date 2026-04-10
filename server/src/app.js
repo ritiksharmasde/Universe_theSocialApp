@@ -27,7 +27,7 @@ app.use(
 
 app.use(express.json());
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "../../uploads")));
 app.get("/", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
