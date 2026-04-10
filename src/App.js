@@ -198,7 +198,7 @@ function App() {
         const mappedPosts = data.posts.map((post) => ({
           id: post.id,
           email: post.email,
-          author: post.author_name,
+          author: post.full_name || post.author_name,
           subtitle: `${post.author_course || ""} • Year ${post.author_year || ""}`,
           avatar: post.profile_image_url
   ? post.profile_image_url.startsWith("http")
