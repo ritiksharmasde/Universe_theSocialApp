@@ -9,7 +9,7 @@ import {
     FiX,
     FiRefreshCw,
 } from "react-icons/fi";
-import API_BASE_URL from "./api";
+import API_BASE_URL , { SERVER_BASE_URL } from "./api";
 const parseJsonSafely = async (response) => {
     const text = await response.text();
 
