@@ -1,4 +1,23 @@
 const pool = require("../config/db");
+const cloudinary = require("../config/cloudinary");
+const streamifier = require("streamifier");
+
+const uploadToCloudinary = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "universe/posts",
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+};
 
 const createPost = async (req, res) => {
   try {
@@ -18,7 +37,12 @@ const createPost = async (req, res) => {
       });
     }
 
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+    let imageUrl = null;
+
+    if (req.file) {
+      const uploadResult = await uploadToCloudinary(req.file.buffer);
+      imageUrl = uploadResult.secure_url;
+    }
 
     const result = await pool.query(
       `
@@ -63,33 +87,33 @@ const getPosts = async (req, res) => {
   try {
     const currentUserEmail = (req.query.currentUserEmail || "").toLowerCase();
     const limit = Math.min(parseInt(req.query.limit, 10) || 10, 20);
-const offset = parseInt(req.query.offset, 10) || 0;
+    const offset = parseInt(req.query.offset, 10) || 0;
 
     const result = await pool.query(
-  `
-  SELECT
-    p.*,
-    u.profile_image_url,
-    EXISTS (
-      SELECT 1
-      FROM post_likes pl
-      WHERE pl.post_id = p.id
-        AND LOWER(pl.user_email) = LOWER($1)
-    ) AS is_liked
-  FROM posts p
-  JOIN users u ON p.email = u.email
-  ORDER BY p.created_at DESC
-  LIMIT $2 OFFSET $3
-  `,
-  [currentUserEmail, limit, offset]
-);
+      `
+      SELECT
+        p.*,
+        u.profile_image_url,
+        EXISTS (
+          SELECT 1
+          FROM post_likes pl
+          WHERE pl.post_id = p.id
+            AND LOWER(pl.user_email) = LOWER($1)
+        ) AS is_liked
+      FROM posts p
+      JOIN users u ON p.email = u.email
+      ORDER BY p.created_at DESC
+      LIMIT $2 OFFSET $3
+      `,
+      [currentUserEmail, limit, offset]
+    );
 
     res.status(200).json({
-  posts: result.rows,
-  limit,
-  offset,
-  hasMore: result.rows.length === limit,
-});
+      posts: result.rows,
+      limit,
+      offset,
+      hasMore: result.rows.length === limit,
+    });
   } catch (error) {
     console.error("getPosts error:", error);
     res.status(500).json({ error: error.message });
