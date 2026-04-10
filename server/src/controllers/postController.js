@@ -93,6 +93,7 @@ const getPosts = async (req, res) => {
       `
       SELECT
         p.*,
+        u.full_name,
         u.profile_image_url,
         EXISTS (
           SELECT 1
