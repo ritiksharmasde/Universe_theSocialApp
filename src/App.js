@@ -186,7 +186,7 @@ function App() {
     const fetchPosts = async () => {
       try {
         const response = await fetch(
-          `${API_BASE_URL}/posts?currentUserEmail=${encodeURIComponent(email)}`
+          `${API_BASE_URL}/posts?currentUserEmail=${encodeURIComponent(email)}&limit=10&offset=0`
         );
         const data = await response.json();
 
