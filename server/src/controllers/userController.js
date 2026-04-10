@@ -1,4 +1,6 @@
 const pool = require("../config/db");
+const cloudinary = require("../config/cloudinary");
+const streamifier = require("streamifier");
 
 const saveProfile = async (req, res) => {
   try {
@@ -65,34 +67,57 @@ const saveProfile = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 const uploadProfileImage = async (req, res) => {
   try {
     const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required." });
+    }
 
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    const imagePath = `/uploads/${req.file.filename}`;
+    const uploadStream = () =>
+      new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "universe/profile",
+            resource_type: "image",
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
+
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
+      });
+
+    const result = await uploadStream();
+    const imageUrl = result.secure_url;
 
     await pool.query(
       `
       UPDATE users
       SET profile_image_url = $1
-      WHERE email = $2
+      WHERE LOWER(email) = LOWER($2)
       `,
-      [imagePath, email]
+      [imageUrl, email]
     );
 
     res.status(200).json({
       message: "Profile image uploaded",
-      imageUrl: imagePath,
+      imageUrl,
     });
   } catch (error) {
     console.error("uploadProfileImage error:", error);
     res.status(500).json({ error: error.message });
   }
 };
+
 const getUserByEmail = async (req, res) => {
   try {
     const { email } = req.params;
@@ -116,8 +141,6 @@ const getUserByEmail = async (req, res) => {
     }
 
     res.status(200).json({
-
-
       user: result.rows[0],
     });
   } catch (error) {
@@ -125,6 +148,7 @@ const getUserByEmail = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 const getPublicUserByEmail = async (req, res) => {
   try {
     const { email } = req.params;
@@ -135,7 +159,7 @@ const getPublicUserByEmail = async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT email, full_name, username, profile_image_url, course, year,section,bio,interests,skills,city,linkedin,github
+      SELECT email, full_name, username, profile_image_url, course, year, section, bio, interests, skills, city, linkedin, github
       FROM users
       WHERE LOWER(email) = LOWER($1)
       LIMIT 1
@@ -155,6 +179,7 @@ const getPublicUserByEmail = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 const sendFriendRequest = async (req, res) => {
   try {
     const { requesterEmail, recipientEmail } = req.body;
@@ -223,21 +248,19 @@ const sendFriendRequest = async (req, res) => {
     try {
       await client.query("BEGIN");
 
-      // 1. insert friendship
       await client.query(
         `
-    INSERT INTO friendships (requester_email, recipient_email, status)
-    VALUES ($1, $2, 'pending')
-    `,
+        INSERT INTO friendships (requester_email, recipient_email, status)
+        VALUES ($1, $2, 'pending')
+        `,
         [requester, recipient]
       );
 
-      // 2. insert notification
       await client.query(
         `
-    INSERT INTO notifications (user_email, type, title, actor_email, entity_type)
-    VALUES ($1, $2, $3, $4, $5)
-    `,
+        INSERT INTO notifications (user_email, type, title, actor_email, entity_type)
+        VALUES ($1, $2, $3, $4, $5)
+        `,
         [
           recipient,
           "friend_request",
@@ -260,17 +283,11 @@ const sendFriendRequest = async (req, res) => {
     } finally {
       client.release();
     }
-
-    // return res.status(201).json({
-    //   message: "Friend request sent successfully.",
-    //   status: "sent",
-    // });
   } catch (error) {
     console.error("sendFriendRequest error:", error);
     return res.status(500).json({ error: error.message });
   }
 };
-// const pool = require("../config/db");
 
 const getRandomSuggestions = async (req, res) => {
   const { currentUserEmail, limit = 10 } = req.query;
@@ -294,7 +311,6 @@ const getRandomSuggestions = async (req, res) => {
   }
 };
 
-// module.exports.getRandomSuggestions = getRandomSuggestions;
 const getAllUsers = async (req, res) => {
   try {
     const currentUserEmail = (req.query.currentUserEmail || "").toLowerCase().trim();
@@ -400,6 +416,7 @@ const getFriendStatus = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 const acceptFriendRequest = async (req, res) => {
   try {
     const { currentUserEmail, otherUserEmail } = req.body;
@@ -481,6 +498,7 @@ const rejectFriendRequest = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 const blockUser = async (req, res) => {
   try {
     const { blockerEmail, blockedEmail } = req.body;
@@ -529,6 +547,7 @@ const blockUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 const unblockUser = async (req, res) => {
   try {
     const { blockerEmail, blockedEmail } = req.body;
@@ -600,6 +619,7 @@ const getBlockStatus = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 module.exports = {
   saveProfile,
   uploadProfileImage,
