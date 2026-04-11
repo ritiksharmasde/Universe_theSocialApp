@@ -27,6 +27,7 @@ function App() {
   const [posts, setPosts] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [isRouteReady, setIsRouteReady] = useState(false);
+  const [unreadCounts, setUnreadCounts] = useState({});
 
   const { isMobile } = useBreakpoint();
 
