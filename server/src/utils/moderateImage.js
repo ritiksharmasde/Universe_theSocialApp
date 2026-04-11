@@ -1,14 +1,21 @@
 const axios = require("axios");
 const FormData = require("form-data");
-const fs = require("fs");
 
 const moderateImage = async (file) => {
   try {
+    if (!file || !file.buffer) {
+      return {
+        isSafe: false,
+        reason: "Image moderation failed. No file buffer found.",
+      };
+    }
+
     const formData = new FormData();
 
-    formData.append("media", fs.createReadStream(file.path), {
+    formData.append("media", file.buffer, {
       filename: file.originalname || "image.jpg",
       contentType: file.mimetype || "image/jpeg",
+      knownLength: file.buffer.length,
     });
 
     formData.append("models", "nudity-2.1");
