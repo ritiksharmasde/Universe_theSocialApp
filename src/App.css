@@ -57,17 +57,19 @@
 }
 
 /* Light theme */
+/* Light theme (FIXED) */
 [data-theme="light"] .sidebar-scroll {
-  scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+  scrollbar-color: rgba(71, 85, 105, 0.6) transparent;
 }
 
 [data-theme="light"] .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.45);
+  background: rgba(71, 85, 105, 0.5);
 }
 
 [data-theme="light"] .sidebar-scroll:hover::-webkit-scrollbar-thumb {
-  background: rgba(71, 85, 105, 0.7);
-  box-shadow: 0 0 4px rgba(100, 116, 139, 0.25);
+  background: rgba(51, 65, 85, 0.8);
+  box-shadow: 0 0 4px rgba(71, 85, 105, 0.3);
+}
 }
 
 /* Dark theme */
