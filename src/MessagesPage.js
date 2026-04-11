@@ -384,26 +384,26 @@ function MessagesPage({
       return;
     }
 
-    const remainingChats = conversations.filter(
-      (chat) => Number(chat.id) !== Number(selectedChat.id)
-    );
+    setConversations((prev) => {
+  const updated = prev.filter(
+    (chat) => Number(chat.id) !== Number(selectedChat.id)
+  );
 
-    setConversations((prev) =>
-      prev.filter((chat) => Number(chat.id) !== Number(selectedChat.id))
-    );
+  if (updated.length > 0) {
+    setSelectedChatId(Number(updated[0].id));
+  } else {
+    setSelectedChatId(null);
+    setMessages([]);
+  }
 
-    setUnreadCounts((prev) => {
-      const next = { ...prev };
-      delete next[Number(selectedChat.id)];
-      return next;
-    });
+  return updated;
+});
 
-    if (remainingChats.length > 0) {
-      setSelectedChatId(Number(remainingChats[0].id));
-    } else {
-      setSelectedChatId(null);
-      setMessages([]);
-    }
+setUnreadCounts((prev) => {
+  const next = { ...prev };
+  delete next[Number(selectedChat.id)];
+  return next;
+});
 
     if (isMobile) {
       setShowChatList(true);
