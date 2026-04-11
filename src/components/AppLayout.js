@@ -8,6 +8,7 @@ function AppLayout({
   theme = "light",
   onThemeChange,
   onLogout,
+  hasUnreadMessages,
 }) {
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
@@ -33,6 +34,7 @@ function AppLayout({
         theme={theme}
         onThemeChange={onThemeChange}
         onLogout={onLogout}
+          hasUnreadMessages={hasUnreadMessages}
       />
 
       <main
