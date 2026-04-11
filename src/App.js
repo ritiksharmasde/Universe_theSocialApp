@@ -422,6 +422,8 @@ function App() {
         <MessagesPage
           currentUserEmail={email}
           activeConversationId={activeConversationId}
+    unreadCounts={unreadCounts}
+    setUnreadCounts={setUnreadCounts}
           onOpenUserProfile={(userEmail) => {
             navigateTo("public-profile", { selectedUserEmail: userEmail });
           }}
