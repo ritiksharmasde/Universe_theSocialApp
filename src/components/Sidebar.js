@@ -110,9 +110,7 @@ function Sidebar({
             alt="UniVerse Logo"
             style={styles.logoImage}
           />
-          <h1 style={styles.logo}>
-            Uni<span style={styles.logoAccent}>Verse</span>
-          </h1>
+          <h1 style={styles.logoGradient}>UniVerse</h1>
         </div>
       )}
 
@@ -389,6 +387,17 @@ const styles = {
     gap: "8px",
     minWidth: 0,
   },
+  logoGradient: {
+  fontSize: "22px",
+  fontWeight: "800",
+  margin: 0,
+
+  background: "linear-gradient(120deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5)",
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+
+  filter: "drop-shadow(0 2px 6px rgba(214,41,118,0.2))",
+},
 
   mobileNav: {
     display: "flex",
@@ -486,9 +495,7 @@ const styles = {
     color: "var(--text-primary)",
   },
 
-  logoAccent: {
-    color: "var(--accent-color)",
-  },
+  
 
   navList: {
     display: "flex",
