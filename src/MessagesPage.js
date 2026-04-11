@@ -24,31 +24,14 @@ function MessagesPage({
   const normalizedSelectedChatId =
     selectedChatId !== null ? Number(selectedChatId) : null;
 
-  const deletedChatsKey = `deletedChats_${currentUserEmail?.toLowerCase?.() || "guest"}`;
-
-  const getDeletedChatIds = () => {
-    try {
-      return JSON.parse(localStorage.getItem(deletedChatsKey) || "[]");
-    } catch {
-      return [];
-    }
-  };
+  
 
   const filteredChats = useMemo(() => {
-    const deletedChatIds = getDeletedChatIds();
-
-    return conversations.filter((chat) => {
-      const isActiveConversation =
-        activeConversationId && Number(chat.id) === Number(activeConversationId);
-
-      if (deletedChatIds.includes(Number(chat.id)) && !isActiveConversation) {
-        return false;
-      }
-
-      const text = `${chat.name || ""} ${chat.displayName || ""}`.toLowerCase();
-      return text.includes(searchText.toLowerCase());
-    });
-  }, [conversations, searchText, activeConversationId]);
+  return conversations.filter((chat) => {
+    const text = `${chat.name || ""} ${chat.displayName || ""}`.toLowerCase();
+    return text.includes(searchText.toLowerCase());
+  });
+}, [conversations, searchText]);
 
   const selectedChat =
     filteredChats.find((chat) => Number(chat.id) === normalizedSelectedChatId) ||
@@ -255,8 +238,8 @@ function MessagesPage({
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/chat/messages/${normalizedSelectedChatId}`
-        );
+  `${API_BASE_URL}/chat/messages/${normalizedSelectedChatId}?userEmail=${encodeURIComponent(currentUserEmail)}`
+);
         const data = await response.json();
 
         if (!response.ok) {
@@ -275,7 +258,7 @@ function MessagesPage({
     };
 
     fetchMessages();
-  }, [normalizedSelectedChatId]);
+  }, [normalizedSelectedChatId, currentUserEmail]);
 
   useEffect(() => {
     if (!normalizedSelectedChatId) return;
@@ -371,26 +354,38 @@ function MessagesPage({
     }
   };
 
-  const handleDeleteChat = () => {
-    if (!selectedChat) return;
+  const handleDeleteChat = async () => {
+  if (!selectedChat) return;
 
-    if (
-      !window.confirm(
-        "Delete this chat from your messages list? This will only remove it for you on this device."
-      )
-    ) {
+  if (
+    !window.confirm(
+      "Delete this chat for you? The other person will still keep their chat."
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/delete-for-me`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        conversationId: selectedChat.id,
+        userEmail: currentUserEmail,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error || "Failed to delete chat");
       return;
     }
 
-    const deletedChatIds = getDeletedChatIds();
-    const updatedDeletedChatIds = Array.from(
-      new Set([...deletedChatIds, Number(selectedChat.id)])
-    );
-
-    localStorage.setItem(deletedChatsKey, JSON.stringify(updatedDeletedChatIds));
-
     const remainingChats = conversations.filter(
-      (chat) => !updatedDeletedChatIds.includes(Number(chat.id))
+      (chat) => Number(chat.id) !== Number(selectedChat.id)
     );
 
     setConversations((prev) =>
@@ -413,7 +408,11 @@ function MessagesPage({
     if (isMobile) {
       setShowChatList(true);
     }
-  };
+  } catch (error) {
+    console.error("delete chat error:", error);
+    alert("Server error");
+  }
+};
 
   const handleOpenChats = () => {
     setShowChatList(true);
