@@ -239,7 +239,7 @@ const getOrCreateDirectConversation = async (req, res) => {
       `,
       [conversation.id, userB]
     );
-    await pool.query(
+   await pool.query(
   `
   UPDATE deleted_conversations
   SET is_hidden = FALSE
@@ -248,6 +248,7 @@ const getOrCreateDirectConversation = async (req, res) => {
   `,
   [conversation.id, userA]
 );
+
 
     return res.status(200).json({
       conversation: {
