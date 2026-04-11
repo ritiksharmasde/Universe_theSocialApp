@@ -41,6 +41,18 @@ const initializeSocket = (io) => {
         );
 
         const savedMessage = result.rows[0];
+        await pool.query(
+  `
+  UPDATE deleted_conversations dc
+  SET is_hidden = FALSE
+  FROM conversation_members cm
+  WHERE dc.conversation_id = $1
+    AND cm.conversation_id = $1
+    AND LOWER(cm.user_email) = LOWER(dc.user_email)
+    AND LOWER(dc.user_email) <> LOWER($2)
+  `,
+  [conversationId, senderEmail]
+);
 
         io.to(`conversation_${conversationId}`).emit(
           "receive_message",
