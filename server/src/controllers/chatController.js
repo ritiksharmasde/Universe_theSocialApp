@@ -82,7 +82,7 @@ const getUserConversations = async (req, res) => {
     ON dc.conversation_id = c.id
    AND LOWER(dc.user_email) = LOWER($1)
   WHERE LOWER(cm.user_email) = LOWER($1)
-    AND dc.id IS NULL
+    AND (dc.id IS NULL OR dc.is_hidden = FALSE)
   ORDER BY c.created_at DESC
   `,
   [email]
@@ -156,15 +156,14 @@ const deleteConversationForMe = async (req, res) => {
     }
 
     await pool.query(
-      `
-      INSERT INTO deleted_conversations (conversation_id, user_email, deleted_at)
-      VALUES ($1, $2, NOW())
-      ON CONFLICT (conversation_id, user_email)
-      DO UPDATE SET deleted_at = NOW()
-      `,
-      [conversationId, normalizedEmail]
-    );
-
+  `
+  INSERT INTO deleted_conversations (conversation_id, user_email, deleted_at, is_hidden)
+  VALUES ($1, $2, NOW(), TRUE)
+  ON CONFLICT (conversation_id, user_email)
+  DO UPDATE SET deleted_at = NOW(), is_hidden = TRUE
+  `,
+  [conversationId, normalizedEmail]
+);
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error("deleteConversationForMe error:", error);
@@ -242,7 +241,8 @@ const getOrCreateDirectConversation = async (req, res) => {
     );
     await pool.query(
   `
-  DELETE FROM deleted_conversations
+  UPDATE deleted_conversations
+  SET is_hidden = FALSE
   WHERE conversation_id = $1
     AND LOWER(user_email) = LOWER($2)
   `,
