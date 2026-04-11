@@ -9,6 +9,8 @@ const socket = io(SERVER_BASE_URL);
 function MessagesPage({
   currentUserEmail = "ritik.17886@stu.upes.ac.in",
   activeConversationId,
+  unreadCounts,
+  setUnreadCounts,
   onOpenUserProfile,
 }) {
   const { isMobile, isTablet } = useBreakpoint();
@@ -21,7 +23,7 @@ function MessagesPage({
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [unreadCounts, setUnreadCounts] = useState({});
+  // const [unreadCounts, setUnreadCounts] = useState({});
 
   const normalizedSelectedChatId =
     selectedChatId !== null ? Number(selectedChatId) : null;
