@@ -293,7 +293,12 @@ function Sidebar({
                   }}
                   onClick={() => onNavigate(item.id)}
                 >
-                  <span style={styles.navIcon}>{item.icon}</span>
+                  <span style={styles.iconWrapper}>
+  {item.icon}
+  {item.id === "messages" && (
+    <span style={styles.redDot}></span>
+  )}
+</span>
                   <span>{item.label}</span>
                 </button>
               );
@@ -511,6 +516,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "12px",
+    width: "100%",
     padding: "14px 16px",
     border: "none",
     background: "transparent",
@@ -518,7 +524,7 @@ const styles = {
     cursor: "pointer",
     fontSize: "15px",
     color: "var(--text-primary)",
-    flexShrink: 0,
+    // flexShrink: 0,
   },
 
   navButtonMobile: {
@@ -529,6 +535,22 @@ const styles = {
     justifyContent: "center",
     borderRadius: "10px",
   },
+  iconWrapper: {
+  position: "relative",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+redDot: {
+  position: "absolute",
+  top: "-2px",
+  right: "-2px",
+  width: "8px",
+  height: "8px",
+  background: "#ef4444",
+  borderRadius: "50%",
+},
 
   navIcon: {
     fontSize: "24px",
