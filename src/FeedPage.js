@@ -791,9 +791,9 @@ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
 },
   messageIconWrapper: {
   position: "relative",
-  display: "flex",
   flex: 1,
   minWidth: 0,
+  display: "flex",
 },
 
 unreadBadge: {
@@ -871,7 +871,8 @@ suggestionSub: {
   suggestionActionGroup: {
   display: "flex",
   gap: "8px",
-  flex: "1 1 220px",
+  flex: 1,
+  minWidth: 0,
 },
 
   acceptSuggestionButton: {
@@ -902,6 +903,9 @@ suggestionSub: {
 
 
   addFriendButton: {
+  flex: 1,
+  minWidth: 0,
+  width: "100%",
   border: "1px solid var(--border-color)",
   background: "var(--bg-surface)",
   color: "var(--text-primary)",
@@ -911,7 +915,6 @@ suggestionSub: {
   fontWeight: "600",
   fontSize: "13px",
   whiteSpace: "nowrap",
-  flex: "1 1 110px",
 },
 
   addFriendButtonDone: {
@@ -922,11 +925,12 @@ suggestionSub: {
   suggestionButtons: {
   display: "flex",
   gap: "8px",
-  flexWrap: "wrap",
   width: "100%",
+  alignItems: "stretch",
 },
 
   messageButton: {
+  width: "100%",
   border: "1px solid var(--border-color)",
   background: "var(--bg-surface-soft)",
   color: "var(--text-primary)",
@@ -936,7 +940,6 @@ suggestionSub: {
   fontWeight: "600",
   fontSize: "13px",
   whiteSpace: "nowrap",
-  flex: "1 1 110px",
 },
 redDotSmall: {
   position: "absolute",
