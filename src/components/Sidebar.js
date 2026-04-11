@@ -392,13 +392,12 @@ const styles = {
   fontWeight: "800",
   margin: 0,
 
-  background: "linear-gradient(120deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5)",
+  background: "linear-gradient(120deg, #e6683c, #dc2743, #cc2366, #bc1888, #833ab4)",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
-
-  filter: "drop-shadow(0 2px 6px rgba(214,41,118,0.2))",
+  backgroundClip: "text",
+  color: "transparent",
 },
-
   mobileNav: {
     display: "flex",
     alignItems: "center",
