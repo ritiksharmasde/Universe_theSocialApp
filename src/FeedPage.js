@@ -13,6 +13,7 @@ function FeedPage({
   onOpenUserProfile,
   onStartChat,
   customPosts = [],
+  unreadCounts = {},
 }) {
   const [searchText, setSearchText] = useState("");
   const [posts, setPosts] = useState(customPosts || []);
@@ -26,6 +27,9 @@ function FeedPage({
   const isTinyMobile = isMobile && window.innerWidth <= 380;
 
   const styles = getStyles(isMobile, isTablet, isDesktop, isTinyMobile);
+  const unreadUsersCount = Object.values(unreadCounts || {}).filter(
+  (count) => count > 0
+).length;
 
 
   useEffect(() => {
@@ -430,13 +434,21 @@ function FeedPage({
               </div>
 
               <div style={styles.suggestionButtons}>
-                <button
-                  style={styles.messageButton}
-                  onClick={() => handleStartChat(item.email)}
-                >
-                  Message
-                </button>
+               
+<div style={styles.messageIconWrapper}>
+  <button
+    style={styles.messageButton}
+    onClick={() => handleStartChat(item.email)}
+  >
+    Message
+  </button>
 
+  {unreadUsersCount > 0 && (
+    <span style={styles.unreadBadge}>
+      {unreadUsersCount > 99 ? "99+" : unreadUsersCount}
+    </span>
+  )}
+</div>
                 {status === "received" ? (
                   <div style={styles.suggestionActionGroup}>
                     <button
@@ -781,6 +793,28 @@ instaHandle: {
   padding: "10px 16px",
   borderRadius: "999px",
   boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+},
+  messageIconWrapper: {
+  position: "relative",
+  display: "inline-flex",
+},
+
+unreadBadge: {
+  position: "absolute",
+  top: "-6px",
+  right: "-6px",
+  minWidth: "20px",
+  height: "20px",
+  borderRadius: "999px",
+  background: "#dc2626",
+  color: "#ffffff",
+  fontSize: "11px",
+  fontWeight: "700",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "0 6px",
+  lineHeight: 1,
 },
 
 instaHandleLink: {
