@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { FiSend, FiSearch, FiMenu } from "react-icons/fi";
 import { io } from "socket.io-client";
 import API_BASE_URL, {SERVER_BASE_URL} from "./api";
 import useBreakpoint from "./useBreakpoint";
 const socket = io(SERVER_BASE_URL);
+
 
 function MessagesPage({
   currentUserEmail = "ritik.17886@stu.upes.ac.in",
@@ -16,6 +17,7 @@ function MessagesPage({
   const [messageText, setMessageText] = useState("");
   const [showChatList, setShowChatList] = useState(!isMobile);
   const [searchText, setSearchText] = useState("");
+  const conversationsRef = useRef([]);
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false);
@@ -162,6 +164,9 @@ function MessagesPage({
       fetchConversations();
     }
   }, [currentUserEmail, activeConversationId, selectedChatId]);
+  useEffect(() => {
+  conversationsRef.current = conversations;
+}, [conversations]);
 
   useEffect(() => {
     const enrichConversations = async () => {
@@ -260,37 +265,93 @@ function MessagesPage({
     fetchMessages();
   }, [normalizedSelectedChatId, currentUserEmail]);
 
-  useEffect(() => {
-    if (!normalizedSelectedChatId) return;
-
+useEffect(() => {
+  if (normalizedSelectedChatId) {
     socket.emit("join_conversation", normalizedSelectedChatId);
+  }
 
-    const handleReceiveMessage = (message) => {
-      const incomingConversationId = Number(message.conversation_id);
+  const handleReceiveMessage = (message) => {
+    const incomingConversationId = Number(message.conversation_id);
 
-      if (incomingConversationId === Number(normalizedSelectedChatId)) {
-        setMessages((prev) => [...prev, message]);
+    if (incomingConversationId === Number(normalizedSelectedChatId)) {
+      setMessages((prev) => [...prev, message]);
 
-        if (message.sender_email !== currentUserEmail) {
-          setUnreadCounts((prev) => ({
-            ...prev,
-            [incomingConversationId]: 0,
-          }));
-        }
-      } else if (message.sender_email !== currentUserEmail) {
+      if (message.sender_email !== currentUserEmail) {
         setUnreadCounts((prev) => ({
           ...prev,
-          [incomingConversationId]: (prev[incomingConversationId] || 0) + 1,
+          [incomingConversationId]: 0,
         }));
       }
-    };
+      return;
+    }
 
-    socket.on("receive_message", handleReceiveMessage);
+    if (message.sender_email !== currentUserEmail) {
+      const alreadyExists = conversationsRef.current.some(
+        (chat) => Number(chat.id) === incomingConversationId
+      );
 
-    return () => {
-      socket.off("receive_message", handleReceiveMessage);
-    };
-  }, [normalizedSelectedChatId, currentUserEmail]);
+      if (!alreadyExists) {
+        fetch(`${API_BASE_URL}/chat/conversations/${encodeURIComponent(currentUserEmail)}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (!data.conversations) return;
+
+            const mappedConversations = data.conversations.map((chat) => {
+              if (chat.is_group) {
+                return {
+                  ...chat,
+                  id: Number(chat.id),
+                  displayName: chat.name || "Group Chat",
+                  otherEmail: null,
+                  avatarUrl: "",
+                };
+              }
+
+              const parts = (chat.name || "").split("-");
+              const otherEmail =
+                parts.find(
+                  (part) => part.toLowerCase() !== currentUserEmail.toLowerCase()
+                ) || "";
+
+              const shortName = otherEmail
+                ? otherEmail.split("@")[0]
+                : "Conversation";
+
+              return {
+                ...chat,
+                id: Number(chat.id),
+                displayName: shortName,
+                otherEmail,
+                avatarUrl: "",
+              };
+            });
+
+            setConversations(mappedConversations);
+            setUnreadCounts((prev) => ({
+              ...prev,
+              [incomingConversationId]: (prev[incomingConversationId] || 0) + 1,
+            }));
+          })
+          .catch((err) =>
+            console.error("refetch conversations error:", err)
+          );
+
+        return;
+      }
+
+      setUnreadCounts((prev) => ({
+        ...prev,
+        [incomingConversationId]: (prev[incomingConversationId] || 0) + 1,
+      }));
+    }
+  };
+
+  socket.on("receive_message", handleReceiveMessage);
+
+  return () => {
+    socket.off("receive_message", handleReceiveMessage);
+  };
+}, [normalizedSelectedChatId, currentUserEmail]);
 
   const handleSend = () => {
     if (!messageText.trim() || !normalizedSelectedChatId) return;
