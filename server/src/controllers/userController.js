@@ -1,5 +1,6 @@
 const pool = require("../config/db");
 const cloudinary = require("../config/cloudinary");
+const moderateImage = require("../utils/moderateImage");
 const streamifier = require("streamifier");
 
 const saveProfile = async (req, res) => {
@@ -96,8 +97,16 @@ const uploadProfileImage = async (req, res) => {
         streamifier.createReadStream(req.file.buffer).pipe(stream);
       });
 
-    const result = await uploadStream();
-    const imageUrl = result.secure_url;
+const moderation = await moderateImage(req.file);
+
+if (!moderation.isSafe) {
+  return res.status(400).json({
+    error: "Profile image violates guidelines",
+  });
+}
+
+const result = await uploadStream();
+const imageUrl = result.secure_url;
 
     await pool.query(
       `
