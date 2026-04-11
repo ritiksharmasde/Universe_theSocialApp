@@ -336,6 +336,7 @@ function App() {
           customPosts={posts}
     unreadCounts={unreadCounts}
           onCreatePost={() => navigateTo("create-post")}
+    
           onOpenProfile={() => navigateTo("profile-details")}
           onOpenUserProfile={(userEmail) => {
             navigateTo("public-profile", { selectedUserEmail: userEmail });
@@ -355,12 +356,15 @@ function App() {
         currentPage={currentPage}
         onNavigate={navigateTo}
         theme={theme}
+    hasUnreadMessages={hasUnreadMessages}
         onThemeChange={setTheme}
+    
         onLogout={handleLogout}
       >
         <PublicProfilePage
           currentUserEmail={email}
           viewedUserEmail={selectedUserEmail}
+    
           onBack={() => navigateTo("feed")}
           onStartChat={(conversationId) => {
             navigateTo("messages", { activeConversationId: conversationId });
@@ -378,6 +382,8 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
+          hasUnreadMessages={hasUnreadMessages}
+          
       >
         {selectedGroup ? (
           <GroupChatPage
@@ -405,6 +411,7 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
+          hasUnreadMessages={hasUnreadMessages}
       >
         <CreateGroupPage
           currentUserEmail={email}
@@ -423,6 +430,7 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
+          hasUnreadMessages={hasUnreadMessages}
       >
         <MessagesPage
           currentUserEmail={email}
@@ -445,6 +453,7 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
+          hasUnreadMessages={hasUnreadMessages}
       >
         <ProfileDetailsPage
           profileData={profileData}
@@ -505,6 +514,7 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
+          hasUnreadMessages={hasUnreadMessages}
       >
         <CreatePostPage
           profileData={profileData}
@@ -549,6 +559,7 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
+          hasUnreadMessages={hasUnreadMessages}
       >
         <SearchPage
           currentUserEmail={email}
@@ -571,6 +582,7 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
+          hasUnreadMessages={hasUnreadMessages}
       >
         <NotificationsPage currentUserEmail={email} />
       </AppLayout>
@@ -584,6 +596,7 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
+          hasUnreadMessages={hasUnreadMessages}
       >
         <FeedbackPage currentUserEmail={email} />
       </AppLayout>
