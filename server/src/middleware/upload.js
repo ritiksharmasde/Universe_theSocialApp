@@ -1,14 +1,22 @@
 const multer = require("multer");
+const moderateImage = require("../utils/moderateImage");
 
 const storage = multer.memoryStorage();
 
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+const fileFilter = async (req, file, cb) => {
+  try {
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
 
-  if (allowedTypes.includes(file.mimetype)) {
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error("Only image files are allowed."), false);
+    }
+
+    // attach file temporarily so moderation can use it if needed later
+    req.pendingFile = file;
+
     cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed."), false);
+  } catch (error) {
+    cb(error, false);
   }
 };
 
