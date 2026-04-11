@@ -114,6 +114,46 @@ const getConversationMessages = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const deleteConversationForMe = async (req, res) => {
+  try {
+    const { conversationId, userEmail } = req.body;
+
+    if (!conversationId || !userEmail) {
+      return res.status(400).json({ error: "conversationId and userEmail are required." });
+    }
+
+    const normalizedEmail = userEmail.toLowerCase().trim();
+
+    const memberCheck = await pool.query(
+      `
+      SELECT 1
+      FROM conversation_members
+      WHERE conversation_id = $1 AND LOWER(user_email) = LOWER($2)
+      LIMIT 1
+      `,
+      [conversationId, normalizedEmail]
+    );
+
+    if (memberCheck.rows.length === 0) {
+      return res.status(403).json({ error: "You are not part of this conversation." });
+    }
+
+    await pool.query(
+      `
+      INSERT INTO deleted_conversations (conversation_id, user_email, deleted_at)
+      VALUES ($1, $2, NOW())
+      ON CONFLICT (conversation_id, user_email)
+      DO UPDATE SET deleted_at = NOW()
+      `,
+      [conversationId, normalizedEmail]
+    );
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("deleteConversationForMe error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
 const getOrCreateDirectConversation = async (req, res) => {
   try {
     const { currentUserEmail, otherUserEmail } = req.body;
@@ -200,4 +240,5 @@ module.exports = {
   getUserConversations,
   getConversationMessages,
   getOrCreateDirectConversation,
+  deleteConversationForMe,
 };
