@@ -36,3 +36,29 @@
     transform: rotate(360deg);
   }
 }
+/* 🔥 Modern clean scrollbar */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.25) transparent;
+}
+
+/* Chrome / Edge / Safari */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+  transition: width 0.2s ease;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.4);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.7);
+  box-shadow: 0 0 6px rgba(139, 92, 246, 0.5);
+}
