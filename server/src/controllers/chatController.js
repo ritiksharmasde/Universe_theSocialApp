@@ -73,15 +73,20 @@ const getUserConversations = async (req, res) => {
     const { email } = req.params;
 
     const result = await pool.query(
-      `
-      SELECT c.id, c.name, c.is_group, c.created_at
-      FROM conversations c
-      JOIN conversation_members cm ON c.id = cm.conversation_id
-      WHERE LOWER(cm.user_email) = LOWER($1)
-      ORDER BY c.created_at DESC
-      `,
-      [email]
-    );
+  `
+  SELECT c.id, c.name, c.is_group, c.created_at
+  FROM conversations c
+  JOIN conversation_members cm
+    ON c.id = cm.conversation_id
+  LEFT JOIN deleted_conversations dc
+    ON dc.conversation_id = c.id
+   AND LOWER(dc.user_email) = LOWER($1)
+  WHERE LOWER(cm.user_email) = LOWER($1)
+    AND dc.id IS NULL
+  ORDER BY c.created_at DESC
+  `,
+  [email]
+);
 
     res.status(200).json({
       conversations: result.rows,
@@ -95,16 +100,28 @@ const getUserConversations = async (req, res) => {
 const getConversationMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
+const { userEmail } = req.query;
 
-    const result = await pool.query(
-      `
-      SELECT *
-      FROM messages
-      WHERE conversation_id = $1
-      ORDER BY created_at ASC
-      `,
-      [conversationId]
-    );
+if (!userEmail) {
+  return res.status(400).json({ error: "userEmail is required." });
+}
+
+const result = await pool.query(
+  `
+  SELECT m.*
+  FROM messages m
+  LEFT JOIN deleted_conversations dc
+    ON dc.conversation_id = m.conversation_id
+   AND LOWER(dc.user_email) = LOWER($2)
+  WHERE m.conversation_id = $1
+    AND (
+      dc.deleted_at IS NULL
+      OR m.created_at > dc.deleted_at
+    )
+  ORDER BY m.created_at ASC
+  `,
+  [conversationId, userEmail]
+);
 
     res.status(200).json({
       messages: result.rows,
