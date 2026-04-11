@@ -789,10 +789,10 @@ instaHandle: {
   bottom: "20px",
   right: "20px",
   zIndex: 9999,
-  background: "linear-gradient(45deg, #f58529, #dd2a7b, #8134af, #515bd4)", // 🔥 insta gradient
+background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
   padding: "10px 16px",
   borderRadius: "999px",
-  boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+  boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
 },
   messageIconWrapper: {
   position: "relative",
