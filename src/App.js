@@ -28,6 +28,9 @@ function App() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [isRouteReady, setIsRouteReady] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
+  const hasUnreadMessages = Object.values(unreadCounts || {}).some(
+  (count) => count > 0
+);
 
   const { isMobile } = useBreakpoint();
 
@@ -326,6 +329,7 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
+          hasUnreadMessages={hasUnreadMessages}
       >
         <FeedPage
           profileData={profileData}
