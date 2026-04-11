@@ -23,6 +23,7 @@ function Sidebar({
   theme = "light",
   onThemeChange,
   onLogout,
+  hasUnreadMessages,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -156,7 +157,13 @@ function Sidebar({
                     aria-label={item.label}
                     title={item.label}
                   >
-                    <span style={styles.navIconMobile}>{item.icon}</span>
+                    <span style={styles.iconWrapper}>
+  <span style={styles.navIconMobile}>{item.icon}</span>
+
+  {item.id === "messages" && hasUnreadMessages && (
+    <span style={styles.redDot}></span>
+  )}
+</span>
                   </button>
                 );
               })}
@@ -295,9 +302,9 @@ function Sidebar({
                 >
                   <span style={styles.iconWrapper}>
   {item.icon}
-  {item.id === "messages" && (
-    <span style={styles.redDot}></span>
-  )}
+  {item.id === "messages" && hasUnreadMessages && (
+  <span style={styles.redDot}></span>
+)}
 </span>
                   <span>{item.label}</span>
                 </button>
