@@ -166,12 +166,10 @@ function MessagesPage({
         });
 
         if (activeConversationId) {
-          setSelectedChatId(Number(activeConversationId));
-        } else if (mappedConversations.length > 0) {
-          setSelectedChatId((prev) =>
-            prev ? Number(prev) : Number(mappedConversations[0].id)
-          );
-        }
+  setSelectedChatId(Number(activeConversationId));
+} else if (!selectedChatId && mappedConversations.length > 0) {
+  setSelectedChatId(Number(mappedConversations[0].id));
+}
       } catch (error) {
         console.error("fetchConversations error:", error);
       }
