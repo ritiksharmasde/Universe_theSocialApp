@@ -161,7 +161,7 @@ function MessagesPage({
     if (currentUserEmail) {
       fetchConversations();
     }
-  }, [currentUserEmail, activeConversationId]);
+  }, [currentUserEmail, activeConversationId, selectedChatId]);
 
   useEffect(() => {
     const enrichConversations = async () => {
