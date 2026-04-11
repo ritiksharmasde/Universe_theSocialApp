@@ -563,17 +563,7 @@ function FeedPage({
           {suggestionsNode}
         </aside>
       )}
-<div style={styles.instaHandle}>
-      <a
-        href="https://instagram.com/zaddieee_"
-        target="_blank"
-        rel="noreferrer"
-        style={styles.instaHandleLink}
-      >
-        <FaInstagram size={18} />
-<span>@zaddieee_</span>
-      </a>
-    </div>
+
     </div>
   );
 }
@@ -779,16 +769,7 @@ const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile) => ({
   borderBottom: "1px solid var(--border-color)",
   gap: "12px",
 },
-instaHandle: {
-  position: "fixed",
-  bottom: "20px",
-  right: "20px",
-  zIndex: 9999,
-background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
-  padding: "10px 16px",
-  borderRadius: "999px",
-  boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-},
+
   messageIconWrapper: {
   position: "relative",
   flex: 1,
@@ -814,15 +795,7 @@ unreadBadge: {
   lineHeight: 1,
 },
 
-instaHandleLink: {
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  color: "#fff",
-  textDecoration: "none",
-  fontSize: "14px",
-  fontWeight: "600",
-},
+
 suggestionLeft: {
   display: "flex",
   alignItems: "center",
