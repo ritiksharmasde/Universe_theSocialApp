@@ -358,7 +358,7 @@ function FeedPage({
       }
 
       if (onStartChat) {
-        onStartChat(data.conversationId);
+        onStartChat(data.conversation?.id);
       }
     } catch (error) {
       console.error("start chat error:", error);
