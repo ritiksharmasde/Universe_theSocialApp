@@ -1,5 +1,6 @@
 const pool = require("../config/db");
 const cloudinary = require("../config/cloudinary");
+const moderateImage = require("../utils/moderateImage");
 const streamifier = require("streamifier");
 
 const uploadToCloudinary = (buffer) => {
@@ -39,10 +40,18 @@ const createPost = async (req, res) => {
 
     let imageUrl = null;
 
-    if (req.file) {
-      const uploadResult = await uploadToCloudinary(req.file.buffer);
-      imageUrl = uploadResult.secure_url;
-    }
+   if (req.file) {
+  const moderation = await moderateImage(req.file);
+
+  if (!moderation.isSafe) {
+    return res.status(400).json({
+      error: moderation.reason || "Inappropriate image not allowed",
+    });
+  }
+
+  const uploadResult = await uploadToCloudinary(req.file.buffer);
+  imageUrl = uploadResult.secure_url;
+}
 
     const result = await pool.query(
       `
