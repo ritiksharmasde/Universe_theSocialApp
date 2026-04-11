@@ -445,9 +445,13 @@ function FeedPage({
 
   {unreadUsersCount > 0 && (
     <span style={styles.unreadBadge}>
-      {unreadUsersCount > 99 ? "99+" : unreadUsersCount}
-    </span>
-  )}
+      {unreadCounts[item.email?.toLowerCase()] > 0 && (
+  <span style={styles.unreadBadge}>
+    {unreadCounts[item.email.toLowerCase()] > 99
+      ? "99+"
+      : unreadCounts[item.email.toLowerCase()]}
+  </span>
+)}
 </div>
                 {status === "received" ? (
                   <div style={styles.suggestionActionGroup}>
