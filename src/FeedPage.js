@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import PostCard from "./components/PostCard";
+import { FaInstagram } from "react-icons/fa";
 import PostDetailPage from "./PostDetailPage";
 import API_BASE_URL, {SERVER_BASE_URL} from "./api";
 import useBreakpoint from "./useBreakpoint";
