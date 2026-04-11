@@ -99,11 +99,12 @@ function Sidebar({
 
   return (
     <aside
-      style={{
-        ...styles.sidebar,
-        ...(isCompact ? styles.sidebarCompact : styles.sidebarDesktop),
-      }}
-    >
+  className="sidebar-scroll"
+  style={{
+    ...styles.sidebar,
+    ...(isCompact ? styles.sidebarCompact : styles.sidebarDesktop),
+  }}
+>
       {!isCompact && (
         <div style={styles.logoContainer}>
           <img
