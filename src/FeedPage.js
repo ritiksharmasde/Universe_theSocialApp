@@ -27,9 +27,7 @@ function FeedPage({
   const isTinyMobile = isMobile && window.innerWidth <= 380;
 
   const styles = getStyles(isMobile, isTablet, isDesktop, isTinyMobile);
-  const unreadUsersCount = Object.values(unreadCounts || {}).filter(
-  (count) => count > 0
-).length;
+  
 
 
   useEffect(() => {
@@ -443,17 +441,10 @@ function FeedPage({
     Message
   </button>
 
-  {unreadUsersCount > 0 && (
-    <span style={styles.unreadBadge}>
-      {unreadCounts[item.email?.toLowerCase()] > 0 && (
-  <span style={styles.unreadBadge}>
-    {unreadCounts[item.email.toLowerCase()] > 99
-      ? "99+"
-      : unreadCounts[item.email.toLowerCase()]}
-  </span>
-)}
-</div>
-                {status === "received" ? (
+  {unreadCounts[item.email?.toLowerCase()] > 0 && (
+    <span style={styles.redDotSmall}></span>
+  )}
+</div>               {status === "received" ? (
                   <div style={styles.suggestionActionGroup}>
                     <button
                       style={styles.acceptSuggestionButton}
@@ -800,7 +791,9 @@ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)",
 },
   messageIconWrapper: {
   position: "relative",
-  display: "inline-flex",
+  display: "flex",
+  flex: 1,
+  minWidth: 0,
 },
 
 unreadBadge: {
@@ -945,7 +938,16 @@ suggestionSub: {
   whiteSpace: "nowrap",
   flex: "1 1 110px",
 },
-
+redDotSmall: {
+  position: "absolute",
+  top: "-4px",
+  right: "-4px",
+  width: "10px",
+  height: "10px",
+  borderRadius: "50%",
+  background: "#ef4444",
+  border: "2px solid var(--bg-surface)",
+},
   addFriendButtonMuted: {
     background: "var(--bg-surface-soft)",
     border: "1px solid var(--border-color)",
