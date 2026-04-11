@@ -240,6 +240,14 @@ const getOrCreateDirectConversation = async (req, res) => {
       `,
       [conversation.id, userB]
     );
+    await pool.query(
+  `
+  DELETE FROM deleted_conversations
+  WHERE conversation_id = $1
+    AND LOWER(user_email) = LOWER($2)
+  `,
+  [conversation.id, userA]
+);
 
     return res.status(200).json({
       conversation: {
