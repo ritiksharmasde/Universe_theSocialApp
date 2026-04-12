@@ -49,7 +49,7 @@ export default function UniversitySocialWelcomePage({
 
     if (!formData.email.trim()) {
       nextErrors.email = "University email is required.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+    } else if (!/^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/.test(formData.email.trim())) {
       nextErrors.email =
         "Use your university email (e.g., ritik.17886@stu.upes.ac.in)";
     }
