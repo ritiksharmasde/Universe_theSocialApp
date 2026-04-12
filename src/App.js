@@ -379,6 +379,7 @@ useEffect(() => {
           profileData={profileData}
           customPosts={posts}
     unreadCounts={unreadCounts}
+    
           onCreatePost={() => navigateTo("create-post")}
     
           onOpenProfile={() => navigateTo("profile-details")}
