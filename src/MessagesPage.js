@@ -41,21 +41,22 @@ function MessagesPage({
     filteredChats.find((chat) => Number(chat.id) === normalizedSelectedChatId) ||
     null;
 
-  useEffect(() => {
-    if (filteredChats.length === 0) {
-      setSelectedChatId(null);
-      setMessages([]);
-      return;
-    }
+useEffect(() => {
+  if (filteredChats.length === 0) {
+    setSelectedChatId(null);
+    setMessages([]);
+    return;
+  }
 
-    const selectedStillExists = filteredChats.some(
-      (chat) => Number(chat.id) === Number(normalizedSelectedChatId)
-    );
+  const selectedStillExists = filteredChats.some(
+    (chat) => Number(chat.id) === Number(normalizedSelectedChatId)
+  );
 
-    if (!selectedStillExists) {
-      setSelectedChatId(Number(filteredChats[0].id));
-    }
-  }, [filteredChats, normalizedSelectedChatId]);
+  if (!selectedStillExists && normalizedSelectedChatId !== null) {
+    setSelectedChatId(null);
+    setMessages([]);
+  }
+}, [filteredChats, normalizedSelectedChatId]);
 
   useEffect(() => {
     if (activeConversationId) {
@@ -152,10 +153,8 @@ function MessagesPage({
           return next;
         });
 
-        if (activeConversationId) {
+      if (activeConversationId) {
   setSelectedChatId(Number(activeConversationId));
-} else if (!selectedChatId && mappedConversations.length > 0) {
-  setSelectedChatId(Number(mappedConversations[0].id));
 }
       } catch (error) {
         console.error("fetchConversations error:", error);
@@ -452,12 +451,8 @@ useEffect(() => {
     (chat) => Number(chat.id) !== Number(selectedChat.id)
   );
 
-  if (updated.length > 0) {
-    setSelectedChatId(Number(updated[0].id));
-  } else {
-    setSelectedChatId(null);
-    setMessages([]);
-  }
+  setSelectedChatId(null);
+  setMessages([]);
 
   return updated;
 });
@@ -646,24 +641,27 @@ setUnreadCounts((prev) => {
               }}
             >
               {!selectedChat ? (
-                <p style={styles.emptyText}>Choose a conversation to start chatting.</p>
-              ) : messages.length === 0 ? (
-                <p style={styles.emptyText}>No messages yet.</p>
-              ) : (
-                messages.map((message) => (
-                  <div
-                    key={message.id}
-                    style={
-                      message.sender_email === currentUserEmail
-                        ? styles.messageBubbleMe
-                        : styles.messageBubbleOther
-                    }
-                  >
-                    {message.message_text}
-                  </div>
-                ))
-              )}
-            </div>
+  <div style={styles.emptyStateCenter}>
+    <p style={styles.emptyText}>Select a chat to view messages.</p>
+  </div>
+) : messages.length === 0 ? (
+  <div style={styles.emptyStateCenter}>
+    <p style={styles.emptyText}>No messages yet.</p>
+  </div>
+) : (
+  messages.map((message) => (
+    <div
+      key={message.id}
+      style={
+        message.sender_email === currentUserEmail
+          ? styles.messageBubbleMe
+          : styles.messageBubbleOther
+      }
+    >
+      {message.message_text}
+    </div>
+  ))
+)}            </div>
 
             <div
               style={{
