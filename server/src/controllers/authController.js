@@ -63,25 +63,27 @@ const sendOtp = async (req, res) => {
             [normalizedEmail, otpHash, passwordHash, fullName || "", expiresAt]
         );
 
-        await transporter.sendMail({
-            from: process.env.MAIL_USER,
-            to: normalizedEmail,
-            subject: "Your UniVerse OTP Code",
-            html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2>Your OTP Code</h2>
-          <p>Use the following OTP to verify your UniVerse account:</p>
-          <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
-            ${otp}
-          </div>
-          <p>This OTP will expire in 5 minutes.</p>
-        </div>
-      `,
-        });
+       transporter.sendMail({
+    from: process.env.MAIL_USER,
+    to: normalizedEmail,
+    subject: "Your UniVerse OTP Code",
+    html: `
+<div style="font-family: Arial, sans-serif; padding: 20px;">
+  <h2>Your OTP Code</h2>
+  <p>Use the following OTP to verify your UniVerse account:</p>
+  <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
+    ${otp}
+  </div>
+  <p>This OTP will expire in 5 minutes.</p>
+</div>
+`,
+}).catch((mailError) => {
+    console.error("MAIL ERROR:", mailError);
+});
 
-        return res.status(200).json({
-            message: "OTP sent to email successfully.",
-        });
+return res.status(200).json({
+    message: "OTP generated. Check your email.",
+});
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
