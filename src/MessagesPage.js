@@ -164,7 +164,7 @@ useEffect(() => {
     if (currentUserEmail) {
       fetchConversations();
     }
-  }, [currentUserEmail, activeConversationId, selectedChatId]);
+  }, [currentUserEmail, activeConversationId]);
   useEffect(() => {
   conversationsRef.current = conversations;
 }, [conversations]);
