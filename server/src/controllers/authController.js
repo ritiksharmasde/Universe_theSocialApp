@@ -48,6 +48,7 @@ const emailRegex = /^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/;
                 error: "Account already exists. Please log in.",
             });
         }
+        const isUpesEmail = normalizedEmail.endsWith("@stu.upes.ac.in");
 
         const otp = generateOtp();
         const otpHash = await hashOtp(otp);
@@ -73,6 +74,28 @@ const emailRegex = /^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/;
         console.log("✅ OTP inserted");
 
         console.log("📨 sending email via Resend first...");
+        if (isUpesEmail) {
+    await gmailTransporter.sendMail({
+        from: process.env.MAIL_USER,
+        to: normalizedEmail,
+        subject: "Your UniVerse OTP Code",
+        text: `Your UniVerse OTP is ${otp}. It expires in 5 minutes.`,
+        html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <h2>Your OTP Code</h2>
+                <p>Use the following OTP to verify your UniVerse account:</p>
+                <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
+                    ${otp}
+                </div>
+                <p>This OTP will expire in 5 minutes.</p>
+            </div>
+        `,
+    });
+
+    return res.status(200).json({
+        message: "OTP sent successfully via Gmail.",
+    });
+}
 
 let sentVia = null;
 
