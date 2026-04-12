@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AppLayout from "./components/AppLayout";
 import WelcomePage from "./WelcomePage";
 import OtpPage from "./OtpPage";
-import { io } from "socket.io-client";
+import socket from "./socket";
 import ProfilePage from "./ProfilePage";
 import FeedPage from "./FeedPage";
 import CreatePostPage from "./CreatePostPage";
@@ -17,7 +17,6 @@ import CreateGroupPage from "./CreateGroupPage";
 import useBreakpoint from "./useBreakpoint";
 import GroupChatPage from "./GroupChatPage";
 import FeedbackPage from "./FeedbackPage";
-const socket = io(SERVER_BASE_URL);
 function App() {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [currentPage, setCurrentPage] = useState("welcome");
