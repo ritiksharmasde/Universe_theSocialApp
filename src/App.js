@@ -29,6 +29,7 @@ function App() {
   const currentUserEmail = email;
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [isRouteReady, setIsRouteReady] = useState(false);
+  const [conversationIdsByEmail, setConversationIdsByEmail] = useState({});
   const [unreadCounts, setUnreadCounts] = useState({});
   // const [unreadCounts, setUnreadCounts] = useState({});
   const hasUnreadMessages = Object.values(unreadCounts || {}).some(
@@ -139,9 +140,26 @@ function App() {
 
       if (!response.ok || !data.conversations) return;
 
-      data.conversations.forEach((chat) => {
-        socket.emit("join_conversation", Number(chat.id));
-      });
+      const nextConversationIdsByEmail = {};
+
+data.conversations.forEach((chat) => {
+  const conversationId = Number(chat.id);
+  socket.emit("join_conversation", conversationId);
+
+  if (!chat.is_group && chat.name) {
+    const parts = chat.name.split("-");
+    const otherEmail =
+      parts.find(
+        (part) => part.toLowerCase() !== currentUserEmail.toLowerCase()
+      ) || "";
+
+    if (otherEmail) {
+      nextConversationIdsByEmail[otherEmail.toLowerCase()] = conversationId;
+    }
+  }
+});
+
+setConversationIdsByEmail(nextConversationIdsByEmail);
     } catch (error) {
       console.error("join conversations error:", error);
     }
@@ -379,6 +397,7 @@ useEffect(() => {
           profileData={profileData}
           customPosts={posts}
     unreadCounts={unreadCounts}
+    conversationIdsByEmail={conversationIdsByEmail}
     
           onCreatePost={() => navigateTo("create-post")}
     
