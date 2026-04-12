@@ -6,3 +6,4 @@ const socket = io(SERVER_BASE_URL, {
 });
 
 export default socket;
+
