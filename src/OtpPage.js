@@ -94,7 +94,7 @@ function OtpPage({ email, onBack, onVerify }) {
     if (secondsLeft > 0) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+      const response = await fetch(`${API_BASE_URL}/auth/resend-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
