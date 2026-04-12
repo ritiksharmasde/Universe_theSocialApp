@@ -72,7 +72,7 @@ const sendOtp = async (req, res) => {
         console.log("✅ OTP inserted");
 
         console.log("📨 sending email...");
-        await transporter.emails.send({
+        const { error } = await transporter.emails.send({
     from: process.env.MAIL_FROM,
     to: normalizedEmail,
     subject: "Your UniVerse OTP Code",
@@ -87,7 +87,13 @@ const sendOtp = async (req, res) => {
         </div>
     `,
 });
-        console.log("✅ EMAIL SENT");
+
+if (error) {
+    console.error("❌ Resend error:", error);
+    return res.status(500).json({ error: "Failed to send OTP email." });
+}
+
+console.log("✅ EMAIL SENT");
 
         return res.status(200).json({
             message: "OTP sent to email successfully.",
@@ -95,6 +101,105 @@ const sendOtp = async (req, res) => {
 
     } catch (error) {
         console.error("❌ sendOtp error:", error);
+        return res.status(500).json({ error: error.message });
+    }
+};
+const resendOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                error: "Email is required.",
+            });
+        }
+
+        const normalizedEmail = email.toLowerCase().trim();
+
+        const emailRegex = /^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/;
+
+        if (!emailRegex.test(normalizedEmail)) {
+            return res.status(400).json({
+                error: "Use a valid university email.",
+            });
+        }
+
+        const otp = generateOtp();
+        const otpHash = await hashOtp(otp);
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+        // mark old unused OTPs as used so only latest stays active
+        await pool.query(
+            `
+            UPDATE otp_codes
+            SET used = TRUE
+            WHERE LOWER(email) = LOWER($1) AND used = FALSE
+            `,
+            [normalizedEmail]
+        );
+
+        // keep previously entered signup data if it exists
+        const latestOtpResult = await pool.query(
+            `
+            SELECT password_hash_temp, full_name_temp
+            FROM otp_codes
+            WHERE LOWER(email) = LOWER($1)
+            ORDER BY created_at DESC
+            LIMIT 1
+            `,
+            [normalizedEmail]
+        );
+
+        const latestOtpRow = latestOtpResult.rows[0];
+
+        await pool.query(
+            `
+            INSERT INTO otp_codes (
+                email,
+                otp_code_hash,
+                password_hash_temp,
+                full_name_temp,
+                expires_at,
+                used,
+                attempt_count
+            )
+            VALUES ($1, $2, $3, $4, $5, FALSE, 0)
+            `,
+            [
+                normalizedEmail,
+                otpHash,
+                latestOtpRow?.password_hash_temp || null,
+                latestOtpRow?.full_name_temp || "",
+                expiresAt,
+            ]
+        );
+
+        const { error } = await transporter.emails.send({
+            from: process.env.MAIL_FROM,
+            to: normalizedEmail,
+            subject: "Your UniVerse OTP Code",
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2>Your OTP Code</h2>
+                    <p>Use the following OTP to verify your UniVerse account:</p>
+                    <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
+                        ${otp}
+                    </div>
+                    <p>This OTP will expire in 5 minutes.</p>
+                </div>
+            `,
+        });
+
+        if (error) {
+            console.error("❌ resendOtp Resend error:", error);
+            return res.status(500).json({ error: "Failed to resend OTP email." });
+        }
+
+        return res.status(200).json({
+            message: "OTP resent successfully.",
+        });
+    } catch (error) {
+        console.error("❌ resendOtp error:", error);
         return res.status(500).json({ error: error.message });
     }
 };
@@ -276,4 +381,5 @@ module.exports = {
     sendOtp,
     verifyOtp,
     loginUser,
+    resendOtp,
 };
