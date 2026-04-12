@@ -5,7 +5,10 @@ const transporter = require("../config/mailer");
 
 const sendOtp = async (req, res) => {
     try {
+        console.log("🔥 sendOtp hit");
+
         const { email, password, fullName } = req.body;
+        console.log("📩 body:", email);
 
         if (!email || !password) {
             return res.status(400).json({
@@ -14,6 +17,7 @@ const sendOtp = async (req, res) => {
         }
 
         const normalizedEmail = email.toLowerCase().trim();
+        console.log("📧 normalized:", normalizedEmail);
 
         const emailRegex = /^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/;
 
@@ -29,10 +33,12 @@ const sendOtp = async (req, res) => {
             });
         }
 
+        console.log("🔍 checking existing user...");
         const existingUserResult = await pool.query(
             `SELECT * FROM users WHERE email = $1`,
             [normalizedEmail]
         );
+        console.log("✅ user check done");
 
         const existingUser = existingUserResult.rows[0];
 
@@ -47,6 +53,7 @@ const sendOtp = async (req, res) => {
         const passwordHash = await bcrypt.hash(password, 10);
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
+        console.log("💾 inserting OTP...");
         await pool.query(
             `
             INSERT INTO otp_codes (
@@ -62,7 +69,9 @@ const sendOtp = async (req, res) => {
             `,
             [normalizedEmail, otpHash, passwordHash, fullName || "", expiresAt]
         );
+        console.log("✅ OTP inserted");
 
+        console.log("📨 sending email...");
         await transporter.sendMail({
             from: process.env.MAIL_USER,
             to: normalizedEmail,
@@ -71,23 +80,23 @@ const sendOtp = async (req, res) => {
                 <div style="font-family: Arial, sans-serif; padding: 20px;">
                     <h2>Your OTP Code</h2>
                     <p>Use the following OTP to verify your UniVerse account:</p>
-                    <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
+                    <div style="font-size: 28px; font-weight: bold;">
                         ${otp}
                     </div>
-                    <p>This OTP will expire in 5 minutes.</p>
                 </div>
             `,
         });
+        console.log("✅ EMAIL SENT");
 
         return res.status(200).json({
             message: "OTP sent to email successfully.",
         });
+
     } catch (error) {
-        console.error("sendOtp error:", error);
+        console.error("❌ sendOtp error:", error);
         return res.status(500).json({ error: error.message });
     }
 };
-
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
