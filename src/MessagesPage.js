@@ -283,69 +283,10 @@ useEffect(() => {
           [incomingConversationId]: 0,
         }));
       }
-      return;
+      
     }
 
-    if (message.sender_email !== currentUserEmail) {
-      const alreadyExists = conversationsRef.current.some(
-        (chat) => Number(chat.id) === incomingConversationId
-      );
-
-      if (!alreadyExists) {
-        fetch(`${API_BASE_URL}/chat/conversations/${encodeURIComponent(currentUserEmail)}`)
-          .then((res) => res.json())
-          .then((data) => {
-            if (!data.conversations) return;
-
-            const mappedConversations = data.conversations.map((chat) => {
-              if (chat.is_group) {
-                return {
-                  ...chat,
-                  id: Number(chat.id),
-                  displayName: chat.name || "Group Chat",
-                  otherEmail: null,
-                  avatarUrl: "",
-                };
-              }
-
-              const parts = (chat.name || "").split("-");
-              const otherEmail =
-                parts.find(
-                  (part) => part.toLowerCase() !== currentUserEmail.toLowerCase()
-                ) || "";
-
-              const shortName = otherEmail
-                ? otherEmail.split("@")[0]
-                : "Conversation";
-
-              return {
-                ...chat,
-                id: Number(chat.id),
-                displayName: shortName,
-                otherEmail,
-                avatarUrl: "",
-              };
-            });
-
-            setConversations(mappedConversations);
-            setUnreadCounts((prev) => ({
-              ...prev,
-              [incomingConversationId]: (prev[incomingConversationId] || 0) + 1,
-            }));
-          })
-          .catch((err) =>
-            console.error("refetch conversations error:", err)
-          );
-
-        return;
-      }
-
-      setUnreadCounts((prev) => ({
-        ...prev,
-        [incomingConversationId]: (prev[incomingConversationId] || 0) + 1,
-      }));
-    }
-  };
+     };
 
   socket.on("receive_message", handleReceiveMessage);
 
