@@ -14,6 +14,7 @@ function FeedPage({
   onStartChat,
   customPosts = [],
   unreadCounts = {},
+  conversationIdsByEmail = {},
 }) {
   const [searchText, setSearchText] = useState("");
   const [posts, setPosts] = useState(customPosts || []);
@@ -441,9 +442,10 @@ function FeedPage({
     Message
   </button>
 
-  {unreadCounts[item.email?.toLowerCase()] > 0 && (
-    <span style={styles.redDotSmall}></span>
-  )}
+  {(() => {
+  const conversationId = conversationIdsByEmail[item.email?.toLowerCase()];
+  return conversationId && unreadCounts[conversationId] > 0;
+})() && <span style={styles.redDotSmall}></span>}
 </div>               {status === "received" ? (
                   <div style={styles.suggestionActionGroup}>
                     <button
