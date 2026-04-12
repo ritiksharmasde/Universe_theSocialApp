@@ -116,8 +116,7 @@ const resendOtp = async (req, res) => {
 
         const normalizedEmail = email.toLowerCase().trim();
 
-        const emailRegex = /^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/;
-
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(normalizedEmail)) {
             return res.status(400).json({
                 error: "Use a valid university email.",
