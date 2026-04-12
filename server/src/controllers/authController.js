@@ -72,20 +72,21 @@ const sendOtp = async (req, res) => {
         console.log("✅ OTP inserted");
 
         console.log("📨 sending email...");
-        await transporter.sendMail({
-            from: process.env.MAIL_USER,
-            to: normalizedEmail,
-            subject: "Your UniVerse OTP Code",
-            html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px;">
-                    <h2>Your OTP Code</h2>
-                    <p>Use the following OTP to verify your UniVerse account:</p>
-                    <div style="font-size: 28px; font-weight: bold;">
-                        ${otp}
-                    </div>
-                </div>
-            `,
-        });
+        await transporter.emails.send({
+    from: process.env.MAIL_FROM,
+    to: normalizedEmail,
+    subject: "Your UniVerse OTP Code",
+    html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Your OTP Code</h2>
+            <p>Use the following OTP to verify your UniVerse account:</p>
+            <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
+                ${otp}
+            </div>
+            <p>This OTP will expire in 5 minutes.</p>
+        </div>
+    `,
+});
         console.log("✅ EMAIL SENT");
 
         return res.status(200).json({
