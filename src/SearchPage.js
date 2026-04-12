@@ -76,15 +76,17 @@ function SearchPage({ currentUserEmail, onStartChat, onOpenUserProfile }) {
         item.subtitle.toLowerCase().includes(q) ||
         item.name.toLowerCase().includes(q) ||
         item.email?.toLowerCase().includes(q) ||
-        item.branch.toLowerCase().includes(q);
+        item.branch?.toLowerCase().trim().includes(q);
 
       const matchesCourse =
-        !courseFilter || item.course.toLowerCase() === courseFilter.toLowerCase();
+  !courseFilter ||
+  item.course?.toLowerCase().trim() === courseFilter.toLowerCase().trim();
 
       const matchesYear = !yearFilter || item.year === yearFilter;
 
       const matchesBranch =
-        !branchFilter || item.branch.toLowerCase() === branchFilter.toLowerCase();
+  !branchFilter ||
+  item.branch?.toLowerCase().trim() === branchFilter.toLowerCase().trim();
 
       return matchesQuery && matchesCourse && matchesYear && matchesBranch;
     });
@@ -354,9 +356,12 @@ function SearchPage({ currentUserEmail, onStartChat, onOpenUserProfile }) {
               style={styles.select}
             >
               <option value="">All Courses</option>
-              <option value="MCA">MCA</option>
-              <option value="BTech">BTech</option>
-              <option value="BBA">BBA</option>
+              <option value="mca">MCA</option>
+              <option value="btech">BTech</option>
+              <option value="bba">BBA</option>
+                 <option value="bca">bca</option>
+              <option value="bdes">BDes</option>
+              <option value="mdes">MDes</option>
             </select>
 
             <select
