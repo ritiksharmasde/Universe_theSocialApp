@@ -37,10 +37,10 @@ const sendOtp = async (req, res) => {
         const existingUser = existingUserResult.rows[0];
 
         if (existingUser && existingUser.password_hash) {
-  return res.status(400).json({
-    error: "Account already exists. Please log in.",
-  });
-}
+            return res.status(400).json({
+                error: "Account already exists. Please log in.",
+            });
+        }
 
         const otp = generateOtp();
         const otpHash = await hashOtp(otp);
@@ -49,42 +49,41 @@ const sendOtp = async (req, res) => {
 
         await pool.query(
             `
-      INSERT INTO otp_codes (
-        email,
-        otp_code_hash,
-        password_hash_temp,
-        full_name_temp,
-        expires_at,
-        used,
-        attempt_count
-      )
-      VALUES ($1, $2, $3, $4, $5, FALSE, 0)
-      `,
+            INSERT INTO otp_codes (
+                email,
+                otp_code_hash,
+                password_hash_temp,
+                full_name_temp,
+                expires_at,
+                used,
+                attempt_count
+            )
+            VALUES ($1, $2, $3, $4, $5, FALSE, 0)
+            `,
             [normalizedEmail, otpHash, passwordHash, fullName || "", expiresAt]
         );
 
-       transporter.sendMail({
-    from: process.env.MAIL_USER,
-    to: normalizedEmail,
-    subject: "Your UniVerse OTP Code",
-    html: `
-<div style="font-family: Arial, sans-serif; padding: 20px;">
-  <h2>Your OTP Code</h2>
-  <p>Use the following OTP to verify your UniVerse account:</p>
-  <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
-    ${otp}
-  </div>
-  <p>This OTP will expire in 5 minutes.</p>
-</div>
-`,
-}).catch((mailError) => {
-    console.error("MAIL ERROR:", mailError);
-});
+        await transporter.sendMail({
+            from: process.env.MAIL_USER,
+            to: normalizedEmail,
+            subject: "Your UniVerse OTP Code",
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2>Your OTP Code</h2>
+                    <p>Use the following OTP to verify your UniVerse account:</p>
+                    <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
+                        ${otp}
+                    </div>
+                    <p>This OTP will expire in 5 minutes.</p>
+                </div>
+            `,
+        });
 
-return res.status(200).json({
-    message: "OTP generated. Check your email.",
-});
+        return res.status(200).json({
+            message: "OTP sent to email successfully.",
+        });
     } catch (error) {
+        console.error("sendOtp error:", error);
         return res.status(500).json({ error: error.message });
     }
 };
@@ -157,11 +156,11 @@ const verifyOtp = async (req, res) => {
 
         const result = await pool.query(
             `
-      SELECT * FROM otp_codes
-      WHERE email = $1 AND used = FALSE
-      ORDER BY created_at DESC
-      LIMIT 1
-      `,
+            SELECT * FROM otp_codes
+            WHERE email = $1 AND used = FALSE
+            ORDER BY created_at DESC
+            LIMIT 1
+            `,
             [normalizedEmail]
         );
 
@@ -184,10 +183,10 @@ const verifyOtp = async (req, res) => {
         if (!isMatch) {
             await pool.query(
                 `
-        UPDATE otp_codes
-        SET attempt_count = attempt_count + 1
-        WHERE id = $1
-        `,
+                UPDATE otp_codes
+                SET attempt_count = attempt_count + 1
+                WHERE id = $1
+                `,
                 [otpRecord.id]
             );
 
@@ -198,10 +197,10 @@ const verifyOtp = async (req, res) => {
 
         await pool.query(
             `
-      UPDATE otp_codes
-      SET used = TRUE
-      WHERE id = $1
-      `,
+            UPDATE otp_codes
+            SET used = TRUE
+            WHERE id = $1
+            `,
             [otpRecord.id]
         );
 
@@ -218,9 +217,9 @@ const verifyOtp = async (req, res) => {
 
             await pool.query(
                 `
-        INSERT INTO users (email, full_name, password_hash, is_verified)
-        VALUES ($1, $2, $3, TRUE)
-        `,
+                INSERT INTO users (email, full_name, password_hash, is_verified)
+                VALUES ($1, $2, $3, TRUE)
+                `,
                 [
                     normalizedEmail,
                     otpRecord.full_name_temp || "",
@@ -232,16 +231,16 @@ const verifyOtp = async (req, res) => {
 
             await pool.query(
                 `
-    UPDATE users
-    SET
-      is_verified = TRUE,
-      password_hash = COALESCE(password_hash, $2),
-      full_name = CASE
-        WHEN full_name IS NULL OR full_name = '' THEN $3
-        ELSE full_name
-      END
-    WHERE email = $1
-    `,
+                UPDATE users
+                SET
+                    is_verified = TRUE,
+                    password_hash = COALESCE(password_hash, $2),
+                    full_name = CASE
+                        WHEN full_name IS NULL OR full_name = '' THEN $3
+                        ELSE full_name
+                    END
+                WHERE email = $1
+                `,
                 [
                     normalizedEmail,
                     otpRecord.password_hash_temp,
