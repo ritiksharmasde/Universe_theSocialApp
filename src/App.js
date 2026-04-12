@@ -25,6 +25,7 @@ function App() {
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [selectedUserEmail, setSelectedUserEmail] = useState("");
   const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
   const currentUserEmail = email;
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [isRouteReady, setIsRouteReady] = useState(false);
@@ -250,6 +251,7 @@ useEffect(() => {
 
     const fetchPosts = async () => {
       try {
+        setPostsLoading(true);
         const response = await fetch(
           `${API_BASE_URL}/posts?currentUserEmail=${encodeURIComponent(email)}&limit=10&offset=0`
         );
@@ -286,7 +288,10 @@ useEffect(() => {
         setPosts(mappedPosts);
       } catch (error) {
         console.error("Fetch posts error:", error);
-      }
+      }finally {
+    setPostsLoading(false);
+  }
+      
     };
 
     fetchPosts();
@@ -395,6 +400,7 @@ useEffect(() => {
         <FeedPage
           profileData={profileData}
           customPosts={posts}
+    postsLoading={postsLoading}
     unreadCounts={unreadCounts}
     conversationIdsByEmail={conversationIdsByEmail}
     
