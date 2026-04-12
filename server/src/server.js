@@ -1,3 +1,6 @@
+const dns = require("node:dns");
+dns.setDefaultResultOrder("ipv4first");
+console.log("✅ DNS result order set to ipv4first");
 require("dotenv").config();
 const http = require("http");
 const { Server } = require("socket.io");
