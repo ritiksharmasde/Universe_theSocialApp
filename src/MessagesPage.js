@@ -19,6 +19,7 @@ function MessagesPage({
   const [showChatList, setShowChatList] = useState(!isMobile);
   const [searchText, setSearchText] = useState("");
   const conversationsRef = useRef([]);
+  const messagesEndRef = useRef(null);
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false);
@@ -305,7 +306,10 @@ useEffect(() => {
 
     setMessageText("");
   };
-
+useEffect(() => {
+  messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+}, [messages]);
+  
   const handleSelectChat = (chatId) => {
     const numericId = Number(chatId);
     setSelectedChatId(numericId);
@@ -601,7 +605,9 @@ setUnreadCounts((prev) => {
       {message.message_text}
     </div>
   ))
-)}            </div>
+)}         
+<div ref={messagesEndRef} />
+  </div>
 
             <div
               style={{
