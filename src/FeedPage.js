@@ -12,6 +12,7 @@ function FeedPage({
   onOpenProfile,
   onOpenUserProfile,
   onStartChat,
+  postsLoading = false,
   customPosts = [],
   unreadCounts = {},
   conversationIdsByEmail = {},
@@ -534,7 +535,12 @@ function FeedPage({
         {isMobile && suggestionsNode}
 
         <section style={styles.feedSection}>
-          {filteredPosts.length === 0 ? (
+         {postsLoading ? (
+  <div style={styles.emptyState}>
+    <p style={styles.emptyTitle}>Loading posts...</p>
+    <p style={styles.emptyText}>Please wait a moment.</p>
+  </div>
+) : filteredPosts.length === 0 ? (
             <div style={styles.emptyState}>
               <p style={styles.emptyTitle}>
                 {normalizedSearch ? "No matching posts found" : "No posts yet"}
