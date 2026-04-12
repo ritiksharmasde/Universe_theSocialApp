@@ -39,6 +39,11 @@
 /* Base */
 .sidebar-scroll {
   scrollbar-width: thin;
+
+  overflow-y: scroll;
+}
+
+👉 This forces scrollbar to
 }
 
 /* Chrome / Edge / Safari */
