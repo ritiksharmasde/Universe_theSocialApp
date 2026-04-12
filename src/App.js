@@ -17,7 +17,7 @@ import CreateGroupPage from "./CreateGroupPage";
 import useBreakpoint from "./useBreakpoint";
 import GroupChatPage from "./GroupChatPage";
 import FeedbackPage from "./FeedbackPage";
-
+const socket = io(SERVER_BASE_URL);
 function App() {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [currentPage, setCurrentPage] = useState("welcome");
@@ -26,10 +26,11 @@ function App() {
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [selectedUserEmail, setSelectedUserEmail] = useState("");
   const [posts, setPosts] = useState([]);
+  const currentUserEmail = email;
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [isRouteReady, setIsRouteReady] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
-  const [unreadCounts, setUnreadCounts] = useState({});
+  // const [unreadCounts, setUnreadCounts] = useState({});
   const hasUnreadMessages = Object.values(unreadCounts || {}).some(
   (count) => count > 0
 );
@@ -126,6 +127,28 @@ function App() {
 
     setIsRouteReady(true);
   }, []);
+  useEffect(() => {
+  if (!currentUserEmail) return;
+
+  const joinUserConversations = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/chat/conversations/${encodeURIComponent(currentUserEmail)}`
+      );
+      const data = await response.json();
+
+      if (!response.ok || !data.conversations) return;
+
+      data.conversations.forEach((chat) => {
+        socket.emit("join_conversation", Number(chat.id));
+      });
+    } catch (error) {
+      console.error("join conversations error:", error);
+    }
+  };
+
+  joinUserConversations();
+}, [currentUserEmail]);
 
   useEffect(() => {
     if (!isRouteReady) return;
