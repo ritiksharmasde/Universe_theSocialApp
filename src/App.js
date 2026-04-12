@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import AppLayout from "./components/AppLayout";
 import WelcomePage from "./WelcomePage";
 import OtpPage from "./OtpPage";
+import { io } from "socket.io-client";
 import ProfilePage from "./ProfilePage";
 import FeedPage from "./FeedPage";
 import CreatePostPage from "./CreatePostPage";
@@ -27,6 +28,7 @@ function App() {
   const [posts, setPosts] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [isRouteReady, setIsRouteReady] = useState(false);
+  const [unreadCounts, setUnreadCounts] = useState({});
   const [unreadCounts, setUnreadCounts] = useState({});
   const hasUnreadMessages = Object.values(unreadCounts || {}).some(
   (count) => count > 0
@@ -183,7 +185,26 @@ function App() {
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
+useEffect(() => {
+  if (!currentUserEmail) return;
 
+  const handleReceiveMessage = async (message) => {
+    const incomingConversationId = Number(message.conversation_id);
+
+    if (message.sender_email === currentUserEmail) return;
+
+    setUnreadCounts((prev) => ({
+      ...prev,
+      [incomingConversationId]: (prev[incomingConversationId] || 0) + 1,
+    }));
+  };
+
+  socket.on("receive_message", handleReceiveMessage);
+
+  return () => {
+    socket.off("receive_message", handleReceiveMessage);
+  };
+}, [currentUserEmail]);
   useEffect(() => {
     if (!email) return;
 
