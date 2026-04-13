@@ -2,7 +2,6 @@ const pool = require("../config/db");
 const { generateOtp, hashOtp } = require("../utils/otp");
 const bcrypt = require("bcryptjs");
 const transporter = require("../config/mailer");
-const gmailTransporter = require("../config/gmailMailer");
 
 const sendOtp = async (req, res) => {
     try {
@@ -20,8 +19,8 @@ const sendOtp = async (req, res) => {
         const normalizedEmail = email.toLowerCase().trim();
         console.log("📧 normalized:", normalizedEmail);
 
-const emailRegex = /^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/;
-        
+        const emailRegex = /^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/;
+
         if (!emailRegex.test(normalizedEmail)) {
             return res.status(400).json({
                 error: "Use a valid university email.",
@@ -48,7 +47,6 @@ const emailRegex = /^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/;
                 error: "Account already exists. Please log in.",
             });
         }
-        const isUpesEmail = normalizedEmail.endsWith("@stu.upes.ac.in");
 
         const otp = generateOtp();
         const otpHash = await hashOtp(otp);
@@ -73,13 +71,10 @@ const emailRegex = /^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/;
         );
         console.log("✅ OTP inserted");
 
-        console.log("📨 sending email via Resend first...");
-        if (isUpesEmail) {
-    try {
-        console.log("📨 sending UPES OTP via Gmail...");
+        console.log("📨 sending email via Resend...");
 
-        await gmailTransporter.sendMail({
-            from: process.env.MAIL_USER,
+        const { error } = await transporter.emails.send({
+            from: process.env.MAIL_FROM,
             to: normalizedEmail,
             subject: "Your UniVerse OTP Code",
             text: `Your UniVerse OTP is ${otp}. It expires in 5 minutes.`,
@@ -95,76 +90,16 @@ const emailRegex = /^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/;
             `,
         });
 
-        console.log("✅ EMAIL SENT via Gmail direct");
+        if (error) {
+            console.error("❌ Resend error:", error);
+            return res.status(500).json({ error: "Failed to send OTP email." });
+        }
+
+        console.log("✅ EMAIL SENT via Resend");
 
         return res.status(200).json({
-            message: "OTP sent successfully via Gmail.",
+            message: "OTP sent to email successfully.",
         });
-    } catch (err) {
-        console.error("❌ Gmail direct failed:", err);
-
-        return res.status(500).json({
-            error: "Failed to send OTP email via Gmail.",
-        });
-    }
-}
-
-let sentVia = null;
-
-try {
-    const { error } = await transporter.emails.send({
-        from: process.env.MAIL_FROM,
-        to: normalizedEmail,
-        subject: "Your UniVerse OTP Code",
-        text: `Your UniVerse OTP is ${otp}. It expires in 5 minutes.`,
-        html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px;">
-                <h2>Your OTP Code</h2>
-                <p>Use the following OTP to verify your UniVerse account:</p>
-                <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
-                    ${otp}
-                </div>
-                <p>This OTP will expire in 5 minutes.</p>
-            </div>
-        `,
-    });
-
-    if (error) {
-        throw new Error(error.message || "Resend failed");
-    }
-
-    sentVia = "Resend";
-    console.log("✅ EMAIL SENT via Resend");
-
-} catch (resendError) {
-    console.error("❌ Resend failed:", resendError.message);
-    console.log("📨 trying Gmail fallback...");
-
-    await gmailTransporter.sendMail({
-        from: process.env.MAIL_USER,
-        to: normalizedEmail,
-        subject: "Your UniVerse OTP Code",
-        text: `Your UniVerse OTP is ${otp}. It expires in 5 minutes.`,
-        html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px;">
-                <h2>Your OTP Code</h2>
-                <p>Use the following OTP to verify your UniVerse account:</p>
-                <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
-                    ${otp}
-                </div>
-                <p>This OTP will expire in 5 minutes.</p>
-            </div>
-        `,
-    });
-
-    sentVia = "Gmail";
-    console.log("✅ EMAIL SENT via Gmail fallback");
-}
-
-return res.status(200).json({
-    message: `OTP sent successfully via ${sentVia}.`,
-});
-
     } catch (error) {
         console.error("❌ sendOtp error:", error);
         return res.status(500).json({ error: error.message });
@@ -242,58 +177,36 @@ const emailRegex = /^[a-zA-Z]+\.[0-9]+@stu\.upes\.ac\.in$/;
         let sentVia = null;
 
 try {
-    const { error } = await transporter.emails.send({
-        from: process.env.MAIL_FROM,
-        to: normalizedEmail,
-        subject: "Your UniVerse OTP Code",
-        text: `Your UniVerse OTP is ${otp}. It expires in 5 minutes.`,
-        html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px;">
-                <h2>Your OTP Code</h2>
-                <p>Use the following OTP to verify your UniVerse account:</p>
-                <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
-                    ${otp}
-                </div>
-                <p>This OTP will expire in 5 minutes.</p>
+    console.log("📨 resending email via Resend...");
+
+const { error } = await transporter.emails.send({
+    from: process.env.MAIL_FROM,
+    to: normalizedEmail,
+    subject: "Your UniVerse OTP Code",
+    text: `Your UniVerse OTP is ${otp}. It expires in 5 minutes.`,
+    html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Your OTP Code</h2>
+            <p>Use the following OTP to verify your UniVerse account:</p>
+            <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
+                ${otp}
             </div>
-        `,
-    });
+            <p>This OTP will expire in 5 minutes.</p>
+        </div>
+    `,
+});
 
-    if (error) {
-        throw new Error(error.message || "Resend failed");
-    }
-
-    sentVia = "Resend";
-    console.log("✅ RESEND OTP SENT via Resend");
-} catch (resendError) {
-    console.error("❌ Resend resendOtp failed:", resendError.message);
-    console.log("📨 trying Gmail fallback for resendOtp...");
-
-    await gmailTransporter.sendMail({
-        from: process.env.MAIL_USER,
-        to: normalizedEmail,
-        subject: "Your UniVerse OTP Code",
-        text: `Your UniVerse OTP is ${otp}. It expires in 5 minutes.`,
-        html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px;">
-                <h2>Your OTP Code</h2>
-                <p>Use the following OTP to verify your UniVerse account:</p>
-                <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0;">
-                    ${otp}
-                </div>
-                <p>This OTP will expire in 5 minutes.</p>
-            </div>
-        `,
-    });
-
-    sentVia = "Gmail";
-    console.log("✅ RESEND OTP SENT via Gmail fallback");
+if (error) {
+    console.error("❌ resendOtp Resend error:", error);
+    return res.status(500).json({ error: "Failed to resend OTP email." });
 }
 
+console.log("✅ RESEND OTP SENT via Resend");
+
 return res.status(200).json({
-    message: `OTP resent successfully via ${sentVia}.`,
+    message: "OTP resent successfully.",
 });
-    } catch (error) {
+} catch (error) {
         console.error("❌ resendOtp error:", error);
         return res.status(500).json({ error: error.message });
     }
