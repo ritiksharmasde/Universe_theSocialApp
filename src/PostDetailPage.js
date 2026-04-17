@@ -316,32 +316,28 @@ maxHeight: isMobile ? "200px" : "300px",
   },
  commentInputRow: {
   display: "flex",
-   
   gap: "10px",
-  alignItems: "stretch",
+  alignItems: "center",
 },
-  commentInput: {
+ commentInput: {
   flex: 1,
   minWidth: 0,
   border: "1px solid var(--border-color)",
   borderRadius: "12px",
-  padding: isMobile ? "10px 12px" : "12px 14px",
+  padding: "12px",
   outline: "none",
   background: "var(--bg-surface)",
   color: "var(--text-primary)",
-  boxSizing: "border-box",
-  width: "100%",
 },
   commentButton: {
   border: "none",
   background: "var(--button-primary)",
   color: "var(--button-primary-text)",
   borderRadius: "12px",
-  padding: "12px 16px",
+  padding: "12px 14px",
   cursor: "pointer",
   fontWeight: "600",
   flexShrink: 0,
-  width: isMobile ? "100%" : "auto",
 },
 });
 
