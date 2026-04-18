@@ -126,7 +126,32 @@ const imageUrl = result.secure_url;
     res.status(500).json({ error: error.message });
   }
 };
+const getMyProfile = async (req, res) => {
+  try {
+    const email = req.user.email.toLowerCase().trim();
 
+    const result = await pool.query(
+      `
+      SELECT *
+      FROM users
+      WHERE LOWER(email) = LOWER($1)
+      LIMIT 1
+      `,
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    return res.status(200).json({
+      user: result.rows[0],
+    });
+  } catch (error) {
+    console.error("getMyProfile error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
 const getUserByEmail = async (req, res) => {
   try {
     const { email } = req.params;
@@ -635,6 +660,7 @@ module.exports = {
   getUserByEmail,
   getPublicUserByEmail,
   sendFriendRequest,
+  getMyProfile,
   getFriendStatus,
   acceptFriendRequest,
   rejectFriendRequest,
