@@ -1,8 +1,15 @@
 const pool = require("../config/db");
 const { generateOtp, hashOtp } = require("../utils/otp");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const transporter = require("../config/mailer");
-
+const createToken = (email) => {
+  return jwt.sign(
+    { email: email.toLowerCase().trim() },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+};
 const sendOtp = async (req, res) => {
   try {
     console.log("🔥 sendOtp hit");
@@ -249,14 +256,15 @@ const loginUser = async (req, res) => {
 
     const needsProfileSetup =
       !user.full_name || !user.course || !user.year;
-
-    return res.status(200).json({
-      message: "Login successful.",
-      user: {
-        email: user.email,
-      },
-      needsProfileSetup,
-    });
+  const token = createToken(user.email)
+   return res.status(200).json({
+  message: "Login successful.",
+  token,
+  user: {
+    email: user.email,
+  },
+  needsProfileSetup,
+});
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -371,12 +379,13 @@ const verifyOtp = async (req, res) => {
       needsProfileSetup =
         !existingUser.full_name || !existingUser.course || !existingUser.year;
     }
-
+const token = createToken(normalizedEmail);
     return res.status(200).json({
-      message: "OTP verified successfully.",
-      isNewUser,
-      needsProfileSetup,
-    });
+  message: "OTP verified successfully.",
+  token,
+  isNewUser,
+  needsProfileSetup,
+});
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
