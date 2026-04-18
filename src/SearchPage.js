@@ -15,17 +15,18 @@ function SearchPage({ currentUserEmail, onStartChat, onOpenUserProfile }) {
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const styles = getStyles(isMobile, isTablet);
-
+  const authHeaders = () => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+});
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setLoadingUsers(true);
 
-        const response = await fetch(
-          `${API_BASE_URL}/user?currentUserEmail=${encodeURIComponent(
-            currentUserEmail || ""
-          )}`
-        );
+        const response = await fetch(`${API_BASE_URL}/user`, {
+  headers: authHeaders(),
+});
 
         const data = await response.json();
 
@@ -62,7 +63,7 @@ function SearchPage({ currentUserEmail, onStartChat, onOpenUserProfile }) {
       email: user.email,
       course: user.course || "",
       year: user.year ? String(user.year) : "",
-      branch: user.section || "",
+      branch: user.branch || "",
       icon: <FiUser />,
       profileImageUrl: user.profile_image_url || "",
     }));
@@ -107,10 +108,11 @@ const matchesCourse =
         const statusEntries = await Promise.all(
           students.map(async (student) => {
             const response = await fetch(
-              `${API_BASE_URL}/user/friend-status?currentUserEmail=${encodeURIComponent(
-                currentUserEmail
-              )}&otherUserEmail=${encodeURIComponent(student.email)}`
-            );
+  `${API_BASE_URL}/user/friend-status?otherUserEmail=${encodeURIComponent(student.email)}`,
+  {
+    headers: authHeaders(),
+  }
+);
 
             const data = await response.json();
 
@@ -135,7 +137,7 @@ const matchesCourse =
   }, [results, currentUserEmail]);
 
   const handleAcceptFriend = async (otherUserEmail) => {
-    const normalizedCurrentUser = currentUserEmail?.toLowerCase()?.trim();
+    
     const normalizedOtherUser = otherUserEmail?.toLowerCase()?.trim();
 
     try {
@@ -143,11 +145,9 @@ const matchesCourse =
 
       const response = await fetch(`${API_BASE_URL}/user/friend-request/accept`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
-          currentUserEmail: normalizedCurrentUser,
+          
           otherUserEmail: normalizedOtherUser,
         }),
       });
@@ -172,7 +172,7 @@ const matchesCourse =
   };
 
   const handleRejectFriend = async (otherUserEmail) => {
-    const normalizedCurrentUser = currentUserEmail?.toLowerCase()?.trim();
+   
     const normalizedOtherUser = otherUserEmail?.toLowerCase()?.trim();
 
     try {
@@ -180,11 +180,9 @@ const matchesCourse =
 
       const response = await fetch(`${API_BASE_URL}/user/friend-request/reject`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
-          currentUserEmail: normalizedCurrentUser,
+          
           otherUserEmail: normalizedOtherUser,
         }),
       });
@@ -216,29 +214,27 @@ const matchesCourse =
   };
 
   const handleStartChat = async (otherUserEmail) => {
-    const normalizedCurrentUser = currentUserEmail?.toLowerCase()?.trim();
+   
     const normalizedOtherUser = otherUserEmail?.toLowerCase()?.trim();
 
-    if (!normalizedCurrentUser || !normalizedOtherUser) {
-      alert("User email missing.");
-      return;
-    }
+    if (!normalizedOtherUser) {
+  alert("User email missing.");
+  return;
+}
 
-    if (normalizedCurrentUser === normalizedOtherUser) {
-      alert("You cannot start a chat with yourself.");
-      return;
-    }
+    if (currentUserEmail?.toLowerCase().trim() === normalizedOtherUser) {
+  alert("You cannot start a chat with yourself.");
+  return;
+}
 
     try {
       setStartingChatEmail(normalizedOtherUser);
 
       const response = await fetch(`${API_BASE_URL}/chat/direct`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
-          currentUserEmail: normalizedCurrentUser,
+          
           otherUserEmail: normalizedOtherUser,
         }),
       });
@@ -251,7 +247,7 @@ const matchesCourse =
       }
 
       if (data.conversation?.id) {
-        const deletedChatsKey = `deletedChats_${normalizedCurrentUser}`;
+        const deletedChatsKey = `deletedChats_${currentUserEmail?.toLowerCase().trim()}`;
         const deletedChatIds = JSON.parse(localStorage.getItem(deletedChatsKey) || "[]");
         const updatedDeletedChatIds = deletedChatIds.filter(
           (id) => Number(id) !== Number(data.conversation.id)
@@ -271,29 +267,27 @@ const matchesCourse =
   };
 
   const handleAddFriend = async (otherUserEmail) => {
-    const normalizedCurrentUser = currentUserEmail?.toLowerCase()?.trim();
+    
     const normalizedOtherUser = otherUserEmail?.toLowerCase()?.trim();
 
-    if (!normalizedCurrentUser || !normalizedOtherUser) {
-      alert("User email missing.");
-      return;
-    }
+    if (!normalizedOtherUser) {
+  alert("User email missing.");
+  return;
+}
 
-    if (normalizedCurrentUser === normalizedOtherUser) {
-      alert("You cannot add yourself.");
-      return;
-    }
+   if (currentUserEmail?.toLowerCase().trim() === normalizedOtherUser) {
+  alert("You cannot add yourself.");
+  return;
+}
 
     try {
       setSendingFriendRequestTo(normalizedOtherUser);
 
       const response = await fetch(`${API_BASE_URL}/user/friend-request`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
-          requesterEmail: normalizedCurrentUser,
+         
           recipientEmail: normalizedOtherUser,
         }),
       });
