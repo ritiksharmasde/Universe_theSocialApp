@@ -58,18 +58,18 @@ function CreateGroupPage({ onBack, currentUserEmail, onGroupCreated }) {
       setSubmitting(true);
 
       const response = await fetch(`${API_BASE_URL}/groups`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          description: formData.description,
-          course: formData.course,
-          year: formData.year,
-          createdByEmail: currentUserEmail,
-        }),
-      });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+  body: JSON.stringify({
+    name: formData.name,
+    description: formData.description,
+    course: formData.course,
+    year: formData.year,
+  }),
+});
 
       const data = await response.json();
 
