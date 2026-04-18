@@ -6,7 +6,8 @@ const createGroup = async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { name, description, course, year, createdByEmail } = req.body;
+    const { name, description, course, year } = req.body;
+const createdByEmail = req.user.email.toLowerCase().trim();
 
     if (!name || !createdByEmail) {
       return res.status(400).json({
@@ -59,11 +60,7 @@ const createGroup = async (req, res) => {
 const deleteGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
-    const { currentUserEmail } = req.body;
-
-    if (!currentUserEmail) {
-      return res.status(400).json({ error: "currentUserEmail is required." });
-    }
+    const currentUserEmail = req.user.email.toLowerCase().trim();
 
     const groupResult = await pool.query(
       `
@@ -81,10 +78,7 @@ const deleteGroup = async (req, res) => {
 
     const group = groupResult.rows[0];
 
-    if (
-      group.created_by_email.toLowerCase() !==
-      currentUserEmail.toLowerCase().trim()
-    ) {
+    if (group.created_by_email.toLowerCase() !== currentUserEmail) {
       return res.status(403).json({
         error: "Only the group owner can delete this group.",
       });
@@ -109,9 +103,7 @@ const deleteGroup = async (req, res) => {
 
 const getGroups = async (req, res) => {
   try {
-    const currentUserEmail = (req.query.currentUserEmail || "")
-      .toLowerCase()
-      .trim();
+    const currentUserEmail = req.user.email.toLowerCase().trim();
 
     const result = await pool.query(
       `
@@ -146,7 +138,7 @@ const joinGroup = async (req, res) => {
 
   try {
     const { groupId } = req.params;
-    const { userEmail } = req.body;
+    const userEmail = req.user.email.toLowerCase().trim();
 
     if (!userEmail) {
       return res.status(400).json({ error: "userEmail is required." });
@@ -231,7 +223,7 @@ const joinGroup = async (req, res) => {
 const leaveGroup = async (req, res) => {
   try {
     const { groupId } = req.params;
-    const { userEmail } = req.body;
+    const userEmail = req.user.email.toLowerCase().trim();
 
     if (!userEmail) {
       return res.status(400).json({ error: "userEmail is required." });
@@ -282,7 +274,7 @@ const leaveGroup = async (req, res) => {
 const getGroupMembers = async (req, res) => {
   try {
     const { groupId } = req.params;
-    const { userEmail } = req.query;
+   const userEmail = req.user.email.toLowerCase().trim();
 
     if (!userEmail) {
       return res.status(400).json({ error: "userEmail is required." });
@@ -329,7 +321,7 @@ const getGroupMembers = async (req, res) => {
 const getGroupMessages = async (req, res) => {
   try {
     const { groupId } = req.params;
-    const { userEmail } = req.query;
+    const userEmail = req.user.email.toLowerCase().trim();
 
     if (!userEmail) {
       return res.status(400).json({ error: "userEmail is required." });
@@ -371,7 +363,8 @@ const getGroupMessages = async (req, res) => {
 const sendGroupMessage = async (req, res) => {
   try {
     const { groupId } = req.params;
-    const { userEmail, userName, userProfileImageUrl, messageText } = req.body;
+    const { userName, userProfileImageUrl, messageText } = req.body
+      const userEmail = req.user.email.toLowerCase().trim();
 
     if (!userEmail || !messageText?.trim()) {
       return res.status(400).json({
