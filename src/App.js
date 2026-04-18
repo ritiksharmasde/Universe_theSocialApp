@@ -133,9 +133,16 @@ function App() {
 
   const joinUserConversations = async () => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/chat/conversations/${encodeURIComponent(currentUserEmail)}`
-      );
+      const token = localStorage.getItem("token");
+
+const response = await fetch(
+  `${API_BASE_URL}/chat/conversations`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
       const data = await response.json();
 
       if (!response.ok || !data.conversations) return;
@@ -252,9 +259,16 @@ useEffect(() => {
     const fetchPosts = async () => {
       try {
         setPostsLoading(true);
-        const response = await fetch(
-          `${API_BASE_URL}/posts?currentUserEmail=${encodeURIComponent(email)}&limit=10&offset=0`
-        );
+       const token = localStorage.getItem("token");
+
+const response = await fetch(
+  `${API_BASE_URL}/posts?limit=10&offset=0`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
         const data = await response.json();
 
         if (!response.ok) {
@@ -305,9 +319,15 @@ useEffect(() => {
       if (!email) return;
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/user/${encodeURIComponent(email)}`
-        );
+        const token = localStorage.getItem("token");
+
+const token = localStorage.getItem("token");
+
+const response = await fetch(`${API_BASE_URL}/user/me`, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
         const data = await response.json();
 
         if (!response.ok) {
@@ -346,6 +366,7 @@ useEffect(() => {
 
   const handleLogout = () => {
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("token");
     setEmail("");
     setProfileData(null);
     setActiveConversationId(null);
@@ -361,12 +382,15 @@ useEffect(() => {
         email={email}
         onBack={() => navigateTo("welcome")}
         onVerify={(data) => {
-          if (data?.needsProfileSetup) {
-            navigateTo("profile");
-          } else {
-            navigateTo("feed");
-          }
-        }}
+  localStorage.setItem("token", data.token);
+  localStorage.setItem("userEmail", email.toLowerCase().trim());
+
+  if (data?.needsProfileSetup) {
+    navigateTo("profile");
+  } else {
+    navigateTo("feed");
+  }
+}}
       />
     );
   }
@@ -681,15 +705,18 @@ useEffect(() => {
         navigateTo("otp");
       }}
       onLoginSuccess={(userEmail, data) => {
-        const normalizedEmail = userEmail.toLowerCase();
-        setEmail(normalizedEmail);
-        localStorage.setItem("userEmail", normalizedEmail);
+const normalizedEmail = userEmail.toLowerCase();
 
-        if (data?.needsProfileSetup) {
-          navigateTo("profile");
-        } else {
-          navigateTo("feed");
-        }
+  localStorage.setItem("token", data.token);
+  localStorage.setItem("userEmail", normalizedEmail);
+
+  setEmail(normalizedEmail);
+
+  if (data?.needsProfileSetup) {
+    navigateTo("profile");
+  } else {
+    navigateTo("feed");
+  }
       }}
     />
   );
