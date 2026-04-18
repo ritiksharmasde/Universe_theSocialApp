@@ -64,7 +64,7 @@ function PublicProfilePage({
 
   useEffect(() => {
     const fetchBlockStatus = async () => {
-      if (!currentUserEmail || !viewedUserEmail) return;
+      if (!viewedUserEmail) return;
       if (currentUserEmail.toLowerCase() === viewedUserEmail.toLowerCase()) return;
 
       try {
@@ -92,7 +92,7 @@ function PublicProfilePage({
 
   useEffect(() => {
     const fetchFriendStatus = async () => {
-      if (!currentUserEmail || !viewedUserEmail) return;
+      if (!viewedUserEmail) return;
 
       if (currentUserEmail.toLowerCase() === viewedUserEmail.toLowerCase()) {
         setFriendStatus("self");
