@@ -78,9 +78,12 @@ function SearchPage({ currentUserEmail, onStartChat, onOpenUserProfile }) {
         item.email?.toLowerCase().includes(q) ||
         item.branch?.toLowerCase().trim().includes(q);
 
-      const matchesCourse =
+      const normalize = (str) =>
+  str?.toLowerCase().replace(/[^a-z]/g, "");
+
+const matchesCourse =
   !courseFilter ||
-  item.course?.toLowerCase().trim() === courseFilter.toLowerCase().trim();
+  normalize(item.course).includes(normalize(courseFilter));
 
       const matchesYear = !yearFilter || item.year === yearFilter;
 
