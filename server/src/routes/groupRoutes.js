@@ -10,17 +10,18 @@ const {
   sendGroupMessage,
 } = require("../controllers/groupController");
 
+const requireAuth = require("../middleware/requireAuth");
 const router = express.Router();
 
-router.post("/", createGroup);
-router.get("/", getGroups);
+router.post("/", requireAuth, createGroup);
+router.get("/", requireAuth, getGroups);
 
-router.post("/:groupId/join", joinGroup);
-router.post("/:groupId/leave", leaveGroup);
-router.delete("/:groupId", deleteGroup);
+router.post("/:groupId/join", requireAuth, joinGroup);
+router.post("/:groupId/leave", requireAuth, leaveGroup);
+router.delete("/:groupId", requireAuth, deleteGroup);
 
-router.get("/:groupId/members", getGroupMembers);
-router.get("/:groupId/messages", getGroupMessages);
-router.post("/:groupId/messages", sendGroupMessage);
+router.get("/:groupId/members", requireAuth, getGroupMembers);
+router.get("/:groupId/messages", requireAuth, getGroupMessages);
+router.post("/:groupId/messages", requireAuth, sendGroupMessage);
 
 module.exports = router;
