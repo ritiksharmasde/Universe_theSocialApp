@@ -26,7 +26,10 @@ function PublicProfilePage({
   const [isBlocked, setIsBlocked] = useState(false);
   const [profilePreview, setProfilePreview] = useState("");
   const isMobile = window.innerWidth < 768;
-
+  const authHeaders = () => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+});
   useEffect(() => {
     const fetchProfile = async () => {
       if (!viewedUserEmail) return;
@@ -35,8 +38,11 @@ function PublicProfilePage({
         setLoading(true);
 
         const response = await fetch(
-          `${API_BASE_URL}/user/public/${encodeURIComponent(viewedUserEmail)}`
-        );
+  `${API_BASE_URL}/user/public/${encodeURIComponent(viewedUserEmail)}`,
+  {
+    headers: authHeaders(),
+  }
+);
         const data = await response.json();
 
         if (!response.ok) {
@@ -63,10 +69,11 @@ function PublicProfilePage({
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/user/block-status?currentUserEmail=${encodeURIComponent(
-            currentUserEmail
-          )}&otherUserEmail=${encodeURIComponent(viewedUserEmail)}`
-        );
+  `${API_BASE_URL}/user/block-status?otherUserEmail=${encodeURIComponent(viewedUserEmail)}`,
+  {
+    headers: authHeaders(),
+  }
+);
         const data = await response.json();
 
         if (!response.ok) {
@@ -94,10 +101,11 @@ function PublicProfilePage({
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/user/friend-status?currentUserEmail=${encodeURIComponent(
-            currentUserEmail
-          )}&otherUserEmail=${encodeURIComponent(viewedUserEmail)}`
-        );
+  `${API_BASE_URL}/user/friend-status?otherUserEmail=${encodeURIComponent(viewedUserEmail)}`,
+  {
+    headers: authHeaders(),
+  }
+);
         const data = await response.json();
 
         if (!response.ok) {
@@ -132,15 +140,12 @@ function PublicProfilePage({
       setActionLoading(true);
 
       const response = await fetch(`${API_BASE_URL}/chat/direct`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          currentUserEmail: normalizedCurrentUser,
-          otherUserEmail: normalizedOtherUser,
-        }),
-      });
+  method: "POST",
+  headers: authHeaders(),
+  body: JSON.stringify({
+    otherUserEmail: normalizedOtherUser,
+  }),
+});
 
       const data = await response.json();
 
@@ -181,15 +186,12 @@ function PublicProfilePage({
       setActionLoading(true);
 
       const response = await fetch(`${API_BASE_URL}/user/${action}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          blockerEmail: currentUserEmail,
-          blockedEmail: viewedUserEmail,
-        }),
-      });
+  method: "POST",
+  headers: authHeaders(),
+  body: JSON.stringify({
+    blockedEmail: viewedUserEmail,
+  }),
+});
 
       const data = await response.json();
 
@@ -219,15 +221,12 @@ function PublicProfilePage({
       setActionLoading(true);
 
       const response = await fetch(`${API_BASE_URL}/user/friend-request`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          requesterEmail: currentUserEmail,
-          recipientEmail: viewedUserEmail,
-        }),
-      });
+  method: "POST",
+  headers: authHeaders(),
+  body: JSON.stringify({
+    recipientEmail: viewedUserEmail,
+  }),
+});
 
       const data = await response.json();
 
@@ -250,15 +249,12 @@ function PublicProfilePage({
       setActionLoading(true);
 
       const response = await fetch(`${API_BASE_URL}/user/friend-request/accept`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          currentUserEmail,
-          otherUserEmail: viewedUserEmail,
-        }),
-      });
+  method: "POST",
+  headers: authHeaders(),
+  body: JSON.stringify({
+    otherUserEmail: viewedUserEmail,
+  }),
+});
 
       const data = await response.json();
 
@@ -281,15 +277,12 @@ function PublicProfilePage({
       setActionLoading(true);
 
       const response = await fetch(`${API_BASE_URL}/user/friend-request/reject`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          currentUserEmail,
-          otherUserEmail: viewedUserEmail,
-        }),
-      });
+  method: "POST",
+  headers: authHeaders(),
+  body: JSON.stringify({
+    otherUserEmail: viewedUserEmail,
+  }),
+});
 
       const data = await response.json();
 
@@ -437,7 +430,7 @@ function PublicProfilePage({
 
             <p style={styles.meta}>
               {userData.course || "Course"} • Year {userData.year || "-"}
-              {userData.section ? ` • Section ${userData.section}` : ""}
+              {userData.branch ? ` • Branch ${userData.branch}` : ""}
             </p>
 
             {userData.bio ? <p style={styles.bio}>{userData.bio}</p> : null}
