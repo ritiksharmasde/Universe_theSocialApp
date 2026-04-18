@@ -12,15 +12,19 @@ function GroupsPage({ currentUserEmail, onBack, onCreateGroup, onOpenGroup }) {
   const [searchText, setSearchText] = useState("");
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
-
+const authHeaders = () => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  });
+  
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/groups?currentUserEmail=${encodeURIComponent(
-            currentUserEmail
-          )}`
-        );
+        const response = await fetch(`${API_BASE_URL}/groups`, {
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+});
         const data = await response.json();
 
         if (!response.ok) {
@@ -54,12 +58,9 @@ function GroupsPage({ currentUserEmail, onBack, onCreateGroup, onOpenGroup }) {
         : `${API_BASE_URL}/groups/${groupId}/join`;
 
       const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userEmail: currentUserEmail,
-        }),
-      });
+  method: "POST",
+  headers: authHeaders(),
+});
 
       const data = await response.json();
 
@@ -92,12 +93,9 @@ function GroupsPage({ currentUserEmail, onBack, onCreateGroup, onOpenGroup }) {
 
     try {
       const response = await fetch(`${API_BASE_URL}/groups/${groupId}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          currentUserEmail,
-        }),
-      });
+  method: "DELETE",
+  headers: authHeaders(),
+});
 
       const data = await response.json();
 
