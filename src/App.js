@@ -316,51 +316,49 @@ const response = await fetch(
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (!email) return;
+  if (!email) return;
 
-      try {
-        const token = localStorage.getItem("token");
+  try {
+    const token = localStorage.getItem("token");
 
-const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/user/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-const response = await fetch(`${API_BASE_URL}/user/me`, {
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
-        const data = await response.json();
+    const data = await response.json();
 
-        if (!response.ok) {
-          console.error(data.error || "Failed to fetch user profile");
-          return;
-        }
+    if (!response.ok) {
+      console.error(data.error || "Failed to fetch user profile");
+      return;
+    }
 
-        const user = data.user;
+    const user = data.user;
 
-        setProfileData({
-          email: user.email,
-          fullName: user.full_name || "",
-          username: user.username || "",
-          course: user.course || "",
-          year: user.year || "",
-          section: user.section || "",
-          bio: user.bio || "",
-          interests: user.interests || "",
-          skills: user.skills || "",
-          city: user.city || "",
-          linkedin: user.linkedin || "",
-          github: user.github || "",
-          profileImage: user.profile_image_url
-            ? user.profile_image_url.startsWith("http")
-              ? user.profile_image_url
-              : `${SERVER_BASE_URL}${user.profile_image_url}`
-            : "",
-        });
-      } catch (error) {
-        console.error("Fetch user profile error:", error);
-      }
-    };
-
+    setProfileData({
+      email: user.email,
+      fullName: user.full_name || "",
+      username: user.username || "",
+      course: user.course || "",
+      year: user.year || "",
+      branch: user.branch || "",
+      bio: user.bio || "",
+      interests: user.interests || "",
+      skills: user.skills || "",
+      city: user.city || "",
+      linkedin: user.linkedin || "",
+      github: user.github || "",
+      profileImage: user.profile_image_url
+        ? user.profile_image_url.startsWith("http")
+          ? user.profile_image_url
+          : `${SERVER_BASE_URL}${user.profile_image_url}`
+        : "",
+    });
+  } catch (error) {
+    console.error("Fetch user profile error:", error);
+  }
+};
     fetchUserProfile();
   }, [email]);
 
@@ -554,28 +552,29 @@ const response = await fetch(`${API_BASE_URL}/user/me`, {
           onBack={() => navigateTo("feed")}
           onSaveProfile={async (updatedData) => {
             try {
-              const response = await fetch(`${API_BASE_URL}/user/save-profile`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  email,
-                  fullName: updatedData.fullName || "",
-                  username: updatedData.username || "",
-                  course: updatedData.course || "",
-                  year: updatedData.year || "",
-                  section: updatedData.section || "",
-                  bio: updatedData.bio || "",
-                  interests: updatedData.interests || "",
-                  skills: updatedData.skills || "",
-                  city: updatedData.city || "",
-                  linkedin: updatedData.linkedin || "",
-                  github: updatedData.github || "",
-                  profileImage: updatedData.profileImage || "",
-                }),
-              });
+              const token = localStorage.getItem("token");
 
+const response = await fetch(`${API_BASE_URL}/user/save-profile`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    fullName: updatedData.fullName || "",
+    username: updatedData.username || "",
+    course: updatedData.course || "",
+    year: updatedData.year || "",
+    branch: updatedData.branch || "",
+    bio: updatedData.bio || "",
+    interests: updatedData.interests || "",
+    skills: updatedData.skills || "",
+    city: updatedData.city || "",
+    linkedin: updatedData.linkedin || "",
+    github: updatedData.github || "",
+    profileImage: updatedData.profileImage || "",
+  }),
+});
               const data = await response.json();
 
               if (!response.ok) {
