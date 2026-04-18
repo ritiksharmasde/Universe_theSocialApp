@@ -5,13 +5,14 @@ const streamifier = require("streamifier");
 
 const saveProfile = async (req, res) => {
   try {
+    const email = req.user.email.toLowerCase().trim();
+
     const {
-      email,
       fullName,
       username,
       course,
       year,
-      section,
+      branch,
       bio,
       interests,
       skills,
@@ -21,10 +22,6 @@ const saveProfile = async (req, res) => {
       profileImage,
     } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ error: "Email is required." });
-    }
-
     await pool.query(
       `
       UPDATE users
@@ -33,7 +30,7 @@ const saveProfile = async (req, res) => {
         username = $2,
         course = $3,
         year = $4,
-        section = $5,
+        branch = $5,
         bio = $6,
         interests = $7,
         skills = $8,
@@ -41,14 +38,14 @@ const saveProfile = async (req, res) => {
         linkedin = $10,
         github = $11,
         profile_image_url = $12
-      WHERE email = $13
+      WHERE LOWER(email) = LOWER($13)
       `,
       [
         fullName,
         username,
         course,
         year,
-        section,
+        branch,
         bio,
         interests,
         skills,
@@ -60,18 +57,17 @@ const saveProfile = async (req, res) => {
       ]
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Profile saved successfully",
     });
   } catch (error) {
     console.error("saveProfile error:", error);
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
-
 const uploadProfileImage = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.user.email.toLowerCase().trim();
 
     if (!email) {
       return res.status(400).json({ error: "Email is required." });
@@ -216,16 +212,16 @@ const getPublicUserByEmail = async (req, res) => {
 
 const sendFriendRequest = async (req, res) => {
   try {
-    const { requesterEmail, recipientEmail } = req.body;
-
-    if (!requesterEmail || !recipientEmail) {
-      return res.status(400).json({
-        error: "Both requesterEmail and recipientEmail are required.",
-      });
-    }
-
-    const requester = requesterEmail.toLowerCase().trim();
-    const recipient = recipientEmail.toLowerCase().trim();
+    const requester = req.user.email.toLowerCase().trim();
+const { recipientEmail } = req.body;
+    
+    if (!recipientEmail) {
+  return res.status(400).json({
+    error: "recipientEmail is required.",
+  });
+}
+    
+const recipient = recipientEmail.toLowerCase().trim();
 
     if (requester === recipient) {
       return res.status(400).json({
@@ -324,7 +320,8 @@ const sendFriendRequest = async (req, res) => {
 };
 
 const getRandomSuggestions = async (req, res) => {
-  const { currentUserEmail, limit = 10 } = req.query;
+ const currentUserEmail = req.user.email.toLowerCase().trim();
+const { limit = 10 } = req.query;
 
   try {
     const result = await pool.query(
@@ -347,7 +344,7 @@ const getRandomSuggestions = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const currentUserEmail = (req.query.currentUserEmail || "").toLowerCase().trim();
+    const currentUserEmail = req.user.email.toLowerCase().trim();
 
     const result = await pool.query(
       `
@@ -380,16 +377,16 @@ const getAllUsers = async (req, res) => {
 
 const getFriendStatus = async (req, res) => {
   try {
-    const { currentUserEmail, otherUserEmail } = req.query;
+   const current = req.user.email.toLowerCase().trim();
+const { otherUserEmail } = req.query;
 
-    if (!currentUserEmail || !otherUserEmail) {
-      return res.status(400).json({
-        error: "currentUserEmail and otherUserEmail are required.",
-      });
-    }
+    if (!otherUserEmail) {
+  return res.status(400).json({
+    error: "otherUserEmail is required.",
+  });
+}
+const other = otherUserEmail.toLowerCase().trim();
 
-    const current = currentUserEmail.toLowerCase().trim();
-    const other = otherUserEmail.toLowerCase().trim();
 
     if (current === other) {
       return res.status(200).json({
@@ -453,16 +450,16 @@ const getFriendStatus = async (req, res) => {
 
 const acceptFriendRequest = async (req, res) => {
   try {
-    const { currentUserEmail, otherUserEmail } = req.body;
+   const current = req.user.email.toLowerCase().trim();
+const { otherUserEmail } = req.body;
 
-    if (!currentUserEmail || !otherUserEmail) {
-      return res.status(400).json({
-        error: "currentUserEmail and otherUserEmail are required.",
-      });
-    }
+   if (!otherUserEmail) {
+  return res.status(400).json({
+    error: "otherUserEmail is required.",
+  });
+}
 
-    const current = currentUserEmail.toLowerCase().trim();
-    const other = otherUserEmail.toLowerCase().trim();
+const other = otherUserEmail.toLowerCase().trim();
 
     const result = await pool.query(
       `
@@ -495,16 +492,16 @@ const acceptFriendRequest = async (req, res) => {
 
 const rejectFriendRequest = async (req, res) => {
   try {
-    const { currentUserEmail, otherUserEmail } = req.body;
+    const current = req.user.email.toLowerCase().trim();
+const { otherUserEmail } = req.body;
 
-    if (!currentUserEmail || !otherUserEmail) {
-      return res.status(400).json({
-        error: "currentUserEmail and otherUserEmail are required.",
-      });
-    }
+    if (!otherUserEmail) {
+  return res.status(400).json({
+    error: "otherUserEmail is required.",
+  });
+}
 
-    const current = currentUserEmail.toLowerCase().trim();
-    const other = otherUserEmail.toLowerCase().trim();
+const other = otherUserEmail.toLowerCase().trim();
 
     const result = await pool.query(
       `
@@ -535,16 +532,16 @@ const rejectFriendRequest = async (req, res) => {
 
 const blockUser = async (req, res) => {
   try {
-    const { blockerEmail, blockedEmail } = req.body;
+    const blocker = req.user.email.toLowerCase().trim();
+const { blockedEmail } = req.body;
 
-    if (!blockerEmail || !blockedEmail) {
-      return res.status(400).json({
-        error: "blockerEmail and blockedEmail are required.",
-      });
-    }
+    if (!blockedEmail) {
+  return res.status(400).json({
+    error: "blockedEmail is required.",
+  });
+}
+const blocked = blockedEmail.toLowerCase().trim();
 
-    const blocker = blockerEmail.toLowerCase().trim();
-    const blocked = blockedEmail.toLowerCase().trim();
 
     if (blocker === blocked) {
       return res.status(400).json({
@@ -584,16 +581,16 @@ const blockUser = async (req, res) => {
 
 const unblockUser = async (req, res) => {
   try {
-    const { blockerEmail, blockedEmail } = req.body;
+    const blocker = req.user.email.toLowerCase().trim();
+const { blockedEmail } = req.body;
 
-    if (!blockerEmail || !blockedEmail) {
-      return res.status(400).json({
-        error: "blockerEmail and blockedEmail are required.",
-      });
-    }
+    if (!blockedEmail) {
+  return res.status(400).json({
+    error: "blockedEmail is required.",
+  });
+}
 
-    const blocker = blockerEmail.toLowerCase().trim();
-    const blocked = blockedEmail.toLowerCase().trim();
+const blocked = blockedEmail.toLowerCase().trim();
 
     const result = await pool.query(
       `
@@ -623,17 +620,16 @@ const unblockUser = async (req, res) => {
 
 const getBlockStatus = async (req, res) => {
   try {
-    const { currentUserEmail, otherUserEmail } = req.query;
+    const current = req.user.email.toLowerCase().trim();
+const { otherUserEmail } = req.query;
 
-    if (!currentUserEmail || !otherUserEmail) {
-      return res.status(400).json({
-        error: "currentUserEmail and otherUserEmail are required.",
-      });
-    }
+    if (!otherUserEmail) {
+  return res.status(400).json({
+    error: "otherUserEmail is required.",
+  });
+}
 
-    const current = currentUserEmail.toLowerCase().trim();
-    const other = otherUserEmail.toLowerCase().trim();
-
+const other = otherUserEmail.toLowerCase().trim();
     const result = await pool.query(
       `
       SELECT *
