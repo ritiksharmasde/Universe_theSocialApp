@@ -314,7 +314,6 @@ useEffect(() => {
 
     socket.emit("send_message", {
       conversationId: normalizedSelectedChatId,
-      senderEmail: currentUserEmail,
       messageText,
     });
 
