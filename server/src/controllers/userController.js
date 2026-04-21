@@ -189,7 +189,7 @@ const getPublicUserByEmail = async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT email, full_name, username, profile_image_url, course, year, section, bio, interests, skills, city, linkedin, github
+      SELECT email, full_name, username, profile_image_url, course, year, branch, bio, interests, skills, city, linkedin, github
       FROM users
       WHERE LOWER(email) = LOWER($1)
       LIMIT 1
@@ -354,7 +354,7 @@ const getAllUsers = async (req, res) => {
         username,
         course,
         year,
-        section,
+        branch,
         profile_image_url
       FROM users
       WHERE ($1 = '' OR LOWER(email) <> LOWER($1))
