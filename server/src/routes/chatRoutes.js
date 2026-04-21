@@ -6,13 +6,14 @@ const {
   getOrCreateDirectConversation,
   deleteConversationForMe,
 } = require("../controllers/chatController");
+const requireAuth = require("../middleware/requireAuth");
 
 const router = express.Router();
 
-router.post("/conversation", createOrGetConversation);
-router.post("/delete-for-me", deleteConversationForMe);
-router.post("/direct", getOrCreateDirectConversation);
-router.get("/conversations/:email", getUserConversations);
-router.get("/messages/:conversationId", getConversationMessages);
+router.post("/conversation", requireAuth, createOrGetConversation);
+router.post("/delete-for-me", requireAuth, deleteConversationForMe);
+router.post("/direct", requireAuth, getOrCreateDirectConversation);
+router.get("/conversations", requireAuth, getUserConversations);
+router.get("/messages/:conversationId", requireAuth, getConversationMessages);
 
 module.exports = router;
