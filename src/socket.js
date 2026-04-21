@@ -9,4 +9,6 @@ const socket = io(SERVER_BASE_URL, {
   transports: ["websocket", "polling"],
 });
 
+window.socket = socket;
+
 export default socket;
