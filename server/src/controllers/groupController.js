@@ -343,10 +343,16 @@ const getGroupMessages = async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT *
-      FROM group_messages
-      WHERE group_id = $1
-      ORDER BY created_at ASC
+      SELECT
+  gm.*,
+  u.full_name,
+  u.username,
+  u.profile_image_url
+FROM group_messages gm
+LEFT JOIN users u
+  ON LOWER(u.email) = LOWER(gm.sender_email)
+WHERE gm.group_id = $1
+ORDER BY gm.created_at ASC
       `,
       [groupId]
     );
@@ -363,9 +369,9 @@ const getGroupMessages = async (req, res) => {
 const sendGroupMessage = async (req, res) => {
   try {
     const { groupId } = req.params;
-    const { userName, userProfileImageUrl, messageText } = req.body
-      const userEmail = req.user.email.toLowerCase().trim();
-
+    const { messageText } = req.body;
+const userEmail = req.user.email.toLowerCase().trim();
+    
     if (!userEmail || !messageText?.trim()) {
       return res.status(400).json({
         error: "userEmail and messageText are required.",
@@ -387,6 +393,22 @@ const sendGroupMessage = async (req, res) => {
     if (!membership.rows.length) {
       return res.status(403).json({ error: "Join the group first." });
     }
+    const userResult = await pool.query(
+  `
+  SELECT full_name, username, profile_image_url
+  FROM users
+  WHERE LOWER(email) = LOWER($1)
+  LIMIT 1
+  `,
+  [userEmail]
+);
+
+const user = userResult.rows[0];
+
+const senderName =
+  user?.full_name || user?.username || userEmail.split("@")[0];
+
+const senderProfileImageUrl = user?.profile_image_url || null;
 
     const result = await pool.query(
       `
@@ -401,12 +423,12 @@ const sendGroupMessage = async (req, res) => {
       RETURNING *
       `,
       [
-        groupId,
-        normalizedEmail,
-        userName?.trim() || "Student",
-        userProfileImageUrl || null,
-        messageText.trim(),
-      ]
+  groupId,
+  normalizedEmail,
+  senderName,
+  senderProfileImageUrl,
+  messageText.trim(),
+]
     );
 
     const savedMessage = result.rows[0];
