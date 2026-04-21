@@ -5,6 +5,10 @@ import { FaInstagram } from "react-icons/fa";
 import PostDetailPage from "./PostDetailPage";
 import API_BASE_URL, {SERVER_BASE_URL} from "./api";
 import useBreakpoint from "./useBreakpoint";
+const authHeaders = (includeJson = true) => ({
+  ...(includeJson ? { "Content-Type": "application/json" } : {}),
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+});
 
 function FeedPage({
   profileData,
@@ -54,10 +58,11 @@ function FeedPage({
         const statusEntries = await Promise.all(
           validSuggestions.map(async (item) => {
             const response = await fetch(
-              `${API_BASE_URL}/user/friend-status?currentUserEmail=${encodeURIComponent(
-                currentUserEmail
-              )}&otherUserEmail=${encodeURIComponent(item.email)}`
-            );
+  `${API_BASE_URL}/user/friend-status?otherUserEmail=${encodeURIComponent(item.email)}`,
+  {
+    headers: authHeaders(false),
+  }
+);
 
             const data = await response.json();
 
@@ -85,11 +90,11 @@ function FeedPage({
         setLoadingSuggestions(true);
 
         const response = await fetch(
-          `${API_BASE_URL}/user/random-suggestions?currentUserEmail=${encodeURIComponent(
-            currentUserEmail
-          )}&limit=10`
-        );
-
+  `${API_BASE_URL}/user/random-suggestions?limit=10`,
+  {
+    headers: authHeaders(false),
+  }
+);
         const data = await response.json();
 
         if (!response.ok) {
@@ -132,11 +137,8 @@ function FeedPage({
 
       const response = await fetch(`${API_BASE_URL}/user/friend-request/accept`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
-          currentUserEmail: normalizedCurrentUser,
           otherUserEmail: normalizedOtherUser,
         }),
       });
@@ -169,13 +171,10 @@ function FeedPage({
 
       const response = await fetch(`${API_BASE_URL}/user/friend-request/reject`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          currentUserEmail: normalizedCurrentUser,
-          otherUserEmail: normalizedOtherUser,
-        }),
+       headers: authHeaders(),
+body: JSON.stringify({
+  otherUserEmail: normalizedOtherUser,
+}),
       });
 
       const data = await response.json();
@@ -201,12 +200,8 @@ function FeedPage({
     try {
       const response = await fetch(`${API_BASE_URL}/posts/${postId}/like`, {
         method: isLiked ? "DELETE" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userEmail: currentUserEmail,
-        }),
+        headers: authHeaders(),
+
       });
 
       const data = await response.json();
@@ -284,13 +279,10 @@ function FeedPage({
 
       const response = await fetch(`${API_BASE_URL}/user/friend-request`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          requesterEmail: normalizedCurrentUser,
-          recipientEmail: normalizedOtherUser,
-        }),
+        headers: authHeaders(),
+body: JSON.stringify({
+  recipientEmail: normalizedOtherUser,
+}),
       });
 
       const data = await response.json();
@@ -345,13 +337,10 @@ function FeedPage({
     try {
       const response = await fetch(`${API_BASE_URL}/chat/direct`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          currentUserEmail,
-          otherUserEmail,
-        }),
+       headers: authHeaders(),
+body: JSON.stringify({
+  otherUserEmail,
+}),
       });
 
       const data = await response.json();
