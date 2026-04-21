@@ -363,16 +363,19 @@ const response = await fetch(
   }, [email]);
 
   const handleLogout = () => {
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("token");
-    setEmail("");
-    setProfileData(null);
-    setActiveConversationId(null);
-    setSelectedUserEmail("");
-    setPosts([]);
-    setSelectedGroup(null);
-    navigateTo("welcome");
-  };
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("token");
+
+  socket.disconnect();
+
+  setEmail("");
+  setProfileData(null);
+  setActiveConversationId(null);
+  setSelectedUserEmail("");
+  setPosts([]);
+  setSelectedGroup(null);
+  navigateTo("welcome");
+};
 
   if (currentPage === "otp") {
     return (
@@ -382,6 +385,11 @@ const response = await fetch(
         onVerify={(data) => {
   localStorage.setItem("token", data.token);
   localStorage.setItem("userEmail", email.toLowerCase().trim());
+
+  socket.auth = {
+    token: localStorage.getItem("token"),
+  };
+  socket.connect();
 
   if (data?.needsProfileSetup) {
     navigateTo("profile");
@@ -704,10 +712,15 @@ const response = await fetch(`${API_BASE_URL}/user/save-profile`, {
         navigateTo("otp");
       }}
       onLoginSuccess={(userEmail, data) => {
-const normalizedEmail = userEmail.toLowerCase();
+  const normalizedEmail = userEmail.toLowerCase();
 
   localStorage.setItem("token", data.token);
   localStorage.setItem("userEmail", normalizedEmail);
+
+  socket.auth = {
+    token: localStorage.getItem("token"),
+  };
+  socket.connect();
 
   setEmail(normalizedEmail);
 
@@ -716,7 +729,7 @@ const normalizedEmail = userEmail.toLowerCase();
   } else {
     navigateTo("feed");
   }
-      }}
+}}
     />
   );
 }
