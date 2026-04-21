@@ -6,7 +6,7 @@ import useBreakpoint from "./useBreakpoint";
 
 
 function MessagesPage({
-  currentUserEmail = "ritik.17886@stu.upes.ac.in",
+  currentUserEmail = "",
   activeConversationId,
   unreadCounts,
   setUnreadCounts,
@@ -81,10 +81,13 @@ useEffect(() => {
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/user/block-status?currentUserEmail=${encodeURIComponent(
-            currentUserEmail
-          )}&otherUserEmail=${encodeURIComponent(selectedChat.otherEmail)}`
-        );
+  `${API_BASE_URL}/user/block-status?otherUserEmail=${encodeURIComponent(selectedChat.otherEmail)}`,
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  }
+);
         const data = await response.json();
 
         if (!response.ok) {
@@ -103,9 +106,11 @@ useEffect(() => {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/chat/conversations/${encodeURIComponent(currentUserEmail)}`
-        );
+        const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+});
         const data = await response.json();
 
         if (!response.ok) {
@@ -180,9 +185,13 @@ useEffect(() => {
 
             try {
               const response = await fetch(
-                `${API_BASE_URL}/user/public/${encodeURIComponent(chat.otherEmail)}`
-              );
-
+  `${API_BASE_URL}/user/public/${encodeURIComponent(chat.otherEmail)}`,
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  }
+);
               if (!response.ok) {
                 return {
                   ...chat,
@@ -244,7 +253,12 @@ useEffect(() => {
 
       try {
         const response = await fetch(
-  `${API_BASE_URL}/chat/messages/${normalizedSelectedChatId}?userEmail=${encodeURIComponent(currentUserEmail)}`
+  `${API_BASE_URL}/chat/messages/${normalizedSelectedChatId}`,
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  }
 );
         const data = await response.json();
 
@@ -335,15 +349,15 @@ useEffect(() => {
 
     try {
       const response = await fetch(`${API_BASE_URL}/user/${action}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          blockerEmail: currentUserEmail,
-          blockedEmail: selectedChat.otherEmail,
-        }),
-      });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+  body: JSON.stringify({
+    blockedEmail: selectedChat.otherEmail,
+  }),
+});
 
       const data = await response.json();
 
@@ -373,15 +387,15 @@ useEffect(() => {
 
   try {
     const response = await fetch(`${API_BASE_URL}/chat/delete-for-me`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        conversationId: selectedChat.id,
-        userEmail: currentUserEmail,
-      }),
-    });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+  body: JSON.stringify({
+    conversationId: selectedChat.id,
+  }),
+});
 
     const data = await response.json();
 
