@@ -82,6 +82,19 @@ function App() {
         return "/";
     }
   };
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  if (!token || !email) return;
+
+  socket.auth = {
+    token,
+  };
+
+  if (!socket.connected) {
+    socket.connect();
+  }
+}, [email]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
