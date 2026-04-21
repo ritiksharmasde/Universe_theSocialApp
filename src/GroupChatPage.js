@@ -10,6 +10,10 @@ import {
     FiRefreshCw,
 } from "react-icons/fi";
 import API_BASE_URL , { SERVER_BASE_URL } from "./api";
+const authHeaders = (includeJson = true) => ({
+  ...(includeJson ? { "Content-Type": "application/json" } : {}),
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+});
 const parseJsonSafely = async (response) => {
     const text = await response.text();
 
@@ -20,6 +24,7 @@ const parseJsonSafely = async (response) => {
         throw new Error(text.slice(0, 120) || "Invalid JSON response");
     }
 };
+
 function GroupChatPage({ group, currentUserEmail, onBack }) {
     const [messages, setMessages] = useState([]);
     const [members, setMembers] = useState([]);
@@ -103,10 +108,11 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
             setError("");
 
             const response = await fetch(
-                `${API_BASE_URL}/groups/${group.id}/messages?userEmail=${encodeURIComponent(
-                    normalizedCurrentUserEmail
-                )}`
-            );
+  `${API_BASE_URL}/groups/${group.id}/messages`,
+  {
+    headers: authHeaders(false),
+  }
+);
 
             const data = await parseJsonSafely(response);
 
@@ -130,10 +136,11 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
             setLoadingMembers(true);
 
             const response = await fetch(
-                `${API_BASE_URL}/groups/${group.id}/members?userEmail=${encodeURIComponent(
-                    normalizedCurrentUserEmail
-                )}`
-            );
+  `${API_BASE_URL}/groups/${group.id}/members`,
+  {
+    headers: authHeaders(false),
+  }
+);
 
             const data = await parseJsonSafely(response);
 
@@ -165,25 +172,12 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
                 ) || null;
 
             const response = await fetch(`${API_BASE_URL}/groups/${group.id}/messages`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    userEmail: normalizedCurrentUserEmail,
-                    userName:
-                        myMemberData?.full_name ||
-                        myMemberData?.username ||
-                        "Student",
-                    userProfileImageUrl: myMemberData?.profile_image_url
-                        ? myMemberData.profile_image_url.startsWith("http")
-                            ? myMemberData.profile_image_url
-                            : `${SERVER_BASE_URL}${myMemberData.profile_image_url}`
-                        : null,
-                    messageText: messageText.trim(),
-                }),
-            });
-
+  method: "POST",
+  headers: authHeaders(),
+  body: JSON.stringify({
+    messageText: messageText.trim(),
+  }),
+});
             const data = await response.json();
 
             if (!response.ok) {
