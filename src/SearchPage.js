@@ -3,6 +3,10 @@ import API_BASE_URL from "./api";
 import { FiSearch, FiUsers, FiFileText, FiUser } from "react-icons/fi";
 import useBreakpoint from "./useBreakpoint";
 
+  const authHeaders = (includeJson = true) => ({
+  ...(includeJson ? { "Content-Type": "application/json" } : {}),
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+});
 function SearchPage({ currentUserEmail, onStartChat, onOpenUserProfile }) {
   const { isMobile, isDesktop, isTablet } = useBreakpoint();
   const [query, setQuery] = useState("");
@@ -15,17 +19,13 @@ function SearchPage({ currentUserEmail, onStartChat, onOpenUserProfile }) {
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const styles = getStyles(isMobile, isTablet);
-  const authHeaders = () => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${localStorage.getItem("token")}`,
-});
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setLoadingUsers(true);
 
         const response = await fetch(`${API_BASE_URL}/user`, {
-  headers: authHeaders(),
+  headers: authHeaders(false),
 });
 
         const data = await response.json();
@@ -110,7 +110,7 @@ const matchesCourse =
             const response = await fetch(
   `${API_BASE_URL}/user/friend-status?otherUserEmail=${encodeURIComponent(student.email)}`,
   {
-    headers: authHeaders(),
+    headers: authHeaders(false),
   }
 );
 
