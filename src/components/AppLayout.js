@@ -60,7 +60,7 @@ const styles = {
 
   backgroundImage: `url(${doodleBg})`,
   backgroundRepeat: "repeat",
-  backgroundSize: "240px 240px",
+  backgroundSize: "320px 320px",
   backgroundAttachment: "fixed",
 
   transition: "background 0.2s ease, color 0.2s ease",
