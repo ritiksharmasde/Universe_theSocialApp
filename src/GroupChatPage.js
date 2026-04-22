@@ -459,7 +459,7 @@ const styles = {
         width: "100%",
         minWidth: 0,
         overflow: "hidden",
-        background: "var(--bg-page)",
+        background: "transparent",
     },
 
     chatShell: {
@@ -469,7 +469,10 @@ const styles = {
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
-        background: "var(--bg-surface)",
+        background: "rgba(20, 30, 50, 0.72)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255,255,255,0.08)",
         border: "1px solid var(--border-color)",
         borderRadius: "20px",
     },
@@ -479,7 +482,9 @@ const styles = {
         alignItems: "center",
         gap: "12px",
         borderBottom: "1px solid var(--border-color)",
-        background: "var(--bg-surface)",
+        background: "rgba(20, 30, 50, 0.72)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
         flexWrap: "wrap",
         flexShrink: 0,
         minWidth: 0,
@@ -582,7 +587,9 @@ const styles = {
     },
 
     otherMessageBubble: {
-        background: "var(--bg-surface)",
+        background: "rgba(255,255,255,0.06)",
+  backdropFilter: "blur(8px)",
+  WebkitBackdropFilter: "blur(8px)",
         color: "var(--text-primary)",
         border: "1px solid var(--border-color)",
         borderBottomLeftRadius: "6px",
@@ -610,7 +617,9 @@ const styles = {
     inputBar: {
         display: "flex",
         borderTop: "1px solid var(--border-color)",
-        background: "var(--bg-surface)",
+        background: "rgba(20, 30, 50, 0.72)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
         flexShrink: 0,       // ⭐ keeps it at bottom
     },
 
@@ -657,7 +666,9 @@ const styles = {
         right: 0,
         height: "100dvh",
         maxWidth: "100vw",
-        background: "var(--bg-surface)",
+        background: "rgba(20, 30, 50, 0.9)",
+  backdropFilter: "blur(16px)",
+  WebkitBackdropFilter: "blur(16px)",
         borderLeft: "1px solid var(--border-color)",
         transform: "translateX(100%)",
         transition: "transform 0.25s ease",
