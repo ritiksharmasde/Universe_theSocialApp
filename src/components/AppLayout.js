@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
-
+import doodleBg from "../public/doodle-fullscreen.svg";
 function AppLayout({
   children,
   currentPage,
@@ -58,7 +58,7 @@ const styles = {
   minHeight: "100dvh",
   backgroundColor: "var(--bg-page)",
 
-  backgroundImage: 'url("/doodle-fullscreen.svg")',
+  backgroundImage: `url(${doodleBg})`,
   backgroundRepeat: "repeat",
   backgroundSize: "240px 240px",
   backgroundAttachment: "fixed",
