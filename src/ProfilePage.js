@@ -49,13 +49,16 @@ function ProfilePage({ email, onBack, onComplete }) {
 
     const imageFormData = new FormData();
     imageFormData.append("image", profileImage);
-    imageFormData.append("email", email);
+    
 
     try {
       const response = await fetch(`${API_BASE_URL}/user/upload-profile-image`, {
-        method: "POST",
-        body: imageFormData,
-      });
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+  body: imageFormData,
+});
 
       const data = await response.json();
 
@@ -118,12 +121,12 @@ function ProfilePage({ email, onBack, onComplete }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          
           fullName: formData.fullName,
           username: formData.username || "",
           course: formData.course,
           year: formData.year,
-          section: formData.section || "",
+          branch: formData.branch || "",
           bio: formData.bio || "",
           interests: formData.interests || "",
           skills: formData.skills || "",
