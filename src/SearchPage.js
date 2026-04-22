@@ -390,7 +390,7 @@ const matchesCourse =
           </div>
         </div>
 
-        <div style={styles.resultsCard}>
+        <div style={styles.}>
           <div style={styles.resultsHeader}>
             <h2 style={styles.sectionTitle}>Results</h2>
             <span style={styles.resultCount}>{results.length} found</span>
@@ -592,7 +592,9 @@ backdropFilter: "blur(10px)",
     cursor: "pointer",
   },
   resultsCard: {
-    background: "var(--bg-surface)",
+   background: "rgba(20, 30, 50, 0.72)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
     border: "1px solid var(--border-color)",
     borderRadius: "24px",
     padding: isMobile ? "16px" : "24px",
@@ -629,7 +631,9 @@ backdropFilter: "blur(10px)",
     border: "1px solid var(--border-color)",
     borderRadius: "16px",
     padding: isMobile ? "12px" : "14px 16px",
-    background: "var(--bg-surface-soft)",
+    background: "rgba(255, 255, 255, 0.06)",
+  backdropFilter: "blur(10px)",
+  WebkitBackdropFilter: "blur(10px)",
   },
   resultLeft: {
     display: "flex",
@@ -673,7 +677,7 @@ backdropFilter: "blur(10px)",
     fontSize: "13px",
     fontWeight: "600",
     color: "var(--text-secondary)",
-    background: "var(--bg-surface)",
+    background: "rgba(8, 15, 30, 0.72)",
     padding: "6px 10px",
     borderRadius: "999px",
     alignSelf: isMobile ? "flex-start" : "center",
@@ -687,7 +691,7 @@ backdropFilter: "blur(10px)",
   },
   friendButton: {
     border: "1px solid var(--border-color)",
-    background: "var(--bg-surface)",
+    background: "rgba(8, 15, 30, 0.72)",
     color: "var(--text-primary)",
     borderRadius: "10px",
     padding: "8px 12px",
@@ -707,7 +711,7 @@ backdropFilter: "blur(10px)",
   },
   rejectButton: {
     border: "1px solid var(--border-color)",
-    background: "var(--bg-surface)",
+    background: "rgba(8, 15, 30, 0.72)",
     color: "var(--text-primary)",
     borderRadius: "10px",
     padding: "8px 12px",
@@ -721,7 +725,7 @@ backdropFilter: "blur(10px)",
     color: "#065f46",
   },
   friendButtonMuted: {
-    background: "var(--bg-surface-soft)",
+    background: "rgba(255,255,255,0.04)",
     border: "1px solid var(--border-color)",
     color: "var(--text-secondary)",
   },
