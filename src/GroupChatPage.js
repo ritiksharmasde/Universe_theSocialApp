@@ -227,7 +227,7 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
         <div
             style={{
                 ...styles.page,
-                height: pageHeight,
+                
             }}
         >
             <div
@@ -471,7 +471,8 @@ const styles = {
 
     chatShell: {
         flex: 1,
-        height: "100%",
+        
+minHeight: 0,
         minHeight: 0,
         display: "flex",
         flexDirection: "column",
@@ -533,7 +534,7 @@ WebkitBackdropFilter: "blur(4px)",
 
     groupName: {
         margin: 0,
-        fontSize: isSmallMobile ? "16px" : isMobile ? "18px" : "22px",
+        fontSize: "20px",
         color: "var(--text-primary)",
         whiteSpace: "nowrap",
         overflow: "hidden",
