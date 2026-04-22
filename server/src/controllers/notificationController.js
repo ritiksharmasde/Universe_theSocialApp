@@ -1,11 +1,7 @@
 const pool = require("../config/db");
 
 const getNotifications = async (req, res) => {
-  const { userEmail } = req.query;
-
-  if (!userEmail) {
-    return res.status(400).json({ error: "userEmail is required" });
-  }
+  const userEmail = req.user.email.toLowerCase().trim();
 
   try {
     const result = await pool.query(
@@ -15,7 +11,7 @@ const getNotifications = async (req, res) => {
       WHERE user_email = $1
       ORDER BY created_at DESC
       `,
-      [userEmail.toLowerCase()]
+      [userEmail]
     );
 
     res.json({ notifications: result.rows });
@@ -27,6 +23,7 @@ const getNotifications = async (req, res) => {
 
 const markNotificationRead = async (req, res) => {
   const { id } = req.params;
+  const userEmail = req.user.email.toLowerCase().trim();
 
   try {
     const result = await pool.query(
@@ -34,9 +31,10 @@ const markNotificationRead = async (req, res) => {
       UPDATE notifications
       SET is_read = TRUE
       WHERE id = $1
+        AND LOWER(user_email) = LOWER($2)
       RETURNING *
       `,
-      [id]
+      [id, userEmail]
     );
 
     if (!result.rows.length) {
@@ -51,11 +49,7 @@ const markNotificationRead = async (req, res) => {
 };
 
 const markAllNotificationsRead = async (req, res) => {
-  const { userEmail } = req.body;
-
-  if (!userEmail) {
-    return res.status(400).json({ error: "userEmail is required" });
-  }
+  const userEmail = req.user.email.toLowerCase().trim();
 
   try {
     await pool.query(
@@ -64,7 +58,7 @@ const markAllNotificationsRead = async (req, res) => {
       SET is_read = TRUE
       WHERE user_email = $1
       `,
-      [userEmail.toLowerCase()]
+      [userEmail]
     );
 
     res.json({ success: true });
