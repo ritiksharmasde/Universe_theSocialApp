@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
-import doodleBg from "../public/doodle-fullscreen.svg";
+import doodleBg from "../public/doodle.svg";
 function AppLayout({
   children,
   currentPage,
