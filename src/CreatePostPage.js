@@ -57,14 +57,7 @@ function CreatePostPage({ onBack, onSubmitPost, profileData }) {
 
     try {
       const postFormData = new FormData();
-      postFormData.append("email", profileData?.email || "");
-      postFormData.append("authorName", profileData?.fullName || "Student");
-      postFormData.append("authorCourse", profileData?.course || "");
-      postFormData.append("authorYear", profileData?.year || "");
-      postFormData.append(
-        "authorProfileImageUrl",
-        profileData?.profileImage || ""
-      );
+      
       postFormData.append("postType", formData.type);
       postFormData.append("caption", formData.caption);
 
@@ -73,9 +66,12 @@ function CreatePostPage({ onBack, onSubmitPost, profileData }) {
       }
 
       const response = await fetch(`${API_BASE_URL}/user/create-post`, {
-        method: "POST",
-        body: postFormData,
-      });
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+  body: postFormData,
+});
 
       const data = await response.json();
 
