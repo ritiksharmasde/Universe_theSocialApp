@@ -390,7 +390,7 @@ const matchesCourse =
           </div>
         </div>
 
-        <div style={styles.}>
+        <div style={styles.resultsCard}>
           <div style={styles.resultsHeader}>
             <h2 style={styles.sectionTitle}>Results</h2>
             <span style={styles.resultCount}>{results.length} found</span>
@@ -507,7 +507,7 @@ const getStyles = (isMobile, isTablet) => ({
   page: {
     minHeight: "100dvh",
     fontFamily: "Inter, Arial, Helvetica, sans-serif",
-    background: "var(--bg-page)",
+    background: "transparent",
     color: "var(--text-primary)",
   },
   container: {
