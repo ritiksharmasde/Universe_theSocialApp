@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../config/db");
-
-router.post("/", async (req, res) => {
+const requireAuth = require("../middleware/requireAuth");
+router.post("/", requireAuth, async (req, res) => {
   try {
-    const { email, category, message } = req.body;
+    const email = req.user.email.toLowerCase().trim();
+const { category, message } = req.body;
 
     if (!email || !category || !message) {
       return res.status(400).json({
