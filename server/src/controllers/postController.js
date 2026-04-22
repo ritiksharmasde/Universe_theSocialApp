@@ -22,36 +22,46 @@ const uploadToCloudinary = (buffer) => {
 
 const createPost = async (req, res) => {
   try {
-    const {
-      email,
-      authorName,
-      authorCourse,
-      authorYear,
-      authorProfileImageUrl,
-      postType,
-      caption,
-    } = req.body;
+    const { postType, caption } = req.body;
+    const email = req.user.email.toLowerCase().trim();
 
-    if (!email || !authorName || !postType || !caption) {
+    if (!postType || !caption) {
       return res.status(400).json({
-        error: "Missing required post fields.",
+        error: "postType and caption are required.",
       });
     }
 
     let imageUrl = null;
 
-   if (req.file) {
-  const moderation = await moderateImage(req.file);
+    if (req.file) {
+      const moderation = await moderateImage(req.file);
 
-  if (!moderation.isSafe) {
-    return res.status(400).json({
-      error: moderation.reason || "Inappropriate image not allowed",
-    });
-  }
+      if (!moderation.isSafe) {
+        return res.status(400).json({
+          error: moderation.reason || "Inappropriate image not allowed",
+        });
+      }
 
-  const uploadResult = await uploadToCloudinary(req.file.buffer);
-  imageUrl = uploadResult.secure_url;
-}
+      const uploadResult = await uploadToCloudinary(req.file.buffer);
+      imageUrl = uploadResult.secure_url;
+    }
+
+    const userResult = await pool.query(
+      `
+      SELECT full_name, course, year, profile_image_url
+      FROM users
+      WHERE LOWER(email) = LOWER($1)
+      LIMIT 1
+      `,
+      [email]
+    );
+
+    const user = userResult.rows[0];
+
+    const authorName = user?.full_name || email.split("@")[0];
+    const authorCourse = user?.course || null;
+    const authorYear = user?.year || null;
+    const authorProfileImageUrl = user?.profile_image_url || null;
 
     const result = await pool.query(
       `
@@ -75,7 +85,7 @@ const createPost = async (req, res) => {
         authorName,
         authorCourse,
         authorYear,
-        authorProfileImageUrl || null,
+        authorProfileImageUrl,
         postType,
         caption,
         imageUrl,
@@ -94,7 +104,7 @@ const createPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const currentUserEmail = (req.query.currentUserEmail || "").toLowerCase();
+    const currentUserEmail = req.user.email.toLowerCase().trim();
     const limit = Math.min(parseInt(req.query.limit, 10) || 10, 20);
     const offset = parseInt(req.query.offset, 10) || 0;
 
@@ -133,13 +143,7 @@ const getPosts = async (req, res) => {
 const likePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { userEmail } = req.body;
-
-    if (!userEmail) {
-      return res.status(400).json({ error: "userEmail is required." });
-    }
-
-    const normalizedEmail = userEmail.toLowerCase().trim();
+    const normalizedEmail = req.user.email.toLowerCase().trim();
 
     const postResult = await pool.query(
       `SELECT email FROM posts WHERE id = $1`,
@@ -213,11 +217,7 @@ const likePost = async (req, res) => {
 const unlikePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { userEmail } = req.body;
-
-    if (!userEmail) {
-      return res.status(400).json({ error: "userEmail is required." });
-    }
+    const userEmail = req.user.email.toLowerCase().trim();
 
     await pool.query(
       `
@@ -225,7 +225,7 @@ const unlikePost = async (req, res) => {
       WHERE post_id = $1
         AND LOWER(user_email) = LOWER($2)
       `,
-      [postId, userEmail.toLowerCase()]
+      [postId, userEmail]
     );
 
     await pool.query(
@@ -268,10 +268,16 @@ const getComments = async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT *
-      FROM post_comments
-      WHERE post_id = $1
-      ORDER BY created_at ASC
+      SELECT
+  pc.*,
+  u.full_name,
+  u.username,
+  u.profile_image_url
+FROM post_comments pc
+LEFT JOIN users u
+  ON LOWER(u.email) = LOWER(pc.user_email)
+WHERE pc.post_id = $1
+ORDER BY pc.created_at ASC
       `,
       [postId]
     );
@@ -288,13 +294,31 @@ const getComments = async (req, res) => {
 const addComment = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { userEmail, userName, userProfileImageUrl, commentText } = req.body;
+    const { commentText } = req.body;
+    const userEmail = req.user.email.toLowerCase().trim();
 
-    if (!userEmail || !commentText?.trim()) {
+    if (!commentText?.trim()) {
       return res.status(400).json({
-        error: "userEmail and commentText are required.",
+        error: "commentText is required.",
       });
     }
+
+    const userResult = await pool.query(
+      `
+      SELECT full_name, username, profile_image_url
+      FROM users
+      WHERE LOWER(email) = LOWER($1)
+      LIMIT 1
+      `,
+      [userEmail]
+    );
+
+    const user = userResult.rows[0];
+
+    const userName =
+      user?.full_name || user?.username || userEmail.split("@")[0];
+
+    const userProfileImageUrl = user?.profile_image_url || null;
 
     const commentResult = await pool.query(
       `
@@ -310,9 +334,9 @@ const addComment = async (req, res) => {
       `,
       [
         postId,
-        userEmail.toLowerCase(),
-        userName || "Student",
-        userProfileImageUrl || null,
+        userEmail,
+        userName,
+        userProfileImageUrl,
         commentText.trim(),
       ]
     );
@@ -339,7 +363,6 @@ const addComment = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 module.exports = {
   createPost,
   getPosts,
