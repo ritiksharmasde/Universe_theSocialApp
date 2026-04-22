@@ -465,13 +465,13 @@ const styles = {
         flexDirection: "column",
         width: "100%",
         minWidth: 0,
-        overflow: "hidden",
+        overflow: "visible",
         background: "transparent",
     },
 
     chatShell: {
         flex: 1,
-        
+        height: "100%",
 minHeight: 0,
         minHeight: 0,
         display: "flex",
@@ -567,6 +567,7 @@ WebkitBackdropFilter: "blur(4px)",
         flex: 1,
         minHeight: 0,        // ⭐ THIS LINE FIXES YOUR PROBLEM
         overflowY: "auto",
+        overflowX: "hidden",
     },
 
     messagesList: {
