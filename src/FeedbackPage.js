@@ -55,16 +55,16 @@ function FeedbackPage({ currentUserEmail }) {
       });
 
       const response = await fetch(`${API_BASE_URL}/feedback`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: currentUserEmail,
-          category,
-          message: trimmedMessage,
-        }),
-      });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+  body: JSON.stringify({
+    category,
+    message: trimmedMessage,
+  }),
+});
 
       const data = await response.json();
 
