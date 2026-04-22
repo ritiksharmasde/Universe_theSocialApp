@@ -289,16 +289,23 @@ useEffect(() => {
     const incomingConversationId = Number(message.conversation_id);
 
     if (incomingConversationId === Number(normalizedSelectedChatId)) {
-      setMessages((prev) => [...prev, message]);
+  setMessages((prev) => [...prev, message]);
 
-      if (message.sender_email !== currentUserEmail) {
-        setUnreadCounts((prev) => ({
-          ...prev,
-          [incomingConversationId]: 0,
-        }));
-      }
-      
-    }
+  if (message.sender_email !== currentUserEmail) {
+    setUnreadCounts((prev) => ({
+      ...prev,
+      [incomingConversationId]: 0,
+    }));
+  }
+} else {
+  if (message.sender_email !== currentUserEmail) {
+    setUnreadCounts((prev) => ({
+      ...prev,
+      [incomingConversationId]:
+        (prev[incomingConversationId] || 0) + 1,
+    }));
+  }
+}
 
      };
 
