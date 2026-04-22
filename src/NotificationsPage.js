@@ -8,7 +8,10 @@ import {
 } from "react-icons/fi";
 import API_BASE_URL from "./api";
 import useBreakpoint from "./useBreakpoint";
-
+const authHeaders = (includeJson = true) => ({
+  ...(includeJson ? { "Content-Type": "application/json" } : {}),
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+});
 function NotificationsPage() {
   const { isMobile } = useBreakpoint();
   const styles = getStyles(isMobile);
@@ -16,11 +19,12 @@ function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const currentUserEmail = localStorage.getItem("userEmail");
+  
   useEffect(() => {
-    console.log("EMAIL:", currentUserEmail);
     const fetchNotifications = async () => {
-      if (!currentUserEmail) {
+      const token = localStorage.getItem("token");
+
+if (!token) {
         setNotifications([]);
         setError("");
         setLoading(false);
@@ -31,11 +35,9 @@ function NotificationsPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `${API_BASE_URL}/notifications?userEmail=${encodeURIComponent(
-            currentUserEmail
-          )}`
-        );
+        const response = await fetch(`${API_BASE_URL}/notifications`, {
+  headers: authHeaders(false),
+});
 
         const data = await response.json().catch(() => null);
 
@@ -56,18 +58,16 @@ function NotificationsPage() {
     };
 
     fetchNotifications();
-  }, [currentUserEmail]);
+  }, []);
 
   const handleMarkRead = async (id, isRead) => {
     if (isRead) return;
 
     try {
       const response = await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
-        method: "PUT", // change to "PUT" if your backend route uses PUT
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+  method: "PUT",
+  headers: authHeaders(),
+});
 
       const data = await response.json().catch(() => null);
 
