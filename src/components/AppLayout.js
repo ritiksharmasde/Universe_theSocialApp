@@ -55,16 +55,22 @@ function AppLayout({
 
 const styles = {
   page: {
-    minHeight: "100dvh",
-    background: "var(--bg-page)",
-    transition: "background 0.2s ease, color 0.2s ease",
-    width: "100%",
-    maxWidth: "100%",
-    overflowX: "hidden",
-    display: "flex",
-    position: "relative",
-  },
+  minHeight: "100dvh",
+  backgroundColor: "var(--bg-page)",
 
+  backgroundImage: 'url("/doodle-fullscreen.svg")',
+  backgroundRepeat: "repeat",
+  backgroundSize: "240px 240px",
+  backgroundAttachment: "fixed",
+
+  transition: "background 0.2s ease, color 0.2s ease",
+  width: "100%",
+  maxWidth: "100%",
+  overflowX: "hidden",
+  display: "flex",
+  position: "relative",
+},
+  
   mainContent: {
     minHeight: "100dvh",
     boxSizing: "border-box",
