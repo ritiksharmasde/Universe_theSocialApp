@@ -80,7 +80,7 @@ function ProfileDetailsPage({ profileData, email, onBack, onSaveProfile }) {
 
     const imageFormData = new FormData();
     imageFormData.append("image", selectedProfileFile);
-    imageFormData.append("email", email || profileData?.email || "");
+    
 
     const response = await fetch(`${API_BASE_URL}/user/upload-profile-image`, {
       method: "POST",
@@ -135,7 +135,7 @@ function ProfileDetailsPage({ profileData, email, onBack, onSaveProfile }) {
       email: email || profileData?.email || "",
       course: profileData?.course || "",
       year: profileData?.year || "",
-      section: profileData?.section || "",
+     branch: profileData?.branch || "",
       bio: profileData?.bio || "",
       interests: profileData?.interests || "",
       skills: profileData?.skills || "",
@@ -191,7 +191,7 @@ function ProfileDetailsPage({ profileData, email, onBack, onSaveProfile }) {
               <p style={styles.username}>@{formData.username || "username"}</p>
               <p style={styles.meta}>
                 {formData.course || "Course"} • Year {formData.year || "-"}
-                {formData.section ? ` • Section ${formData.section}` : ""}
+               {formData.branch ? ` • Branch ${formData.branch}` : ""}
               </p>
 
               <div style={styles.headerButtons}>
@@ -280,10 +280,10 @@ function ProfileDetailsPage({ profileData, email, onBack, onSaveProfile }) {
               styles={styles}
             />
 
-            <ProfileField
-              label="Section"
-              name="section"
-              value={formData.section}
+           <ProfileField
+  label="Branch"
+  name="branch"
+  value={formData.branch}
               isEditing={isEditing}
               onChange={handleChange}
               styles={styles}
