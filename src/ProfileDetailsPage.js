@@ -14,7 +14,7 @@ function ProfileDetailsPage({ profileData, email, onBack, onSaveProfile }) {
     email: email || profileData?.email || "",
     course: profileData?.course || "",
     year: profileData?.year || "",
-    section: profileData?.section || "",
+    branch: profileData?.branch || "",
     bio: profileData?.bio || "",
     interests: profileData?.interests || "",
     skills: profileData?.skills || "",
@@ -84,6 +84,9 @@ function ProfileDetailsPage({ profileData, email, onBack, onSaveProfile }) {
 
     const response = await fetch(`${API_BASE_URL}/user/upload-profile-image`, {
       method: "POST",
+      headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
       body: imageFormData,
     });
 
