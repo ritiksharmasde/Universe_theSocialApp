@@ -4,6 +4,22 @@ const pool = require("../config/db");
 const requireAuth = require("../middleware/requireAuth");
 router.post("/send-admin-notification", requireAuth, async (req, res) => {
   try {
+    const senderEmail = req.user.email.toLowerCase().trim();
+
+    const adminCheck = await pool.query(
+      `
+      SELECT is_admin
+      FROM users
+      WHERE LOWER(email) = LOWER($1)
+      LIMIT 1
+      `,
+      [senderEmail]
+    );
+
+    if (!adminCheck.rows.length || !adminCheck.rows[0].is_admin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
     const { userEmail, title, body } = req.body;
 
     if (!userEmail) {
@@ -32,5 +48,4 @@ router.post("/send-admin-notification", requireAuth, async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 });
-
 module.exports = router;
