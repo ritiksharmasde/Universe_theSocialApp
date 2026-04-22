@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../config/db");
-
-router.post("/send-admin-notification", async (req, res) => {
+const requireAuth = require("../middleware/requireAuth");
+router.post("/send-admin-notification", requireAuth, async (req, res) => {
   try {
     const { userEmail, title, body } = req.body;
 
