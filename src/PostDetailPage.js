@@ -7,6 +7,10 @@ import {
   FiBookmark,
 } from "react-icons/fi";
 import API_BASE_URL from "./api";
+const authHeaders = (includeJson = true) => ({
+  ...(includeJson ? { "Content-Type": "application/json" } : {}),
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+});
 
 function PostDetailPage({
   post,
@@ -25,7 +29,9 @@ function PostDetailPage({
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/posts/${post.id}/comments`);
+        const response = await fetch(`${API_BASE_URL}/posts/${post.id}/comments`, {
+  headers: authHeaders(false),
+});
         const data = await response.json();
 
         if (!response.ok) {
@@ -49,17 +55,12 @@ function PostDetailPage({
 
     try {
       const response = await fetch(`${API_BASE_URL}/posts/${post.id}/comments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userEmail: currentUserEmail,
-          userName: currentUserName,
-          userProfileImageUrl: currentUserProfileImage,
-          commentText,
-        }),
-      });
+  method: "POST",
+  headers: authHeaders(),
+  body: JSON.stringify({
+    commentText,
+  }),
+});
 
       const data = await response.json();
 
