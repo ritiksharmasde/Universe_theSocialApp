@@ -157,14 +157,14 @@ const getUserByEmail = async (req, res) => {
     }
 
     const result = await pool.query(
-      `
-      SELECT *
-      FROM users
-      WHERE LOWER(email) = LOWER($1)
-      LIMIT 1
-      `,
-      [email]
-    );
+  `
+  SELECT email, full_name, username, course, year, branch, bio, interests, skills, city, linkedin, github, profile_image_url, is_verified
+  FROM users
+  WHERE LOWER(email) = LOWER($1)
+  LIMIT 1
+  `,
+  [email]
+);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "User not found." });
