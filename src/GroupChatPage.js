@@ -42,7 +42,7 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
     const isTablet = screenWidth >= 768 && screenWidth < 1024;
 
     const pageHeight = isMobile
-        ? "calc(100dvh - 86px)"
+        ? "calc(100dvh - 96px)"
         : isTablet
             ? "calc(100dvh - 108px)"
             : "calc(100dvh - 48px)";
@@ -240,7 +240,7 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
                 <div
                     style={{
                         ...styles.header,
-                        padding: isSmallMobile ? "10px 12px" : "14px 16px",
+                        padding: isSmallMobile ? "8px 10px" : isMobile ? "10px 12px" : "14px 16px",
                     }}
                 >
                     <div style={styles.headerLeft}>
@@ -250,7 +250,14 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
                         </button>
 
                         <div style={styles.groupInfo}>
-                            <h2 style={styles.groupName}>{group?.name || "Group Chat"}</h2>
+                            <h2
+  style={{
+    ...styles.groupName,
+    fontSize: isSmallMobile ? "16px" : isMobile ? "18px" : "22px",
+  }}
+>
+  {group?.name || "Group Chat"}
+</h2>
                             <p style={styles.groupMeta}>
                                 {(members?.length || group?.members_count || 0)}/5 members
                             </p>
@@ -485,7 +492,7 @@ WebkitBackdropFilter: "blur(4px)",
         background: "rgba(20, 30, 50, 0.72)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
-        flexWrap: "wrap",
+        flexWrap: "nowrap",
         flexShrink: 0,
         minWidth: 0,
     },
@@ -526,7 +533,7 @@ WebkitBackdropFilter: "blur(4px)",
 
     groupName: {
         margin: 0,
-        fontSize: "clamp(18px, 3vw, 28px)",
+        fontSize: isSmallMobile ? "16px" : isMobile ? "18px" : "22px",
         color: "var(--text-primary)",
         whiteSpace: "nowrap",
         overflow: "hidden",
