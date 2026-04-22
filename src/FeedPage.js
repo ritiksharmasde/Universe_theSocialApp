@@ -568,7 +568,7 @@ body: JSON.stringify({
 const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile) => ({
   page: {
     minHeight: "100dvh",
-    background: "var(--bg-page)",
+    background: "transparent",
     display: "grid",
     gridTemplateColumns: isMobile
       ? "1fr"
@@ -621,7 +621,9 @@ const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile) => ({
     width: "100%",
     maxWidth: "100%",
     border: "1px solid var(--border-color)",
-    background: "var(--bg-surface)",
+   background: "rgba(20, 30, 50, 0.72)",
+backdropFilter: "blur(12px)",
+WebkitBackdropFilter: "blur(12px)",
     borderRadius: "16px",
     padding: isMobile ? "12px 12px 12px 38px" : "15px 16px 15px 44px",
     fontSize: isMobile ? "14px" : "15px",
@@ -636,7 +638,9 @@ const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile) => ({
   },
 
   emptyState: {
-    background: "var(--bg-surface)",
+    background: "rgba(20, 30, 50, 0.72)",
+backdropFilter: "blur(12px)",
+WebkitBackdropFilter: "blur(12px)",
     border: "1px solid var(--border-color)",
     borderRadius: "20px",
     padding: "32px",
@@ -671,7 +675,9 @@ const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile) => ({
   },
 
   profileCard: {
-    background: "var(--bg-surface)",
+    background: "rgba(20, 30, 50, 0.72)",
+backdropFilter: "blur(12px)",
+WebkitBackdropFilter: "blur(12px)",
     border: "1px solid var(--border-color)",
     borderRadius: "20px",
     padding: "18px",
@@ -723,7 +729,9 @@ const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile) => ({
   },
 
   widgetCardLarge: {
-    background: "var(--bg-surface)",
+    background: "rgba(20, 30, 50, 0.72)",
+backdropFilter: "blur(12px)",
+WebkitBackdropFilter: "blur(12px)",
     border: "1px solid var(--border-color)",
     borderRadius: "20px",
     padding: isTinyMobile ? "14px" : "18px",
@@ -860,7 +868,7 @@ suggestionSub: {
 
   rejectSuggestionButton: {
   border: "1px solid var(--border-color)",
-  background: "var(--bg-surface)",
+  background: "rgba(8, 15, 30, 0.72)",
   color: "var(--text-primary)",
   borderRadius: "10px",
   padding: "8px 12px",
@@ -877,7 +885,7 @@ suggestionSub: {
   minWidth: 0,
   width: "100%",
   border: "1px solid var(--border-color)",
-  background: "var(--bg-surface)",
+  background: "rgba(8, 15, 30, 0.72)",
   color: "var(--text-primary)",
   borderRadius: "10px",
   padding: "8px 12px",
@@ -902,7 +910,7 @@ suggestionSub: {
   messageButton: {
   width: "100%",
   border: "1px solid var(--border-color)",
-  background: "var(--bg-surface-soft)",
+  background: "rgba(255, 255, 255, 0.06)",
   color: "var(--text-primary)",
   borderRadius: "10px",
   padding: "8px 12px",
@@ -922,7 +930,7 @@ redDotSmall: {
   border: "2px solid var(--bg-surface)",
 },
   addFriendButtonMuted: {
-    background: "var(--bg-surface-soft)",
+    background: "rgba(255,255,255,0.04)",
     border: "1px solid var(--border-color)",
     color: "var(--text-secondary)",
   },
