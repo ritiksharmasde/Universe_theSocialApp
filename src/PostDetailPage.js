@@ -145,8 +145,8 @@ function PostDetailPage({
                 comments.map((comment) => (
                   <div key={comment.id} style={styles.commentItem}>
                     <p style={styles.commentName}>
-                      {comment.user_name || comment.user_email}
-                    </p>
+  {comment.full_name || comment.username || comment.user_name || comment.user_email}
+</p>
                     <p style={styles.commentText}>{comment.comment_text}</p>
                   </div>
                 ))
