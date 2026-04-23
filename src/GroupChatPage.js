@@ -472,6 +472,7 @@ const styles = {
   height: "100%",
   display: "flex",
   flexDirection: "column",
+        justifyContent: "space-between",
   overflow: "hidden",
   background: "rgba(10, 20, 35, 0.85)",
   backdropFilter: "blur(4px)",
@@ -620,13 +621,14 @@ const styles = {
     },
 
     inputBar: {
-        display: "flex",
-        borderTop: "1px solid var(--border-color)",
-        background: "rgba(20, 30, 50, 0.72)",
+  display: "flex",
+  borderTop: "1px solid var(--border-color)",
+  background: "rgba(20, 30, 50, 0.72)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
-        flexShrink: 0,       // ⭐ keeps it at bottom
-    },
+  flexShrink: 0,
+  marginTop: "auto",
+},
 
     input: {
         flex: 1,
