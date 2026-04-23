@@ -456,7 +456,7 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
 
 const styles = {
     page: {
-  height: "calc(100dvh - 48px)",
+  height: "100dvh",
   minHeight: 0,
   display: "flex",
   flexDirection: "column",
@@ -467,17 +467,17 @@ const styles = {
 },
 
     chatShell: {
-  flex: 1,
-  minHeight: 0,
+  height: "100%",       
   display: "flex",
   flexDirection: "column",
-  overflow: "hidden",
+  overflow: "hidden",  
   background: "rgba(10, 20, 35, 0.85)",
   backdropFilter: "blur(4px)",
   WebkitBackdropFilter: "blur(4px)",
   border: "1px solid var(--border-color)",
   borderRadius: "20px",
 },
+    
     header: {
         display: "flex",
         justifyContent: "space-between",
@@ -559,10 +559,11 @@ const styles = {
 
     messagesArea: {
   flex: 1,
-  minHeight: 0,
+  // minHeight: 0,
   overflowY: "auto",
   overflowX: "hidden",
-  scrollbarGutter: "stable",
+        minHeight: 0,
+  // scrollbarGutter: "stable",
 },
 
     messagesList: {
