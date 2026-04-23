@@ -456,10 +456,9 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
 
 const styles = {
     page: {
-  height: "100%",
+  height: "calc(100dvh - 48px)",
   minHeight: 0,
   display: "flex",
-        maxHeight: "calc(100dvh - 48px)",
   flexDirection: "column",
   width: "100%",
   minWidth: 0,
@@ -470,7 +469,6 @@ const styles = {
     chatShell: {
   flex: 1,
   minHeight: 0,
-  height: "100%",
   display: "flex",
   flexDirection: "column",
   overflow: "hidden",
