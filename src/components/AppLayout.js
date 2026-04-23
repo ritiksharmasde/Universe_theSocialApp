@@ -85,6 +85,7 @@ const styles = {
   innerContent: {
   width: "100%",
   maxWidth: "1240px",
+  height: "100%",
   minWidth: 0,
   margin: "0 auto",
   padding: "0 12px",
@@ -94,6 +95,8 @@ const styles = {
   mainContentDesktop: {
     marginLeft: "280px",
     padding: "24px 20px 24px 16px",
+    height: "100dvh",
+  boxSizing: "border-box",
   },
 
   mainContentTablet: {
