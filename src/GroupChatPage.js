@@ -456,7 +456,7 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
 
 const styles = {
     page: {
-  height: "calc(100dvh - 48px)",
+  height: "100%",
   minHeight: 0,
   display: "flex",
   flexDirection: "column",
@@ -472,7 +472,6 @@ const styles = {
   height: "100%",
   display: "flex",
   flexDirection: "column",
-        justifyContent: "space-between",
   overflow: "hidden",
   background: "rgba(10, 20, 35, 0.85)",
   backdropFilter: "blur(4px)",
@@ -627,7 +626,7 @@ const styles = {
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
   flexShrink: 0,
-  marginTop: "auto",
+  
 },
 
     input: {
