@@ -284,11 +284,12 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
                 </div>
 
                 <div
-                    style={{
-                        ...styles.messagesArea,
-                        padding: isSmallMobile ? "10px" : isMobile ? "12px" : "16px",
-                    }}
-                >
+  className="group-messages-scroll"
+  style={{
+    ...styles.messagesArea,
+    padding: isSmallMobile ? "10px 6px 10px 10px" : isMobile ? "12px 8px 12px 12px" : "16px 10px 16px 16px",
+  }}
+>
                     {loadingMessages ? (
                         <div style={styles.stateWrap}>
                             <p style={styles.stateText}>Loading messages...</p>
@@ -458,6 +459,7 @@ const styles = {
   height: "100%",
   minHeight: 0,
   display: "flex",
+        maxHeight: "calc(100dvh - 48px)",
   flexDirection: "column",
   width: "100%",
   minWidth: 0,
@@ -468,11 +470,10 @@ const styles = {
     chatShell: {
   flex: 1,
   minHeight: 0,
-        height: "100%",
+  height: "100%",
   display: "flex",
   flexDirection: "column",
-  overflowY: "auto",
-overflowX: "hidden",
+  overflow: "hidden",
   background: "rgba(10, 20, 35, 0.85)",
   backdropFilter: "blur(4px)",
   WebkitBackdropFilter: "blur(4px)",
@@ -561,8 +562,9 @@ overflowX: "hidden",
     messagesArea: {
   flex: 1,
   minHeight: 0,
-  overflow: "visible",
-  // overflowX: "hidden",
+  overflowY: "auto",
+  overflowX: "hidden",
+  scrollbarGutter: "stable",
 },
 
     messagesList: {
