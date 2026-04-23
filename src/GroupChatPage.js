@@ -41,11 +41,11 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
     const isMobile = screenWidth < 768;
     const isTablet = screenWidth >= 768 && screenWidth < 1024;
 
-    const pageHeight = isMobile
-        ? "calc(100dvh - 96px)"
-        : isTablet
-            ? "calc(100dvh - 108px)"
-            : "calc(100dvh - 48px)";
+    // const pageHeight = isMobile
+    //     ? "calc(100dvh - 96px)"
+    //     : isTablet
+    //         ? "calc(100dvh - 108px)"
+    //         : "calc(100dvh - 48px)";
 
 
     const messagesEndRef = useRef(null);
@@ -227,7 +227,7 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
         <div
   style={{
     ...styles.page,
-    height: "100%",
+    
   }}
 >
             <div
@@ -460,32 +460,30 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
 
 const styles = {
     page: {
-        minHeight: 0,
   height: "100%",
+  minHeight: 0,
   display: "flex",
   flexDirection: "column",
   width: "100%",
   minWidth: 0,
   overflow: "hidden",
   background: "transparent",
-    },
+},
 
     chatShell: {
-        flex: 1,
-        height: "100%",
-minHeight: 0,
-        maxHeight: "100%",
-        // minHeight: 0,
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        background: "rgba(10, 20, 35, 0.85)",
-backdropFilter: "blur(4px)",
-WebkitBackdropFilter: "blur(4px)",
-  border: "1px solid rgba(255,255,255,0.08)",
-        border: "1px solid var(--border-color)",
-        borderRadius: "20px",
-    },
+  flex: 1,
+  minHeight: 0,
+  height: "100%",
+  maxHeight: "100%",
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
+  background: "rgba(10, 20, 35, 0.85)",
+  backdropFilter: "blur(4px)",
+  WebkitBackdropFilter: "blur(4px)",
+  border: "1px solid var(--border-color)",
+  borderRadius: "20px",
+},
     header: {
         display: "flex",
         justifyContent: "space-between",
@@ -566,11 +564,11 @@ WebkitBackdropFilter: "blur(4px)",
     },
 
     messagesArea: {
-        flex: 1,
-        minHeight: 0,        // ⭐ THIS LINE FIXES YOUR PROBLEM
-        overflowY: "auto",
-        overflowX: "hidden",
-    },
+  flex: 1,
+  minHeight: 0,
+  overflowY: "auto",
+  overflowX: "hidden",
+},
 
     messagesList: {
         display: "flex",
