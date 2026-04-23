@@ -227,13 +227,7 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
         <div
   style={{
     ...styles.page,
-    height: isMobile
-      ? "100dvh"
-      : isTablet
-      ? "calc(100dvh - 108px)"
-      : "calc(100dvh - 48px)",
-      paddingTop: isMobile ? 0 : "24px",
-    boxSizing: "border-box",
+    height: "100%",
   }}
 >
             <div
@@ -467,13 +461,13 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
 const styles = {
     page: {
         minHeight: 0,
-        height: "100dvh",
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        minWidth: 0,
-        overflow: "hidden",
-        background: "transparent",
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  minWidth: 0,
+  overflow: "hidden",
+  background: "transparent",
     },
 
     chatShell: {
