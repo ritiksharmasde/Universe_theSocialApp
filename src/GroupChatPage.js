@@ -468,9 +468,11 @@ const styles = {
     chatShell: {
   flex: 1,
   minHeight: 0,
+        height: "100%",
   display: "flex",
   flexDirection: "column",
-  overflow: "hidden",
+  overflowY: "auto",
+overflowX: "hidden",
   background: "rgba(10, 20, 35, 0.85)",
   backdropFilter: "blur(4px)",
   WebkitBackdropFilter: "blur(4px)",
@@ -559,8 +561,8 @@ const styles = {
     messagesArea: {
   flex: 1,
   minHeight: 0,
-  overflowY: "auto",
-  overflowX: "hidden",
+  overflow: "visible",
+  // overflowX: "hidden",
 },
 
     messagesList: {
