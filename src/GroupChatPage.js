@@ -227,7 +227,13 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
         <div
   style={{
     ...styles.page,
-    height: "100dvh",
+    height: isMobile
+      ? "100dvh"
+      : isTablet
+      ? "calc(100dvh - 108px)"
+      : "calc(100dvh - 48px)",
+      paddingTop: isMobile ? 0 : "24px",
+    boxSizing: "border-box",
   }}
 >
             <div
