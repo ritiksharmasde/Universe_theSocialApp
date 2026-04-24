@@ -140,30 +140,43 @@ useEffect(() => {
         }
 
         const mappedConversations = (data.conversations || []).map((chat) => {
-          if (chat.is_group) {
-            return {
-              ...chat,
-              id: Number(chat.id),
-              displayName: chat.name || "Group Chat",
-              otherEmail: null,
-              avatarUrl: "",
-            };
-          }
+  if (chat.is_group) {
+    return {
+      ...chat,
+      id: Number(chat.id),
+      displayName: chat.name || "Group Chat",
+      otherEmail: null,
+      avatarUrl: "",
+    };
+  }
 
-          const parts = (chat.name || "").split("-");
-          const otherEmail =
-            parts.find(
-              (part) => part.toLowerCase() !== currentUserEmail.toLowerCase()
-            ) || "";
+  const displayName =
+    chat.other_full_name ||
+    chat.other_username ||
+    chat.other_email?.split("@")[0] ||
+    "Conversation";
+          
 
-          const shortName = otherEmail ? otherEmail.split("@")[0] : "Conversation";
+          // const parts = (chat.name || "").split("-");
+          // const otherEmail =
+          //   parts.find(
+          //     (part) => part.toLowerCase() !== currentUserEmail.toLowerCase()
+          //   ) || "";
+
+          // const shortName = otherEmail ? otherEmail.split("@")[0] : "Conversation";
 
           return {
             ...chat,
-            id: Number(chat.id),
-            displayName: shortName,
-            otherEmail,
-            avatarUrl: "",
+    id: Number(chat.id),
+    displayName,
+    otherEmail: chat.other_email,
+    avatarUrl: chat.other_profile_image_url
+      ? chat.other_profile_image_url.startsWith("http")
+        ? chat.other_profile_image_url
+        : `${SERVER_BASE_URL}${chat.other_profile_image_url}`
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}`,
+    course: chat.other_course || "",
+    year: chat.other_year || "",
           };
         });
 
@@ -195,78 +208,78 @@ useEffect(() => {
   conversationsRef.current = conversations;
 }, [conversations]);
 
-  useEffect(() => {
-    const enrichConversations = async () => {
-      try {
-        const updated = await Promise.all(
-          conversations.map(async (chat) => {
-            if (chat.is_group || !chat.otherEmail) {
-              return chat;
-            }
+//   useEffect(() => {
+//     const enrichConversations = async () => {
+//       try {
+//         const updated = await Promise.all(
+//           conversations.map(async (chat) => {
+//             if (chat.is_group || !chat.otherEmail) {
+//               return chat;
+//             }
 
-            try {
-              const response = await fetch(
-  `${API_BASE_URL}/user/public/${encodeURIComponent(chat.otherEmail)}`,
-  {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  }
-);
-              if (!response.ok) {
-                return {
-                  ...chat,
-                  displayName: chat.displayName || chat.otherEmail.split("@")[0],
-                  avatarUrl: chat.avatarUrl || "",
-                  course: chat.course || "",
-                  year: chat.year || "",
-                };
-              }
+//             try {
+//               const response = await fetch(
+//   `${API_BASE_URL}/user/public/${encodeURIComponent(chat.otherEmail)}`,
+//   {
+//     headers: {
+//       Authorization: `Bearer ${localStorage.getItem("token")}`,
+//     },
+//   }
+// );
+//               if (!response.ok) {
+//                 return {
+//                   ...chat,
+//                   displayName: chat.displayName || chat.otherEmail.split("@")[0],
+//                   avatarUrl: chat.avatarUrl || "",
+//                   course: chat.course || "",
+//                   year: chat.year || "",
+//                 };
+//               }
 
-              const data = await response.json();
+//               const data = await response.json();
 
-              return {
-                ...chat,
-                displayName:
-                  data?.user?.full_name ||
-                  data?.user?.username ||
-                  chat.displayName ||
-                  chat.otherEmail.split("@")[0],
-                avatarUrl: data?.user?.profile_image_url
-                  ? data.user.profile_image_url.startsWith("http")
-                    ? data.user.profile_image_url
-                    : `${SERVER_BASE_URL}${data.user.profile_image_url}`
-                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(data?.user?.full_name || chat.otherEmail.split("@")[0])}`,
-                course: data?.user?.course || chat.course || "",
-                year: data?.user?.year || chat.year || "",
-              };
-            } catch {
-              return {
-                ...chat,
-                displayName: chat.displayName || chat.otherEmail.split("@")[0],
-                avatarUrl: chat.avatarUrl || "",
-                course: chat.course || "",
-                year: chat.year || "",
-              };
-            }
-          })
-        );
+//               return {
+//                 ...chat,
+//                 displayName:
+//                   data?.user?.full_name ||
+//                   data?.user?.username ||
+//                   chat.displayName ||
+//                   chat.otherEmail.split("@")[0],
+//                 avatarUrl: data?.user?.profile_image_url
+//                   ? data.user.profile_image_url.startsWith("http")
+//                     ? data.user.profile_image_url
+//                     : `${SERVER_BASE_URL}${data.user.profile_image_url}`
+//                   : `https://ui-avatars.com/api/?name=${encodeURIComponent(data?.user?.full_name || chat.otherEmail.split("@")[0])}`,
+//                 course: data?.user?.course || chat.course || "",
+//                 year: data?.user?.year || chat.year || "",
+//               };
+//             } catch {
+//               return {
+//                 ...chat,
+//                 displayName: chat.displayName || chat.otherEmail.split("@")[0],
+//                 avatarUrl: chat.avatarUrl || "",
+//                 course: chat.course || "",
+//                 year: chat.year || "",
+//               };
+//             }
+//           })
+//         );
 
-        const changed =
-          JSON.stringify(updated) !== JSON.stringify(conversations);
+//         const changed =
+//           JSON.stringify(updated) !== JSON.stringify(conversations);
 
-        if (changed) {
-          setConversations(updated);
-        }
-      } catch (error) {
-        console.error("enrichConversations error:", error);
-      }
-    };
+//         if (changed) {
+//           setConversations(updated);
+//         }
+//       } catch (error) {
+//         console.error("enrichConversations error:", error);
+//       }
+//     };
 
-    if (conversations.length > 0) {
-      enrichConversations();
-    }
-  }, [conversations]);
+//     if (conversations.length > 0) {
+//       enrichConversations();
+//     }
+//   }, [conversations]);
 
   useEffect(() => {
     const fetchMessages = async () => {
