@@ -149,14 +149,45 @@ const forgotPassword = async (req, res) => {
       [normalizedEmail, otpHash, expiresAt]
     );
 
-    // 🔥 send via Resend (you already use it)
+    
     await transporter.emails.send({
-      from: process.env.MAIL_FROM,
-      to: normalizedEmail,
-      subject: "Reset Password OTP",
-      html: `<h2>Your OTP: ${otp}</h2>`,
-    });
+  from: process.env.MAIL_FROM,
+  to: normalizedEmail,
+  subject: "Reset your UniVerse password",
+  html: `
+  <div style="font-family: Arial, sans-serif; background-color:#f4f6fb; padding:40px 0;">
+    <div style="max-width:480px; margin:auto; background:#ffffff; border-radius:16px; padding:32px; box-shadow:0 10px 30px rgba(0,0,0,0.08); text-align:center;">
+      
+      <h1 style="margin-bottom:8px; font-size:22px; color:#111827;">
+        UniVerse
+      </h1>
+      
+      <p style="margin:0 0 24px; font-size:14px; color:#6b7280;">
+        Reset your password securely
+      </p>
 
+      <h2 style="margin-bottom:16px; font-size:18px; color:#111827;">
+        Your verification code
+      </h2>
+
+      <div style="font-size:28px; letter-spacing:6px; font-weight:bold; color:#6366f1; margin-bottom:24px;">
+        ${otp}
+      </div>
+
+      <p style="font-size:14px; color:#6b7280; margin-bottom:20px;">
+        This code will expire in <strong>5 minutes</strong>.
+      </p>
+
+      <div style="border-top:1px solid #e5e7eb; margin:24px 0;"></div>
+
+      <p style="font-size:12px; color:#9ca3af;">
+        If you didn’t request this, you can safely ignore this email.
+      </p>
+
+    </div>
+  </div>
+  `,
+});
     res.json({ message: "OTP sent for password reset" });
   } catch (err) {
     res.status(500).json({ error: err.message });
