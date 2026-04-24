@@ -12,6 +12,12 @@ const authHeaders = (includeJson = true) => ({
   ...(includeJson ? { "Content-Type": "application/json" } : {}),
   Authorization: `Bearer ${localStorage.getItem("token")}`,
 });
+const glass = {
+  background: "rgba(15, 25, 45, 0.75)",
+  backdropFilter: "blur(14px)",
+  WebkitBackdropFilter: "blur(14px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+};
 function NotificationsPage() {
   const { isMobile } = useBreakpoint();
   const styles = getStyles(isMobile);
@@ -137,6 +143,14 @@ if (!token) {
                     ...(item.is_read ? {} : styles.unreadNotificationItem),
                   }}
                   onClick={() => handleMarkRead(item.id, item.is_read)}
+onMouseEnter={(e) => {
+  e.currentTarget.style.transform = "translateY(-1px)";
+  e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+}}
+onMouseLeave={(e) => {
+  e.currentTarget.style.transform = "none";
+  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+}}
                 >
                   <div style={styles.iconWrap}>
                     {getNotificationIcon(item.type)}
@@ -167,7 +181,7 @@ const getStyles = (isMobile) => ({
   page: {
     minHeight: "100dvh",
     fontFamily: "Inter, Arial, Helvetica, sans-serif",
-    background: "var(--bg-page)",
+    background: "transparent",
     color: "var(--text-primary)",
   },
   container: {
@@ -176,8 +190,7 @@ const getStyles = (isMobile) => ({
     padding: isMobile ? "0 8px" : "0 10px",
   },
   headerCard: {
-    background: "var(--bg-surface)",
-    border: "1px solid var(--border-color)",
+    ...glass,
     borderRadius: "24px",
     padding: isMobile ? "16px" : "24px",
     marginBottom: "18px",
@@ -194,8 +207,7 @@ const getStyles = (isMobile) => ({
     fontSize: isMobile ? "14px" : "16px",
   },
   notificationsCard: {
-    background: "var(--bg-surface)",
-    border: "1px solid var(--border-color)",
+    ...glass,
     borderRadius: "24px",
     padding: isMobile ? "14px" : "20px",
   },
@@ -210,21 +222,26 @@ const getStyles = (isMobile) => ({
     gap: "14px",
     padding: isMobile ? "12px" : "14px",
     borderRadius: "16px",
-    background: "var(--bg-surface-soft)",
-    border: "1px solid var(--border-color)",
+    background: "rgba(255,255,255,0.05)",
+border: "1px solid rgba(255,255,255,0.08)",
+backdropFilter: "blur(6px)",
+WebkitBackdropFilter: "blur(6px)",
     cursor: "pointer",
     transition: "0.2s ease",
     width: "100%",
     textAlign: "left",
   },
   unreadNotificationItem: {
-    border: "1px solid #3b82f6",
+    border: "1px solid rgba(99,102,241,0.6)",
+boxShadow: "0 0 0 1px rgba(99,102,241,0.25)",
+background: "rgba(99,102,241,0.08)",
   },
   iconWrap: {
     width: isMobile ? "40px" : "44px",
     height: isMobile ? "40px" : "44px",
     borderRadius: "14px",
-    background: "var(--button-primary)",
+    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+boxShadow: "0 4px 12px rgba(99,102,241,0.35)",
     color: "var(--button-primary-text)",
     display: "flex",
     alignItems: "center",
