@@ -108,7 +108,7 @@ const styles = {
 doodleOverlay: {
   position: "fixed",
   inset: 0,
-  background: "rgba(0, 0, 0, 0.25)", // 🔥 control darkness here
+  background: "rgba(0, 0, 0, 0.55)", // 🔥 control darkness here
   pointerEvents: "none",
   zIndex: 0,
 },
