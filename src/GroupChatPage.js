@@ -97,8 +97,11 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
     }, [messages]);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
+  messagesEndRef.current?.scrollIntoView({
+    behavior: "auto",
+    block: "nearest",
+  });
+};
 
     const fetchMessages = async () => {
         if (!group?.id || !normalizedCurrentUserEmail) return;
