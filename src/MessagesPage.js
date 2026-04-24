@@ -332,7 +332,19 @@ useEffect(() => {
   const incomingConversationId = Number(message.conversation_id);
   const isMine =
     message.sender_email?.toLowerCase().trim() === currentUserEmailRef.current;
+setConversations((prev) => {
+  const target = prev.find(
+    (chat) => Number(chat.id) === incomingConversationId
+  );
 
+  if (!target) return prev;
+
+  const rest = prev.filter(
+    (chat) => Number(chat.id) !== incomingConversationId
+  );
+
+  return [target, ...rest];
+});
   if (incomingConversationId === Number(selectedChatIdRef.current)) {
     setMessages((prev) => [...prev, message]);
 
