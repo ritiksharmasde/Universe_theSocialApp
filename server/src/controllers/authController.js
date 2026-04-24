@@ -166,6 +166,18 @@ const resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
 
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        error: "Email, OTP and new password are required",
+      });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        error: "Password must be at least 8 characters.",
+      });
+    }
+    
     const normalizedEmail = email.toLowerCase().trim();
 
     const result = await pool.query(
