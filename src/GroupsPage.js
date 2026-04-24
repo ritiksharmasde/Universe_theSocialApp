@@ -8,10 +8,10 @@ import {
 } from "react-icons/fi";
 import API_BASE_URL from "./api";
 const glass = {
-  background: "rgba(20, 30, 50, 0.72)",
+  background: "var(--glass-bg)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
 };
 function GroupsPage({ currentUserEmail, onBack, onCreateGroup, onOpenGroup }) {
   const [searchText, setSearchText] = useState("");
@@ -325,8 +325,8 @@ const styles = {
   },
   searchInput: {
   width: "100%",
-  border: "1px solid rgba(255,255,255,0.08)",
-  background: "rgba(20, 30, 50, 0.72)",
+  border: "1px solid var(--border-color)",
+  background: "var(--input-bg)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
   borderRadius: "16px",
@@ -423,29 +423,30 @@ const styles = {
     cursor: "pointer",
   },
   joinedButton: {
-  background: "rgba(255,255,255,0.08)",
+  background: "var(--bg-surface-soft)",
   color: "var(--text-primary)",
+  border: "1px solid var(--border-color)",
   backdropFilter: "blur(8px)",
 },
   viewButton: {
-    border: "1px solid rgba(255,255,255,0.08)",
-  background: "rgba(8, 15, 30, 0.6)",
+  border: "1px solid var(--border-color)",
+  background: "var(--input-bg)",
   backdropFilter: "blur(8px)",
-    color: "var(--text-primary)",
-    borderRadius: "12px",
-    padding: "10px 14px",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
+  color: "var(--text-primary)",
+  borderRadius: "12px",
+  padding: "10px 14px",
+  fontWeight: "700",
+  cursor: "pointer",
+},
   deleteButton: {
-    border: "1px solid #dc2626",
-    background: "#ffffff",
-    color: "#dc2626",
-    borderRadius: "12px",
-    padding: "10px 14px",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
+  border: "1px solid #dc2626",
+  background: "transparent",
+  color: "#dc2626",
+  borderRadius: "12px",
+  padding: "10px 14px",
+  fontWeight: "700",
+  cursor: "pointer",
+},
   emptyState: {
     ...glass,
     borderRadius: "22px",
