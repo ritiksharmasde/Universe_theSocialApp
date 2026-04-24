@@ -11,6 +11,12 @@ const authHeaders = (includeJson = true) => ({
   ...(includeJson ? { "Content-Type": "application/json" } : {}),
   Authorization: `Bearer ${localStorage.getItem("token")}`,
 });
+const glass = {
+  background: "rgba(15, 25, 45, 0.75)",
+  backdropFilter: "blur(14px)",
+  WebkitBackdropFilter: "blur(14px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+};
 
 function PostDetailPage({
   post,
@@ -182,11 +188,12 @@ function PostDetailPage({
 const getStyles = (isMobile, isTablet) => ({
   
     page: {
-      minHeight: "100dvh",
-      background: "var(--bg-page)",
-      padding: isMobile ? "10px" : "30px",
-      color: "var(--text-primary)",
-  },
+  minHeight: "100dvh",
+  background: "transparent",
+  padding: isMobile ? "10px" : "30px",
+  color: "var(--text-primary)",
+},
+  
   container: {
     maxWidth: "1000px",
     margin: "0 auto",
@@ -200,17 +207,16 @@ const getStyles = (isMobile, isTablet) => ({
     color: "var(--text-primary)",
   },
   content: {
-    display: "grid",
-gridTemplateColumns: isMobile
-  ? "1fr"
-  : "repeat(auto-fit, minmax(280px, 1fr))",
-      gap: "20px",
-    background: "var(--bg-surface)",
-    borderRadius: "20px",
-    border: "1px solid var(--border-color)",
-    overflow: "hidden",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
-  },
+  ...glass,
+  display: "grid",
+  gridTemplateColumns: isMobile
+    ? "1fr"
+    : "repeat(auto-fit, minmax(280px, 1fr))",
+  gap: "20px",
+  borderRadius: "20px",
+  overflow: "hidden",
+  boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+},
   image: {
     width: "100%",
     height: "auto",
@@ -218,21 +224,23 @@ gridTemplateColumns: isMobile
     objectFit: "cover",
     background: "var(--bg-surface-soft)",
   },
-  noImage: {
-    minHeight: "500px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "var(--bg-surface-soft)",
-    color: "var(--text-secondary)",
-    fontWeight: "600",
-  },
+ noImage: {
+  minHeight: "500px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  background: "rgba(8, 15, 30, 0.45)",
+  color: "var(--text-secondary)",
+  fontWeight: "600",
+},
   side: {
   padding: isMobile ? "16px" : "20px",
   display: "flex",
   flexDirection: "column",
   gap: "16px",
-  background: "var(--bg-surface)",
+  background: "rgba(8, 15, 30, 0.45)",
+  backdropFilter: "blur(8px)",
+  WebkitBackdropFilter: "blur(8px)",
   minWidth: 0,
   boxSizing: "border-box",
 },
@@ -329,11 +337,11 @@ maxHeight: isMobile ? "200px" : "300px",
   flex: 1,
   minWidth: 0,
   width: 0,
-  border: "1px solid var(--border-color)",
+  border: "1px solid rgba(255,255,255,0.08)",
   borderRadius: "12px",
   padding: isMobile ? "10px 12px" : "12px 14px",
   outline: "none",
-  background: "var(--bg-surface)",
+  background: "rgba(8, 15, 30, 0.6)",
   color: "var(--text-primary)",
   boxSizing: "border-box",
 },
