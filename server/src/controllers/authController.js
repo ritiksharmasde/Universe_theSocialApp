@@ -495,4 +495,7 @@ module.exports = {
   resendOtp,
   loginUser,
   verifyOtp,
+  forgotPassword,
+  resetPassword,
+  
 };
