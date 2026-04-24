@@ -75,15 +75,39 @@ const getUserConversations = async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT c.id, c.name, c.is_group, c.created_at
+      SELECT
+        c.id,
+        c.name,
+        c.is_group,
+        c.created_at,
+
+        other_member.user_email AS other_email,
+
+        u.full_name AS other_full_name,
+        u.username AS other_username,
+        u.profile_image_url AS other_profile_image_url,
+        u.course AS other_course,
+        u.year AS other_year
+
       FROM conversations c
-      JOIN conversation_members cm
-        ON c.id = cm.conversation_id
+
+      JOIN conversation_members current_member
+        ON current_member.conversation_id = c.id
+       AND LOWER(current_member.user_email) = LOWER($1)
+
+      LEFT JOIN conversation_members other_member
+        ON other_member.conversation_id = c.id
+       AND LOWER(other_member.user_email) != LOWER($1)
+
+      LEFT JOIN users u
+        ON LOWER(u.email) = LOWER(other_member.user_email)
+
       LEFT JOIN deleted_conversations dc
         ON dc.conversation_id = c.id
        AND LOWER(dc.user_email) = LOWER($1)
-      WHERE LOWER(cm.user_email) = LOWER($1)
-        AND (dc.id IS NULL OR dc.is_hidden = FALSE)
+
+      WHERE (dc.id IS NULL OR dc.is_hidden = FALSE)
+
       ORDER BY c.created_at DESC
       `,
       [email]
@@ -97,7 +121,6 @@ const getUserConversations = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 const getConversationMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
