@@ -6,8 +6,8 @@ import {
   FiBookmark,
   FiMoreHorizontal,
 } from "react-icons/fi";
-
-function PostCard({ post, onClick, onToggleLike, onOpenUserProfile }) {
+function PostCard({ post, onClick, onToggleLike, onOpenUserProfile, onDelete }) {
+const [showMenu, setShowMenu] = React.useState(false);
   return (
     <article style={styles.postCard} onClick={() => onClick && onClick(post)}>
       <div style={styles.postHeader}>
@@ -35,9 +35,37 @@ function PostCard({ post, onClick, onToggleLike, onOpenUserProfile }) {
           </div>
         </div>
 
-        <button style={styles.moreButton} onClick={(e) => e.stopPropagation()}>
-          <FiMoreHorizontal color="var(--card-icon)" />
+        <div style={styles.moreWrapper}>
+  <button
+    style={styles.moreButton}
+    onClick={(e) => {
+      e.stopPropagation();
+      setShowMenu((prev) => !prev);
+    }}
+  >
+    <FiMoreHorizontal color="var(--card-icon)" />
+  </button>
+
+  {showMenu && (
+    <div
+      style={styles.menu}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {post.email === localStorage.getItem("userEmail") && (
+        <button
+          style={styles.deleteMenuItem}
+          onClick={() => {
+            setShowMenu(false);
+            onDelete && onDelete(post.id);
+          }}
+        >
+          Delete post
         </button>
+      )}
+    </div>
+  )}
+</div>
+    
       </div>
 
       {post.image ? (
@@ -69,12 +97,7 @@ function PostCard({ post, onClick, onToggleLike, onOpenUserProfile }) {
             <FiMessageCircle color="var(--card-icon)" />
           </button>
 
-          <button
-            style={styles.iconOnlyButton}
-            onClick={(e) => e.stopPropagation()}
-          >
-
-          </button>
+          
         </div>
 
         <button
@@ -113,8 +136,12 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     padding: "14px 16px",
+    position: "relative",
     background: "var(--bg-surface)",
   },
+  moreWrapper: {
+  position: "relative",
+},
   postHeaderLeft: {
     display: "flex",
     gap: "12px",
@@ -179,6 +206,28 @@ const styles = {
     justifyContent: "center",
     padding: 0,
   },
+  menu: {
+  position: "absolute",
+  top: "32px",
+  right: 0,
+  background: "var(--bg-surface)",
+  border: "1px solid var(--border-color)",
+  borderRadius: "12px",
+  boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+  zIndex: 10,
+  minWidth: "140px",
+},
+
+deleteMenuItem: {
+  width: "100%",
+  border: "none",
+  background: "transparent",
+  color: "#ef4444",
+  padding: "10px 12px",
+  textAlign: "left",
+  cursor: "pointer",
+  fontWeight: "600",
+},
   likedButton: {
     color: "#dc2626",
   },
