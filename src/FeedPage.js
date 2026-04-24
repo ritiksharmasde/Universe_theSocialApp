@@ -20,6 +20,7 @@ function FeedPage({
   customPosts = [],
   unreadCounts = {},
   conversationIdsByEmail = {},
+  theme = "light",
 }) {
   const [searchText, setSearchText] = useState("");
   const [posts, setPosts] = useState(customPosts || []);
@@ -32,7 +33,7 @@ function FeedPage({
   const { isMobile, isTablet, isDesktop } = useBreakpoint();
   const isTinyMobile = isMobile && window.innerWidth <= 380;
 
-  const styles = getStyles(isMobile, isTablet, isDesktop, isTinyMobile);
+  const styles = getStyles(isMobile, isTablet, isDesktop, isTinyMobile, theme);
   
 
 
@@ -565,7 +566,22 @@ body: JSON.stringify({
   );
 }
 
-const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile) => ({
+const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile, theme) => {
+  const isDarkCard = theme === "dark";
+
+  const cardBg = isDarkCard
+    ? "rgba(20, 30, 50, 0.72)"
+    : "rgba(255, 255, 255, 0.88)";
+
+  const inputBg = isDarkCard
+    ? "rgba(20, 30, 50, 0.72)"
+    : "rgba(255, 255, 255, 0.9)";
+
+  const softButtonBg = isDarkCard
+    ? "rgba(8, 15, 30, 0.72)"
+    : "rgba(0, 0, 0, 0.05)";
+
+  return {
   page: {
     minHeight: "100dvh",
     background: "transparent",
@@ -621,7 +637,7 @@ const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile) => ({
     width: "100%",
     maxWidth: "100%",
     border: "1px solid var(--border-color)",
-   background: "rgba(20, 30, 50, 0.72)",
+  background: inputBg,
 backdropFilter: "blur(12px)",
 WebkitBackdropFilter: "blur(12px)",
     borderRadius: "16px",
@@ -638,7 +654,7 @@ WebkitBackdropFilter: "blur(12px)",
   },
 
   emptyState: {
-    background: "rgba(20, 30, 50, 0.72)",
+    background: cardBg,
 backdropFilter: "blur(12px)",
 WebkitBackdropFilter: "blur(12px)",
     border: "1px solid var(--border-color)",
@@ -675,7 +691,7 @@ WebkitBackdropFilter: "blur(12px)",
   },
 
   profileCard: {
-    background: "rgba(20, 30, 50, 0.72)",
+    background: cardBg,
 backdropFilter: "blur(12px)",
 WebkitBackdropFilter: "blur(12px)",
     border: "1px solid var(--border-color)",
@@ -729,7 +745,7 @@ WebkitBackdropFilter: "blur(12px)",
   },
 
   widgetCardLarge: {
-    background: "rgba(20, 30, 50, 0.72)",
+    background: cardBg,
 backdropFilter: "blur(12px)",
 WebkitBackdropFilter: "blur(12px)",
     border: "1px solid var(--border-color)",
@@ -868,7 +884,7 @@ suggestionSub: {
 
   rejectSuggestionButton: {
   border: "1px solid var(--border-color)",
-  background: "rgba(8, 15, 30, 0.72)",
+  background: softButtonBg,
   color: "var(--text-primary)",
   borderRadius: "10px",
   padding: "8px 12px",
@@ -885,7 +901,7 @@ suggestionSub: {
   minWidth: 0,
   width: "100%",
   border: "1px solid var(--border-color)",
-  background: "rgba(8, 15, 30, 0.72)",
+  background: softButtonBg,
   color: "var(--text-primary)",
   borderRadius: "10px",
   padding: "8px 12px",
@@ -910,7 +926,7 @@ suggestionSub: {
   messageButton: {
   width: "100%",
   border: "1px solid var(--border-color)",
-  background: "rgba(255, 255, 255, 0.06)",
+  background: softButtonBg,
   color: "var(--text-primary)",
   borderRadius: "10px",
   padding: "8px 12px",
@@ -930,10 +946,11 @@ redDotSmall: {
   border: "2px solid var(--bg-surface)",
 },
   addFriendButtonMuted: {
-    background: "rgba(255,255,255,0.04)",
+    background: softButtonBg,
     border: "1px solid var(--border-color)",
     color: "var(--text-secondary)",
   },
-});
+  };
+};
 
 export default FeedPage;
