@@ -364,16 +364,6 @@ useEffect(() => {
 
   if (!text || !normalizedSelectedChatId) return;
 
-  const tempMessage = {
-    id: `temp-${Date.now()}`, // temporary id
-    conversation_id: normalizedSelectedChatId,
-    sender_email: currentUserEmailRef.current,
-    message_text: text,
-  };
-
-  // 🔥 instantly show message
-  setMessages((prev) => [...prev, tempMessage]);
-
   socket.emit("send_message", {
     conversationId: normalizedSelectedChatId,
     messageText: text,
@@ -381,6 +371,7 @@ useEffect(() => {
 
   setMessageText("");
 };
+  
 useEffect(() => {
   messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
 }, [messages]);
