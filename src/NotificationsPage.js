@@ -13,10 +13,10 @@ const authHeaders = (includeJson = true) => ({
   Authorization: `Bearer ${localStorage.getItem("token")}`,
 });
 const glass = {
-  background: "rgba(15, 25, 45, 0.75)",
+  background: "var(--glass-bg)",
   backdropFilter: "blur(14px)",
   WebkitBackdropFilter: "blur(14px)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
 };
 function NotificationsPage() {
   const { isMobile } = useBreakpoint();
@@ -145,11 +145,11 @@ if (!token) {
                   onClick={() => handleMarkRead(item.id, item.is_read)}
 onMouseEnter={(e) => {
   e.currentTarget.style.transform = "translateY(-1px)";
-  e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+  e.currentTarget.style.background = "var(--bg-surface)";
 }}
 onMouseLeave={(e) => {
   e.currentTarget.style.transform = "none";
-  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+  e.currentTarget.style.background = "var(--bg-surface-soft)";
 }}
                 >
                   <div style={styles.iconWrap}>
@@ -222,8 +222,8 @@ const getStyles = (isMobile) => ({
     gap: "14px",
     padding: isMobile ? "12px" : "14px",
     borderRadius: "16px",
-    background: "rgba(255,255,255,0.05)",
-border: "1px solid rgba(255,255,255,0.08)",
+    background: "var(--bg-surface-soft)",
+border: "1px solid var(--border-color)",
 backdropFilter: "blur(6px)",
 WebkitBackdropFilter: "blur(6px)",
     cursor: "pointer",
@@ -234,13 +234,13 @@ WebkitBackdropFilter: "blur(6px)",
   unreadNotificationItem: {
     border: "1px solid rgba(99,102,241,0.6)",
 boxShadow: "0 0 0 1px rgba(99,102,241,0.25)",
-background: "rgba(99,102,241,0.08)",
+background: "var(--bg-surface)",
   },
   iconWrap: {
     width: isMobile ? "40px" : "44px",
     height: isMobile ? "40px" : "44px",
     borderRadius: "14px",
-    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+    background: "var(--button-primary)",
 boxShadow: "0 4px 12px rgba(99,102,241,0.35)",
     color: "var(--button-primary-text)",
     display: "flex",
