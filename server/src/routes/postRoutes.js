@@ -3,6 +3,7 @@ const {
   getPosts,
   likePost,
   unlikePost,
+  deletePost,
   getComments,
   addComment,
 } = require("../controllers/postController");
@@ -11,8 +12,10 @@ const requireAuth = require("../middleware/requireAuth");
 const router = express.Router();
 
 router.get("/", requireAuth, getPosts);
+
 router.post("/:postId/like", requireAuth, likePost);
 router.delete("/:postId/like", requireAuth, unlikePost);
+router.delete("/:postId", requireAuth, deletePost);
 router.get("/:postId/comments", requireAuth, getComments);
 router.post("/:postId/comments", requireAuth, addComment);
 
