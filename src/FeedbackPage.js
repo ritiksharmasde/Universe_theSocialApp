@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import API_BASE_URL from "./api";
-
+const glass = {
+  background: "rgba(15, 25, 45, 0.75)",
+  backdropFilter: "blur(14px)",
+  WebkitBackdropFilter: "blur(14px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+};
 function FeedbackPage({ currentUserEmail }) {
   const [category, setCategory] = useState("site-development");
   const [message, setMessage] = useState("");
@@ -93,7 +98,17 @@ function FeedbackPage({ currentUserEmail }) {
   return (
     <div style={dynamicStyles.page}>
       <div style={dynamicStyles.wrapper}>
-        <div style={dynamicStyles.card}>
+        <div
+  style={dynamicStyles.card}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.transform = "translateY(-2px)";
+    e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.35)";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.transform = "none";
+    e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,0,0.25)";
+  }}
+>
           <div style={dynamicStyles.header}>
             <h1 style={dynamicStyles.title}>Feedback</h1>
             <p style={dynamicStyles.subtitle}>
@@ -166,7 +181,7 @@ function getStyles({ isMobile, isTablet }) {
       justifyContent: "center",
       padding: isMobile ? "12px" : isTablet ? "20px" : "28px",
       boxSizing: "border-box",
-      background: "var(--bg-primary, transparent)",
+      background: "transparent",
     },
 
     wrapper: {
@@ -176,13 +191,12 @@ function getStyles({ isMobile, isTablet }) {
 
     card: {
       width: "100%",
-      background: "var(--bg-surface)",
-      border: "1px solid var(--border-color)",
+      ...glass,
+      transition: "all 0.2s ease",
+boxShadow: "0 8px 30px rgba(0,0,0,0.25)",
       borderRadius: isMobile ? "16px" : "24px",
       padding: isMobile ? "16px" : isTablet ? "22px" : "28px",
       boxSizing: "border-box",
-      boxShadow:
-        "0 8px 24px rgba(15, 23, 42, 0.06)",
     },
 
     header: {
@@ -214,8 +228,10 @@ function getStyles({ isMobile, isTablet }) {
       marginBottom: "18px",
       padding: isMobile ? "12px" : "14px 16px",
       borderRadius: "14px",
-      background: "var(--bg-surface-soft)",
-      border: "1px solid var(--border-color)",
+      background: "rgba(8, 15, 30, 0.6)",
+border: "1px solid rgba(255,255,255,0.08)",
+backdropFilter: "blur(8px)",
+WebkitBackdropFilter: "blur(8px)",
       color: "var(--text-primary)",
       overflowWrap: "anywhere",
     },
@@ -252,35 +268,32 @@ function getStyles({ isMobile, isTablet }) {
     },
 
     input: {
-      width: "100%",
-      minHeight: isMobile ? "46px" : "50px",
-      padding: isMobile ? "12px 14px" : "14px 16px",
-      borderRadius: "14px",
-      border: "1px solid var(--border-color)",
-      background: "var(--bg-surface-soft)",
-      color: "var(--text-primary)",
-      fontSize: isMobile ? "14px" : "15px",
-      boxSizing: "border-box",
-      outline: "none",
-      appearance: "none",
-      WebkitAppearance: "none",
-      MozAppearance: "none",
-    },
+  width: "100%",
+  minHeight: isMobile ? "46px" : "50px",
+  padding: isMobile ? "12px 14px" : "14px 16px",
+  borderRadius: "14px",
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(8, 15, 30, 0.6)",
+  color: "var(--text-primary)",
+  fontSize: isMobile ? "14px" : "15px",
+  boxSizing: "border-box",
+  outline: "none",
+},
 
     textarea: {
-      width: "100%",
-      padding: isMobile ? "12px 14px" : "14px 16px",
-      borderRadius: "14px",
-      border: "1px solid var(--border-color)",
-      background: "var(--bg-surface-soft)",
-      color: "var(--text-primary)",
-      fontSize: isMobile ? "14px" : "15px",
-      lineHeight: 1.6,
-      boxSizing: "border-box",
-      outline: "none",
-      resize: "vertical",
-      minHeight: isMobile ? "140px" : "180px",
-    },
+  width: "100%",
+  padding: isMobile ? "12px 14px" : "14px 16px",
+  borderRadius: "14px",
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(8, 15, 30, 0.6)",
+  color: "var(--text-primary)",
+  fontSize: isMobile ? "14px" : "15px",
+  lineHeight: 1.6,
+  boxSizing: "border-box",
+  outline: "none",
+  resize: "vertical",
+  minHeight: isMobile ? "140px" : "180px",
+},
 
     button: {
       width: isMobile ? "100%" : "fit-content",
@@ -306,8 +319,9 @@ function getStyles({ isMobile, isTablet }) {
       marginBottom: "14px",
       padding: isMobile ? "12px" : "12px 14px",
       borderRadius: "14px",
-      border: "1px solid rgba(34, 197, 94, 0.25)",
-      background: "rgba(34, 197, 94, 0.10)",
+      background: "rgba(34, 197, 94, 0.12)",
+border: "1px solid rgba(34, 197, 94, 0.25)",
+backdropFilter: "blur(6px)",
       color: "var(--text-primary)",
       fontWeight: "600",
       fontSize: isMobile ? "14px" : "15px",
@@ -317,8 +331,9 @@ function getStyles({ isMobile, isTablet }) {
       marginBottom: "14px",
       padding: isMobile ? "12px" : "12px 14px",
       borderRadius: "14px",
-      border: "1px solid rgba(239, 68, 68, 0.25)",
-      background: "rgba(239, 68, 68, 0.10)",
+      background: "rgba(239, 68, 68, 0.12)",
+border: "1px solid rgba(239, 68, 68, 0.25)",
+backdropFilter: "blur(6px)",
       color: "var(--text-primary)",
       fontWeight: "600",
       fontSize: isMobile ? "14px" : "15px",
