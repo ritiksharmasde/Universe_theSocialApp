@@ -7,7 +7,12 @@ import {
   FiBookOpen,
 } from "react-icons/fi";
 import API_BASE_URL from "./api";
-
+const glass = {
+  background: "rgba(20, 30, 50, 0.72)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+};
 function GroupsPage({ currentUserEmail, onBack, onCreateGroup, onOpenGroup }) {
   const [searchText, setSearchText] = useState("");
   const [groups, setGroups] = useState([]);
@@ -249,7 +254,7 @@ const authHeaders = () => ({
 const styles = {
   page: {
     minHeight: "100dvh",
-    background: "var(--bg-page)",
+    background: "transparent",
     padding: "clamp(10px, 3vw, 24px)",
     boxSizing: "border-box",
     fontFamily: "Inter, Arial, Helvetica, sans-serif",
@@ -291,8 +296,7 @@ const styles = {
     gap: "8px",
   },
   headerCard: {
-    background: "var(--bg-surface)",
-    border: "1px solid var(--border-color)",
+    ...glass,
     borderRadius: "24px",
     padding: "24px",
     marginBottom: "18px",
@@ -320,27 +324,28 @@ const styles = {
     fontSize: "16px",
   },
   searchInput: {
-    width: "100%",
-    boxSizing: "border-box",
-    border: "1px solid var(--border-color)",
-    background: "var(--bg-surface)",
-    borderRadius: "16px",
-    padding: "clamp(10px, 3vw, 15px) 16px clamp(10px, 3vw, 15px) 42px",
-    fontSize: "15px",
-    outline: "none",
-    color: "var(--text-primary)",
-  },
+  width: "100%",
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(20, 30, 50, 0.72)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  borderRadius: "16px",
+  padding: "12px 16px 12px 42px",
+  fontSize: "15px",
+  outline: "none",
+  color: "var(--text-primary)",
+},
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
     gap: "18px",
   },
   groupCard: {
-    background: "var(--bg-surface)",
-    border: "1px solid var(--border-color)",
+    ...glass,
     borderRadius: "22px",
     padding: "20px",
     display: "flex",
+    transition: "all 0.2s ease",
     flexDirection: "column",
     gap: "14px",
   },
@@ -418,12 +423,14 @@ const styles = {
     cursor: "pointer",
   },
   joinedButton: {
-    background: "var(--bg-surface-soft)",
-    color: "var(--text-primary)",
-  },
+  background: "rgba(255,255,255,0.08)",
+  color: "var(--text-primary)",
+  backdropFilter: "blur(8px)",
+},
   viewButton: {
-    border: "1px solid var(--border-color)",
-    background: "var(--bg-surface)",
+    border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(8, 15, 30, 0.6)",
+  backdropFilter: "blur(8px)",
     color: "var(--text-primary)",
     borderRadius: "12px",
     padding: "10px 14px",
@@ -440,10 +447,9 @@ const styles = {
     cursor: "pointer",
   },
   emptyState: {
-    marginTop: "24px",
-    background: "var(--bg-surface)",
-    border: "1px solid var(--border-color)",
+    ...glass,
     borderRadius: "22px",
+    marginTop: "24px",
     padding: "28px",
     textAlign: "center",
   },
