@@ -7,7 +7,7 @@ import useBreakpoint from "./useBreakpoint";
   ...(includeJson ? { "Content-Type": "application/json" } : {}),
   Authorization: `Bearer ${localStorage.getItem("token")}`,
 });
-function SearchPage({ currentUserEmail, onStartChat, onOpenUserProfile }) {
+function SearchPage({ currentUserEmail, onStartChat, onOpenUserProfile, theme = "light" }) {
   const { isMobile, isDesktop, isTablet } = useBreakpoint();
   const [query, setQuery] = useState("");
   const [courseFilter, setCourseFilter] = useState("");
@@ -18,7 +18,8 @@ function SearchPage({ currentUserEmail, onStartChat, onOpenUserProfile }) {
   const [sendingFriendRequestTo, setSendingFriendRequestTo] = useState("");
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
-  const styles = getStyles(isMobile, isTablet);
+  const styles = getStyles(isMobile, isTablet, theme);
+  
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -502,7 +503,39 @@ const matchesCourse =
 
 // const {isMobile, isDesktop, isTablet} = useBreakpoint();
 
-const getStyles = (isMobile, isTablet) => ({
+const getStyles = (isMobile, isTablet, theme) => {
+  const isDark = theme === "dark";
+const isGrey = theme === "grey";
+
+  const cardBg = isDark
+  ? "rgba(15, 23, 42, 0.88)"
+  : isGrey
+  ? "rgba(243, 244, 246, 0.85)"   // 🔥 grey mode
+  : "rgba(255, 255, 255, 0.88)";
+
+const inputBg = isDark
+  ? "rgba(30, 41, 59, 0.9)"
+  : isGrey
+  ? "rgba(243, 244, 246, 0.9)"
+  : "rgba(255, 255, 255, 0.95)";
+
+const itemBg = isDark
+  ? "rgba(30, 41, 59, 0.72)"
+  : isGrey
+  ? "rgba(229, 231, 235, 0.8)"
+  : "rgba(255, 255, 255, 0.72)";
+
+const softButtonBg = isDark
+  ? "rgba(51, 65, 85, 0.9)"
+  : isGrey
+  ? "rgba(0, 0, 0, 0.06)"
+  : "rgba(0, 0, 0, 0.05)";
+
+  const cardText = isDark ? "#f8fafc" : "#111827";
+  const cardSubText = isDark ? "#cbd5e1" : "#4b5563";
+  const mutedText = isDark ? "#94a3b8" : "#6b7280";
+
+  return {
 
   page: {
     minHeight: "100dvh",
@@ -518,7 +551,7 @@ const getStyles = (isMobile, isTablet) => ({
 
   },
   headerCard: {
-   background: "rgba(20, 30, 50, 0.85)",
+   background: cardBg,
 backdropFilter: "blur(10px)",
     border: "1px solid var(--border-color)",
     borderRadius: "24px",
@@ -528,15 +561,15 @@ backdropFilter: "blur(10px)",
   title: {
     margin: "0 0 8px 0",
     fontSize: isMobile ? "26px" : "32px",
-    color: "var(--text-primary)",
+    color: cardText,
   },
   subtitle: {
     margin: 0,
-    color: "var(--text-secondary)",
+    color: cardSubText,
     lineHeight: 1.6,
   },
   searchCard: {
-   background: "rgba(20, 30, 50, 0.85)",
+   background: cardBg,
 backdropFilter: "blur(10px)",
     border: "1px solid var(--border-color)",
     borderRadius: "24px",
@@ -559,13 +592,13 @@ backdropFilter: "blur(10px)",
     width: "100%",
     boxSizing: "border-box",
     border: "1px solid var(--border-color)",
-    background: "rgba(20, 30, 50, 0.85)",
+    background: inputBg,
+  color: cardText,
 backdropFilter: "blur(10px)",
     borderRadius: "16px",
     padding: isMobile ? "12px 12px 12px 38px" : "15px 16px 15px 42px",
     fontSize: "15px",
     outline: "none",
-    color: "var(--text-primary)",
   },
   filterGrid: {
     display: "grid",
@@ -577,10 +610,10 @@ backdropFilter: "blur(10px)",
     borderRadius: "14px",
     padding: "12px 14px",
     fontSize: "14px",
-    background: "rgba(20, 30, 50, 0.85)",
+    background: inputBg,
 backdropFilter: "blur(10px)",
     outline: "none",
-    color: "var(--text-primary)",
+    color: cardText,
   },
   clearButton: {
     border: "none",
@@ -592,7 +625,7 @@ backdropFilter: "blur(10px)",
     cursor: "pointer",
   },
   resultsCard: {
-   background: "rgba(20, 30, 50, 0.72)",
+   background: cardBg,
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
     border: "1px solid var(--border-color)",
@@ -610,7 +643,7 @@ backdropFilter: "blur(10px)",
   sectionTitle: {
     margin: 0,
     fontSize: "20px",
-    color: "var(--text-primary)",
+    color: cardText,
   },
   resultCount: {
     fontSize: "13px",
@@ -631,7 +664,7 @@ backdropFilter: "blur(10px)",
     border: "1px solid var(--border-color)",
     borderRadius: "16px",
     padding: isMobile ? "12px" : "14px 16px",
-    background: "rgba(255, 255, 255, 0.06)",
+    background: itemBg,
   backdropFilter: "blur(10px)",
   WebkitBackdropFilter: "blur(10px)",
   },
@@ -660,24 +693,24 @@ backdropFilter: "blur(10px)",
   resultTitle: {
     margin: 0,
     fontWeight: "700",
-    color: "var(--text-primary)",
+    color: cardText,
   },
   resultSubtitle: {
     margin: "4px 0 0 0",
     fontSize: "13px",
-    color: "var(--text-secondary)",
+    color: cardSubText,
   },
   resultMeta: {
     margin: "4px 0 0 0",
     fontSize: "12px",
-    color: "var(--text-muted)",
+    color: mutedText,
   },
   resultType: {
     textTransform: "capitalize",
     fontSize: "13px",
     fontWeight: "600",
-    color: "var(--text-secondary)",
-    background: "rgba(8, 15, 30, 0.72)",
+    background: softButtonBg,
+  color: cardSubText,
     padding: "6px 10px",
     borderRadius: "999px",
     alignSelf: isMobile ? "flex-start" : "center",
@@ -691,8 +724,8 @@ backdropFilter: "blur(10px)",
   },
   friendButton: {
     border: "1px solid var(--border-color)",
-    background: "rgba(8, 15, 30, 0.72)",
-    color: "var(--text-primary)",
+    background: softButtonBg,
+  color: cardText,
     borderRadius: "10px",
     padding: "8px 12px",
     fontSize: "13px",
@@ -711,8 +744,8 @@ backdropFilter: "blur(10px)",
   },
   rejectButton: {
     border: "1px solid var(--border-color)",
-    background: "rgba(8, 15, 30, 0.72)",
-    color: "var(--text-primary)",
+    background: softButtonBg,
+  color: cardText,
     borderRadius: "10px",
     padding: "8px 12px",
     fontSize: "13px",
@@ -746,12 +779,13 @@ backdropFilter: "blur(10px)",
   emptyTitle: {
     margin: "0 0 8px 0",
     fontWeight: "700",
-    color: "var(--text-primary)",
+    color: cardText,
   },
   emptyText: {
     margin: 0,
-    color: "var(--text-secondary)",
-  },
-});
+    color: cardSubText,
+   },
+  };
+};
 
 export default SearchPage;
