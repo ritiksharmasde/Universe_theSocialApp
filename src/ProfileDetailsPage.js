@@ -102,7 +102,43 @@ function ProfileDetailsPage({ profileData, email, onBack, onSaveProfile }) {
         : `${SERVER_BASE_URL}${data.imageUrl}`
       : "";
   };
+useEffect(() => {
+  const fetchMyProfile = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/me`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
+      const data = await response.json();
+
+      if (!response.ok) return;
+
+      const user = data.user;
+
+      setFormData({
+        fullName: user.full_name || "",
+        username: user.username || "",
+        email: user.email || "",
+        course: user.course || "",
+        year: user.year || "",
+        branch: user.branch || "",
+        bio: user.bio || "",
+        interests: user.interests || "",
+        skills: user.skills || "",
+        city: user.city || "",
+        linkedin: user.linkedin || "",
+        github: user.github || "",
+        profileImage: user.profile_image_url || "",
+      });
+    } catch (error) {
+      console.error("fetchMyProfile error:", error);
+    }
+  };
+
+  fetchMyProfile();
+}, []);
   const handleSave = async () => {
     if (!validateForm()) return;
 
