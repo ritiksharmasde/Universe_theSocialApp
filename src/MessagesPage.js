@@ -592,7 +592,7 @@ setUnreadCounts((prev) => {
           </div>
         )}
 
-        {(!isMobile || selectedChat) && !showChatList && (
+        {(!isMobile || (!showChatList && selectedChat)) && (
           <div
             style={{
               ...styles.chatWindow,
