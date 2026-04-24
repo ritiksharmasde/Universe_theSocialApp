@@ -1,6 +1,12 @@
 import API_BASE_URL from "./api";
 import React, { useState } from "react";
 import { FiArrowLeft } from "react-icons/fi";
+const glass = {
+  background: "rgba(20, 30, 50, 0.72)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+};
 
 function CreatePostPage({ onBack, onSubmitPost, profileData }) {
   const [imageFile, setImageFile] = useState(null);
@@ -170,21 +176,20 @@ function CreatePostPage({ onBack, onSubmitPost, profileData }) {
 const styles = {
   page: {
     minHeight: "100dvh",
-    background: "var(--bg-page)",
+    background: "transparent",
     padding: "clamp(10px, 3vw, 32px)",
     boxSizing: "border-box",
     fontFamily: "Inter, Arial, Helvetica, sans-serif",
     color: "var(--text-primary)",
   },
   card: {
-    maxWidth: "720px",
-    margin: "0 auto",
-    background: "var(--bg-surface)",
-    border: "1px solid var(--border-color)",
-    borderRadius: "24px",
-    padding: "clamp(16px, 4vw, 28px)",
-    boxSizing: "border-box",
-  },
+  ...glass,
+  maxWidth: "720px",
+  margin: "0 auto",
+  borderRadius: "24px",
+  padding: "clamp(16px, 4vw, 28px)",
+  boxSizing: "border-box",
+},
   backButton: {
     border: "none",
     background: "transparent",
@@ -199,7 +204,7 @@ const styles = {
   },
   title: {
     margin: "0 0 8px 0",
-    padding: "clamp(22px, 6vw, 32px)",
+    fontSize: "clamp(22px, 6vw, 32px)",
     color: "var(--text-primary)",
   },
   subtitle: {
@@ -226,14 +231,14 @@ const styles = {
     color: "var(--text-primary)",
   },
   select: {
-    border: "1px solid var(--border-color)",
-    borderRadius: "14px",
-    padding: "14px 16px",
-    fontSize: "15px",
-    outline: "none",
-    background: "var(--bg-surface)",
-    color: "var(--text-primary)",
-  },
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: "14px",
+  padding: "14px 16px",
+  fontSize: "15px",
+  outline: "none",
+  background: "rgba(8, 15, 30, 0.6)",
+  color: "var(--text-primary)",
+},
   fileUploadText: {
     fontSize: "14px",
     color: "var(--text-secondary)",
@@ -254,7 +259,9 @@ const styles = {
     border: "1px dashed var(--border-color)",
     borderRadius: "16px",
     padding: "16px",
-    background: "var(--bg-surface)",
+    background: "rgba(8, 15, 30, 0.6)",
+backdropFilter: "blur(8px)",
+WebkitBackdropFilter: "blur(8px)",
     cursor: "pointer",
     transition: "0.2s ease",
   },
@@ -267,27 +274,27 @@ const styles = {
     minWidth: 0,
   },
   textarea: {
-    border: "1px solid var(--border-color)",
-    borderRadius: "14px",
-    padding: "clamp(10px, 3vw, 14px) 16px",
-    fontSize: "15px",
-    outline: "none",
-    resize: "vertical",
-    fontFamily: "inherit",
-    background: "var(--bg-surface)",
-    color: "var(--text-primary)",
-  },
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: "14px",
+  padding: "clamp(10px, 3vw, 14px) 16px",
+  fontSize: "15px",
+  outline: "none",
+  resize: "vertical",
+  fontFamily: "inherit",
+  background: "rgba(8, 15, 30, 0.6)",
+  color: "var(--text-primary)",
+},
   error: {
     margin: 0,
     fontSize: "13px",
     color: "#dc2626",
   },
   previewBox: {
-    border: "1px solid var(--border-color)",
-    borderRadius: "18px",
-    overflow: "hidden",
-    background: "var(--bg-surface-soft)",
-  },
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: "18px",
+  overflow: "hidden",
+  background: "rgba(8, 15, 30, 0.6)",
+},
   previewImage: {
     width: "100%",
     maxHeight: "clamp(200px, 40vw, 360px)",
