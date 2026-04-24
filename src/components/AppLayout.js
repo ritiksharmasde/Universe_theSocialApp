@@ -26,6 +26,7 @@ function AppLayout({
 
   return (
     <div style={styles.page}>
+  <div style={styles.doodleOverlay} />
       <Sidebar
         currentPage={currentPage}
         onNavigate={onNavigate}
@@ -78,6 +79,7 @@ const styles = {
     width: "100%",
     maxWidth: "100%",
     flex: 1,
+    zIndex: 1,
     minWidth: 0,
     overflowX: "hidden",
   },
@@ -103,7 +105,13 @@ const styles = {
     marginLeft: 0,
     padding: "88px 16px 20px",
   },
-
+doodleOverlay: {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0, 0, 0, 0.25)", // 🔥 control darkness here
+  pointerEvents: "none",
+  zIndex: 0,
+},
   mainContentMobile: {
     marginLeft: 0,
     padding: "72px 10px 14px",
