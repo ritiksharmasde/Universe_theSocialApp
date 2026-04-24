@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import socket from "./socket";
 
-
+import EmojiPicker from "emoji-picker-react";
 import {
     FiArrowLeft,
     FiSend,
     FiUsers,
     FiX,
     FiRefreshCw,
+    FiSmile,
 } from "react-icons/fi";
 import API_BASE_URL , { SERVER_BASE_URL } from "./api";
 const authHeaders = (includeJson = true) => ({
@@ -30,6 +31,7 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
     const [members, setMembers] = useState([]);
     const [messageText, setMessageText] = useState("");
     const [loadingMessages, setLoadingMessages] = useState(true);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [loadingMembers, setLoadingMembers] = useState(true);
     const [sending, setSending] = useState(false);
     const [error, setError] = useState("");
@@ -49,7 +51,9 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
 
 
     const messagesEndRef = useRef(null);
-
+    const handleEmojiClick = (emojiData) => {
+  setMessageText((prev) => prev + emojiData.emoji);
+};
     const normalizedCurrentUserEmail = useMemo(
         () => (currentUserEmail || "").toLowerCase().trim(),
         [currentUserEmail]
@@ -91,7 +95,15 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
             socket.off("group_message", handleIncomingMessage);
         };
     }, [group?.id]);
+    useEffect(() => {
+  const handleClickOutside = () => setShowEmojiPicker(false);
 
+  if (showEmojiPicker) {
+    window.addEventListener("click", handleClickOutside);
+  }
+
+  return () => window.removeEventListener("click", handleClickOutside);
+}, [showEmojiPicker]);
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
@@ -190,6 +202,7 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
             
 
             setMessageText("");
+            setShowEmojiPicker(false);
         } catch (err) {
             console.error("send message error:", err);
             alert(err.message || "Failed to send message");
@@ -204,7 +217,9 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
             handleSendMessage();
         }
     };
-
+useEffect(() => {
+  setShowEmojiPicker(false);
+}, [group?.id]);
     const formatTime = (value) => {
         if (!value) return "";
         const date = new Date(value);
@@ -355,35 +370,61 @@ function GroupChatPage({ group, currentUserEmail, onBack }) {
                     )}
                 </div>
 
-                <div
-                    style={{
-                        ...styles.inputBar,
-                        padding: isSmallMobile ? "8px" : "12px",
-                        gap: isSmallMobile ? "8px" : "10px",
-                    }}
-                >
-                    <textarea
-                        value={messageText}
-                        onChange={(e) => setMessageText(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Type a message..."
-                        style={styles.input}
-                        rows={1}
-                    />
+                <div style={styles.inputBar}>
+  
+  {/* ✅ EMOJI BUTTON */}
+  <div style={styles.emojiWrapper}>
+    <button
+      type="button"
+      style={styles.emojiButton}
+      onClick={(e) => {
+        e.stopPropagation();
+        setShowEmojiPicker((prev) => !prev);
+      }}
+    >
+      <FiSmile />
+    </button>
 
-                    <button
-                        type="button"
-                        onClick={handleSendMessage}
-                        style={{
-                            ...styles.sendButton,
-                            ...(sending || !messageText.trim() ? styles.sendButtonDisabled : {}),
-                        }}
-                        disabled={sending || !messageText.trim()}
-                    >
-                        <FiSend />
-                    </button>
-                </div>
+    {showEmojiPicker && (
+      <div
+        style={styles.emojiPickerBox}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <EmojiPicker
+          onEmojiClick={handleEmojiClick}
+          theme="auto"
+          width={300}
+          height={350}
+        />
+      </div>
+    )}
+  </div>
 
+  {/* ✅ INPUT */}
+  <textarea
+    value={messageText}
+    onChange={(e) => setMessageText(e.target.value)}
+    onKeyDown={handleKeyDown}
+    placeholder="Type a message..."
+    style={styles.input}
+    rows={1}
+  />
+
+  {/* ✅ SEND */}
+  <button
+    type="button"
+    onClick={handleSendMessage}
+    style={{
+      ...styles.sendButton,
+      ...(sending || !messageText.trim()
+        ? styles.sendButtonDisabled
+        : {}),
+    }}
+    disabled={sending || !messageText.trim()}
+  >
+    <FiSend />
+  </button>
+</div>
                 <div
                     style={{
                         ...styles.membersPanel,
@@ -476,7 +517,7 @@ const styles = {
   display: "flex",
   flexDirection: "column",
   overflow: "hidden",
-  background: "rgba(10, 20, 35, 0.85)",
+  background: "var(--glass-bg)",
   backdropFilter: "blur(4px)",
   WebkitBackdropFilter: "blur(4px)",
   border: "1px solid var(--border-color)",
@@ -489,14 +530,38 @@ const styles = {
         alignItems: "center",
         gap: "12px",
         borderBottom: "1px solid var(--border-color)",
-        background: "rgba(20, 30, 50, 0.72)",
+        background: "var(--glass-bg)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
         flexWrap: "nowrap",
         flexShrink: 0,
         minWidth: 0,
     },
+emojiWrapper: {
+  position: "relative",
+  flexShrink: 0,
+},
 
+emojiButton: {
+  width: "48px",
+  height: "48px",
+  borderRadius: "14px",
+  background: "var(--bg-page)",
+  border: "1px solid var(--border-color)",
+  color: "var(--text-primary)",
+  cursor: "pointer",
+  fontSize: "18px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+emojiPickerBox: {
+  position: "absolute",
+  bottom: "60px",
+  left: 0,
+  zIndex: 50,
+},
     headerLeft: {
         display: "flex",
         alignItems: "center",
@@ -625,7 +690,7 @@ const styles = {
     inputBar: {
   display: "flex",
   borderTop: "1px solid var(--border-color)",
-  background: "rgba(20, 30, 50, 0.72)",
+  background: "var(--glass-bg)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
   flexShrink: 0,
@@ -675,7 +740,7 @@ const styles = {
         right: 0,
         height: "100dvh",
         maxWidth: "100vw",
-        background: "rgba(20, 30, 50, 0.9)",
+        background: "var(--glass-bg-strong)",
   backdropFilter: "blur(16px)",
   WebkitBackdropFilter: "blur(16px)",
         borderLeft: "1px solid var(--border-color)",
