@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import API_BASE_URL from "./api";
-
+const glass = {
+  background: "rgba(15, 25, 45, 0.75)",
+  backdropFilter: "blur(14px)",
+  WebkitBackdropFilter: "blur(14px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+};
 function ProfilePage({ email, onBack, onComplete }) {
   const [profileImage, setProfileImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -276,12 +281,12 @@ function InputField({ label, error, ...props }) {
 const styles = {
   page: {
     minHeight: "100dvh",
-    background: "#0f172a",
+    background: "transparent",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: "20px",
-    color: "#ffffff",
+    color: "var(--text-primary)",
     fontFamily: "Arial, sans-serif",
   },
   imageContainer: {
@@ -296,13 +301,12 @@ const styles = {
     height: "clamp(80px, 25vw, 120px)",
     borderRadius: "50%",
     objectFit: "cover",
-    border: "3px solid #334155",
+    border: "2px solid rgba(255,255,255,0.08)",
   },
   card: {
     width: "100%",
     maxWidth: "560px",
-    background: "rgba(255,255,255,0.08)",
-    border: "1px solid rgba(255,255,255,0.1)",
+    ...glass,
     borderRadius: "24px",
     padding: "clamp(16px, 4vw, 32px)",
     boxSizing: "border-box",
@@ -315,7 +319,7 @@ const styles = {
   subtitle: {
     marginTop: 0,
     marginBottom: "24px",
-    color: "#cbd5e1",
+    color: "var(--text-secondary)",
     lineHeight: 1.6,
   },
   form: {
@@ -331,7 +335,7 @@ const styles = {
   label: {
     fontSize: "14px",
     fontWeight: "600",
-    color: "#e2e8f0",
+    color: "var(--text-primary)"
   },
   uploadWrapper: {
     display: "flex",
@@ -349,6 +353,7 @@ const styles = {
     cursor: "pointer",
     fontSize: "14px",
     textAlign: "center",
+    transition: "all 0.2s ease",
   },
 
   fileName: {
@@ -359,9 +364,9 @@ const styles = {
     width: "100%",
     padding: "clamp(10px, 3vw, 14px) clamp(12px, 3vw, 16px)",
     borderRadius: "14px",
-    border: "1px solid rgba(255,255,255,0.18)",
-    background: "#1e293b",
-    color: "#ffffff",
+    background: "rgba(8, 15, 30, 0.6)",
+border: "1px solid rgba(255,255,255,0.08)",
+color: "var(--text-primary)",
     outline: "none",
     boxSizing: "border-box",
   },
@@ -370,9 +375,9 @@ const styles = {
     minHeight: "clamp(80px, 15vw, 120px)",
     padding: "clamp(10px, 3vw, 14px) clamp(12px, 3vw, 16px)",
     borderRadius: "14px",
-    border: "1px solid rgba(255,255,255,0.18)",
-    background: "#1e293b",
-    color: "#ffffff",
+    background: "rgba(8, 15, 30, 0.6)",
+border: "1px solid rgba(255,255,255,0.08)",
+color: "var(--text-primary)",
     outline: "none",
     resize: "vertical",
     boxSizing: "border-box",
@@ -407,15 +412,16 @@ const styles = {
 
   fileName: {
     fontSize: "13px",
-    color: "#cbd5e1",
+    color: "var(--text-secondary)"
   },
   primaryButton: {
     width: "100%",
     padding: "14px",
     borderRadius: "14px",
     border: "none",
-    background: "#ffffff",
-    color: "#0f172a",
+    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+color: "#fff",
+boxShadow: "0 4px 12px rgba(99,102,241,0.35)",
     fontWeight: "bold",
     fontSize: "16px",
     cursor: "pointer",
