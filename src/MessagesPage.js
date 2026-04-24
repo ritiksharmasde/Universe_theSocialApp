@@ -26,11 +26,13 @@ function MessagesPage({
   const conversationsRef = useRef([]);
   const messagesEndRef = useRef(null);
   const messagesRef = useRef([]);
+  const selectedChatIdRef = useRef(null);
+const currentUserEmailRef = useRef("");
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false);
   // const [unreadCounts, setUnreadCounts] = useState({});
-const normalizedCurrentUserEmail = currentUserEmail.toLowerCase().trim();
+// const currentUserEmailRef.current = currentUserEmail.toLowerCase().trim();
   const normalizedSelectedChatId =
     selectedChatId !== null ? Number(selectedChatId) : null;
 
@@ -43,19 +45,29 @@ const normalizedCurrentUserEmail = currentUserEmail.toLowerCase().trim();
   });
 }, [conversations, searchText]);
 
+  
   const selectedChat =
     filteredChats.find((chat) => Number(chat.id) === normalizedSelectedChatId) ||
     null;
+  
 useEffect(() => {
   messagesRef.current = messages;
 }, [messages]);
+
+useEffect(() => {
+  selectedChatIdRef.current = normalizedSelectedChatId;
+}, [normalizedSelectedChatId]);
+useEffect(() => {
+  currentUserEmailRef.current = currentUserEmail.toLowerCase().trim();
+}, [currentUserEmail]);
+  
 useEffect(() => {
   if (filteredChats.length === 0) {
     setSelectedChatId(null);
     setMessages([]);
     return;
   }
-
+  
   const selectedStillExists = filteredChats.some(
     (chat) => Number(chat.id) === Number(normalizedSelectedChatId)
   );
@@ -288,11 +300,13 @@ useEffect(() => {
     fetchMessages();
   }, [normalizedSelectedChatId, currentUserEmail]);
 
+  
+
 useEffect(() => {
   const handleReceiveMessage = (message) => {
     const incomingConversationId = Number(message.conversation_id);
 
-    if (incomingConversationId === Number(normalizedSelectedChatId)) {
+    if (incomingConversationId === Number(selectedChatIdRef.current)) {
       setMessages((prev) => {
   const exists = prev.some((m) => m.id === message.id);
   if (exists) return prev; // 🔥 prevent duplicate
@@ -302,7 +316,7 @@ useEffect(() => {
 
       if (
         message.sender_email?.toLowerCase().trim() !==
-        normalizedCurrentUserEmail
+        currentUserEmailRef.current
       ) {
         setUnreadCounts((prev) => ({
           ...prev,
@@ -312,7 +326,7 @@ useEffect(() => {
     } else {
       if (
         message.sender_email?.toLowerCase().trim() !==
-        normalizedCurrentUserEmail
+        currentUserEmailRef.current
       ) {
        setUnreadCounts((prev) => {
   // 🔥 guard against duplicate message increments
@@ -338,21 +352,35 @@ useEffect(() => {
     socket.off("receive_message", handleReceiveMessage);
   };
 }, []); // 🔥 EMPTY dependency
+  
 useEffect(() => {
   if (normalizedSelectedChatId) {
     socket.emit("join_conversation", normalizedSelectedChatId);
   }
 }, [normalizedSelectedChatId]);
+  
   const handleSend = () => {
-    if (!messageText.trim() || !normalizedSelectedChatId) return;
+  const text = messageText.trim();
 
-    socket.emit("send_message", {
-      conversationId: normalizedSelectedChatId,
-      messageText,
-    });
+  if (!text || !normalizedSelectedChatId) return;
 
-    setMessageText("");
+  const tempMessage = {
+    id: `temp-${Date.now()}`, // temporary id
+    conversation_id: normalizedSelectedChatId,
+    sender_email: currentUserEmailRef.current,
+    message_text: text,
   };
+
+  // 🔥 instantly show message
+  setMessages((prev) => [...prev, tempMessage]);
+
+  socket.emit("send_message", {
+    conversationId: normalizedSelectedChatId,
+    messageText: text,
+  });
+
+  setMessageText("");
+};
 useEffect(() => {
   messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
 }, [messages]);
@@ -654,7 +682,7 @@ setUnreadCounts((prev) => {
     <div
       key={message.id}
       style={
-        message.sender_email?.toLowerCase().trim() === normalizedCurrentUserEmail
+        message.sender_email?.toLowerCase().trim() === currentUserEmailRef.current
           ? styles.messageBubbleMe
           : styles.messageBubbleOther
       }
