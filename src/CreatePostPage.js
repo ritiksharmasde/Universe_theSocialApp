@@ -2,10 +2,10 @@ import API_BASE_URL from "./api";
 import React, { useState } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 const glass = {
-  background: "rgba(20, 30, 50, 0.72)",
+  background: "var(--glass-bg)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
 };
 
 function CreatePostPage({ onBack, onSubmitPost, profileData }) {
@@ -231,12 +231,12 @@ const styles = {
     color: "var(--text-primary)",
   },
   select: {
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
   borderRadius: "14px",
   padding: "14px 16px",
   fontSize: "15px",
   outline: "none",
-  background: "rgba(8, 15, 30, 0.6)",
+  background: "var(--input-bg)",
   color: "var(--text-primary)",
 },
   fileUploadText: {
@@ -259,7 +259,7 @@ const styles = {
     border: "1px dashed var(--border-color)",
     borderRadius: "16px",
     padding: "16px",
-    background: "rgba(8, 15, 30, 0.6)",
+    background: "var(--input-bg)",
 backdropFilter: "blur(8px)",
 WebkitBackdropFilter: "blur(8px)",
     cursor: "pointer",
@@ -274,14 +274,14 @@ WebkitBackdropFilter: "blur(8px)",
     minWidth: 0,
   },
   textarea: {
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
   borderRadius: "14px",
   padding: "clamp(10px, 3vw, 14px) 16px",
   fontSize: "15px",
   outline: "none",
   resize: "vertical",
   fontFamily: "inherit",
-  background: "rgba(8, 15, 30, 0.6)",
+  background: "var(--input-bg)",
   color: "var(--text-primary)",
 },
   error: {
@@ -290,10 +290,10 @@ WebkitBackdropFilter: "blur(8px)",
     color: "#dc2626",
   },
   previewBox: {
-  border: "1px solid rgba(255,255,255,0.08)",
+ border: "1px solid var(--border-color)",
   borderRadius: "18px",
   overflow: "hidden",
-  background: "rgba(8, 15, 30, 0.6)",
+  background: "var(--input-bg)",
 },
   previewImage: {
     width: "100%",
