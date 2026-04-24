@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { FiArrowLeft, FiUsers } from "react-icons/fi";
 import API_BASE_URL from "./api";
 const glass = {
-  background: "rgba(20, 30, 50, 0.72)",
+  background: "var(--glass-bg)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
 };
 function CreateGroupPage({ onBack, currentUserEmail, onGroupCreated }) {
   const [formData, setFormData] = useState({
@@ -260,24 +260,24 @@ padding: "clamp(10px, 3vw, 32px)",
   input: {
   width: "100%",
   boxSizing: "border-box",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
   borderRadius: "14px",
   padding: "clamp(10px, 3vw, 14px) 16px",
   fontSize: "15px",
   outline: "none",
-  background: "rgba(8, 15, 30, 0.6)",
+  background: "var(--input-bg)",
   color: "var(--text-primary)",
 },
   textarea: {
   minHeight: "clamp(100px, 20vw, 140px)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
   borderRadius: "14px",
   padding: "14px 16px",
   fontSize: "15px",
   outline: "none",
   resize: "vertical",
   fontFamily: "inherit",
-  background: "rgba(8, 15, 30, 0.6)",
+  background: "var(--input-bg)",
   color: "var(--text-primary)",
 },
   error: {
