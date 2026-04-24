@@ -567,20 +567,23 @@ body: JSON.stringify({
 }
 
 const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile, theme) => {
-  const isDarkCard = theme === "dark";
+ const isDark = theme === "dark";
 
- const cardBg = isDark
-  ? "rgba(15, 23, 42, 0.88)"      // dark card
-  : "rgba(255, 255, 255, 0.88)"; // light/grey card
+const cardBg = isDark
+  ? "rgba(15, 23, 42, 0.88)"
+  : "rgba(255, 255, 255, 0.88)";
 
-  const inputBg = isDarkCard
-    ? "rgba(20, 30, 50, 0.72)"
-    : "rgba(255, 255, 255, 0.9)";
+const inputBg = isDark
+  ? "rgba(30, 41, 59, 0.9)"     // 🔥 improved contrast
+  : "rgba(255, 255, 255, 0.95)";
 
-  const softButtonBg = isDarkCard
-    ? "rgba(8, 15, 30, 0.72)"
-    : "rgba(0, 0, 0, 0.05)";
+const softButtonBg = isDark
+  ? "rgba(51, 65, 85, 0.9)"     // 🔥 FIXED (visible buttons)
+  : "rgba(0, 0, 0, 0.05)";
+const cardText = isDark ? "#f8fafc" : "#111827";
+const cardSubText = isDark ? "#cbd5e1" : "#4b5563";
 
+  
   return {
   page: {
     minHeight: "100dvh",
