@@ -26,6 +26,7 @@ function MessagesPage({
   const conversationsRef = useRef([]);
   const messagesEndRef = useRef(null);
   const messagesRef = useRef([]);
+  const receivedMessageIdsRef = useRef(new Set());
   const selectedChatIdRef = useRef(null);
 const currentUserEmailRef = useRef("");
   const [conversations, setConversations] = useState([]);
@@ -304,47 +305,35 @@ useEffect(() => {
 
 useEffect(() => {
   const handleReceiveMessage = (message) => {
-    const incomingConversationId = Number(message.conversation_id);
+  const messageKey = message.id || `${message.conversation_id}-${message.sender_email}-${message.message_text}`;
 
-    if (incomingConversationId === Number(selectedChatIdRef.current)) {
-      setMessages((prev) => {
-  const exists = prev.some((m) => m.id === message.id);
-  if (exists) return prev; // 🔥 prevent duplicate
+  if (receivedMessageIdsRef.current.has(messageKey)) return;
+  receivedMessageIdsRef.current.add(messageKey);
 
-  return [...prev, message];
-});
+  const incomingConversationId = Number(message.conversation_id);
+  const isMine =
+    message.sender_email?.toLowerCase().trim() === currentUserEmailRef.current;
 
-      if (
-        message.sender_email?.toLowerCase().trim() !==
-        currentUserEmailRef.current
-      ) {
-        setUnreadCounts((prev) => ({
-          ...prev,
-          [incomingConversationId]: 0,
-        }));
-      }
-    } else {
-      if (
-        message.sender_email?.toLowerCase().trim() !==
-        currentUserEmailRef.current
-      ) {
-       setUnreadCounts((prev) => {
-  // 🔥 guard against duplicate message increments
-  if (
-    messagesRef.current.some((m) => m.id === message.id)
-  ) {
-    return prev;
+  if (incomingConversationId === Number(selectedChatIdRef.current)) {
+    setMessages((prev) => [...prev, message]);
+
+    if (!isMine) {
+      setUnreadCounts((prev) => ({
+        ...prev,
+        [incomingConversationId]: 0,
+      }));
+    }
+
+    return;
   }
 
-  return {
-    ...prev,
-    [incomingConversationId]:
-      (prev[incomingConversationId] || 0) + 1,
-  };
-});
-      }
-    }
-  };
+  if (!isMine) {
+    setUnreadCounts((prev) => ({
+      ...prev,
+      [incomingConversationId]: (prev[incomingConversationId] || 0) + 1,
+    }));
+  }
+};
 
   socket.on("receive_message", handleReceiveMessage);
 
