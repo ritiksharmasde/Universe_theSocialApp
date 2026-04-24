@@ -8,6 +8,13 @@ import {
 } from "react-icons/fi";
 function PostCard({ post, onClick, onToggleLike, onOpenUserProfile, onDelete }) {
 const [showMenu, setShowMenu] = React.useState(false);
+  React.useEffect(() => {
+  const handleClickOutside = () => setShowMenu(false);
+  if (showMenu) {
+    window.addEventListener("click", handleClickOutside);
+  }
+  return () => window.removeEventListener("click", handleClickOutside);
+}, [showMenu]);
   return (
     <article style={styles.postCard} onClick={() => onClick && onClick(post)}>
       <div style={styles.postHeader}>
@@ -100,12 +107,7 @@ const [showMenu, setShowMenu] = React.useState(false);
           
         </div>
 
-        <button
-          style={styles.iconOnlyButton}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* <FiBookmark color="var(--card-icon)" /> */}
-        </button>
+        <FiBookmark color="var(--card-icon)" />
       </div>
 
       <div style={styles.postBody}>
