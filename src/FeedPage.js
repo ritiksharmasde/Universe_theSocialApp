@@ -601,20 +601,17 @@ body: JSON.stringify({
 
 const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile, theme) => {
  const isDark = theme === "dark";
+const isGrey = theme === "grey";
 
-const cardBg = isDark
-  ? "rgba(15, 23, 42, 0.88)"
-  : "rgba(255, 255, 255, 0.88)";
+const cardBg = "var(--glass-bg)";
 
-const inputBg = isDark
-  ? "rgba(30, 41, 59, 0.9)"     // 🔥 improved contrast
-  : "rgba(255, 255, 255, 0.95)";
+const inputBg = "var(--input-bg)";
 
 const softButtonBg = isDark
   ? "rgba(51, 65, 85, 0.9)"     // 🔥 FIXED (visible buttons)
   : "rgba(0, 0, 0, 0.05)";
-const cardText = isDark ? "#f8fafc" : "#111827";
-const cardSubText = isDark ? "#cbd5e1" : "#4b5563";
+const cardText = "var(--text-primary)";
+const cardSubText = "var(--text-secondary)";
 
   
   return {
