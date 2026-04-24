@@ -238,6 +238,37 @@ body: JSON.stringify({
       alert("Server error");
     }
   };
+  const handleDeletePost = async (postId) => {
+  if (!window.confirm("Delete this post?")) return;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}`, {
+      method: "DELETE",
+      headers: authHeaders(false),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error || "Failed to delete post");
+      return;
+    }
+
+    // remove from feed
+    setPosts((prev) =>
+      prev.filter((post) => Number(post.id) !== Number(postId))
+    );
+
+    // also close detail page if open
+    setSelectedPost((prev) =>
+      prev && prev.id === postId ? null : prev
+    );
+
+  } catch (error) {
+    console.error("delete post error:", error);
+    alert("Server error");
+  }
+};
 
   const handleCommentAdded = (postId) => {
     setPosts((prev) =>
@@ -376,6 +407,7 @@ body: JSON.stringify({
     return (
       <PostDetailPage
         post={selectedPost}
+    onDelete={handleDeletePost}
         onBack={() => setSelectedPost(null)}
         currentUserEmail={currentUserEmail}
         currentUserName={currentUserName}
@@ -544,12 +576,13 @@ body: JSON.stringify({
           ) : (
             filteredPosts.map((post) => (
               <PostCard
-                key={post.id}
-                post={post}
-                onClick={setSelectedPost}
-                onToggleLike={handleToggleLike}
-                onOpenUserProfile={onOpenUserProfile}
-              />
+  key={post.id}
+  post={post}
+  onClick={setSelectedPost}
+  onToggleLike={handleToggleLike}
+  onOpenUserProfile={onOpenUserProfile}
+  onDelete={handleDeletePost} 
+/>
             ))
           )}
         </section>
