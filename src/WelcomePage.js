@@ -22,10 +22,12 @@ export default function UniversitySocialWelcomePage({
 }, [mode]);
 
   const subheading = useMemo(() => {
-    return mode === "signup"
-      ? "Create your account and connect with verified university students."
-      : "Log in to continue to your university social network.";
-  }, [mode]);
+  if (mode === "signup")
+    return "Create your account and connect with verified university students.";
+  if (mode === "login")
+    return "Log in to continue to your university social network.";
+  return "Enter your email to receive a reset OTP.";
+}, [mode]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -297,7 +299,17 @@ const handleForgotPassword = async () => {
       {mode === "signup" ? "Continue" : "Log in"}
     </button>
   )}
-
+{mode === "forgot" && (
+  <div className="text-center text-sm mt-2">
+    <button
+      type="button"
+      onClick={() => setMode("login")}
+      className="text-slate-300 hover:text-white underline"
+    >
+      Back to login
+    </button>
+  </div>
+)}
 </form>
             {message && (
               <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
