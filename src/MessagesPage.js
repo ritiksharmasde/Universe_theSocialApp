@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
-import { FiSend, FiSearch, FiMenu } from "react-icons/fi";
+import { FiSend, FiSearch, FiMenu, FiSmile  } from "react-icons/fi";
+import EmojiPicker from "emoji-picker-react";
 import socket from "./socket";
 import API_BASE_URL, {SERVER_BASE_URL} from "./api";
 import useBreakpoint from "./useBreakpoint";
@@ -20,6 +21,7 @@ function MessagesPage({
   const { isMobile, isTablet } = useBreakpoint();
 
   const [selectedChatId, setSelectedChatId] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [messageText, setMessageText] = useState("");
   const [showChatList, setShowChatList] = useState(!isMobile);
   const [searchText, setSearchText] = useState("");
@@ -54,6 +56,10 @@ const currentUserEmailRef = useRef("");
 useEffect(() => {
   messagesRef.current = messages;
 }, [messages]);
+  
+  const handleEmojiClick = (emojiData) => {
+  setMessageText((prev) => prev + emojiData.emoji);
+};
 
 useEffect(() => {
   selectedChatIdRef.current = normalizedSelectedChatId;
@@ -372,6 +378,7 @@ useEffect(() => {
   });
 
   setMessageText("");
+setShowEmojiPicker(false);
 };
   
 useEffect(() => {
@@ -483,6 +490,15 @@ setUnreadCounts((prev) => {
     alert("Server error");
   }
 };
+  useEffect(() => {
+  const handleClickOutside = () => setShowEmojiPicker(false);
+
+  if (showEmojiPicker) {
+    window.addEventListener("click", handleClickOutside);
+  }
+
+  return () => window.removeEventListener("click", handleClickOutside);
+}, [showEmojiPicker]);
 
   const handleOpenChats = () => {
     setShowChatList(true);
@@ -700,6 +716,33 @@ setUnreadCounts((prev) => {
                   : {}),
               }}
             >
+          <div style={styles.emojiWrapper}>
+  <button
+    type="button"
+    style={styles.emojiButton}
+    onClick={(e) => {
+  e.stopPropagation();
+  setShowEmojiPicker((prev) => !prev);
+}}
+  >
+    <FiSmile />
+  </button>
+
+  {showEmojiPicker && (
+    <div
+  style={styles.emojiPickerBox}
+  onClick={(e) => e.stopPropagation()}
+>
+      <EmojiPicker
+        onEmojiClick={handleEmojiClick}
+        theme="auto"
+        width={300}
+        height={350}
+      />
+    </div>
+  )}
+</div>
+              
               <input
                 type="text"
                 value={messageText}
@@ -870,6 +913,31 @@ const styles = {
   border: "1px solid rgba(99,102,241,0.5)",
   boxShadow: "0 6px 18px rgba(99,102,241,0.35)",
   transform: "scale(1.01)",
+},
+  emojiWrapper: {
+  position: "relative",
+  flexShrink: 0,
+},
+
+emojiButton: {
+  width: "48px",
+  height: "48px",
+  borderRadius: "14px",
+  background: "rgba(8, 15, 30, 0.6)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  color: "var(--text-primary)",
+  cursor: "pointer",
+  fontSize: "18px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+emojiPickerBox: {
+  position: "absolute",
+  bottom: "58px",
+  left: 0,
+  zIndex: 50,
 },
   avatar: {
     width: "44px",
