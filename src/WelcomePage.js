@@ -14,7 +14,11 @@ export default function UniversitySocialWelcomePage({
   });
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
-
+  const [resetData, setResetData] = useState({
+  otp: "",
+  newPassword: "",
+});
+  
   const heading = useMemo(() => {
   if (mode === "signup") return "Join your campus community";
   if (mode === "login") return "Welcome back";
@@ -67,6 +71,35 @@ const handleForgotPassword = async () => {
     }
 
     setMessage("OTP sent to your email");
+    setMode("reset");
+  } catch (err) {
+    console.error(err);
+  }
+};
+  const handleResetPassword = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: formData.email.toLowerCase().trim(),
+        otp: resetData.otp,
+        newPassword: resetData.newPassword,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setMessage(data.error);
+      return;
+    }
+
+    setMessage("Password reset successful");
+
+    setMode("login");
   } catch (err) {
     console.error(err);
   }
@@ -85,7 +118,7 @@ const handleForgotPassword = async () => {
         "Use your university email (e.g., ritik.17886@stu.upes.ac.in)";
     }
 
-    if (mode !== "forgot") {
+    if (mode !== "forgot" && mode !== "reset") {
   if (!formData.password.trim()) {
     nextErrors.password = "Password is required.";
   } else if (formData.password.length < 8) {
@@ -253,7 +286,7 @@ const handleForgotPassword = async () => {
   />
 
   {/* PASSWORD (NOT IN FORGOT) */}
-  {mode !== "forgot" && (
+  {mode !== "forgot" && mode !== "reset" && (
     <InputField
       label="Password"
       name="password"
@@ -281,25 +314,60 @@ const handleForgotPassword = async () => {
       </button>
     </div>
   )}
+{mode === "reset" && (
+  <>
+    <InputField
+      label="OTP"
+      name="otp"
+      type="text"
+      placeholder="Enter OTP"
+      value={resetData.otp}
+      onChange={(e) =>
+        setResetData({ ...resetData, otp: e.target.value })
+      }
+    />
+
+    <InputField
+      label="New Password"
+      name="newPassword"
+      type="password"
+      placeholder="Enter new password"
+      value={resetData.newPassword}
+      onChange={(e) =>
+        setResetData({
+          ...resetData,
+          newPassword: e.target.value,
+        })
+      }
+    />
+  </>
+)}
 
   {/* MAIN BUTTON */}
-  {mode === "forgot" ? (
-    <button
-      type="button"
-      onClick={handleForgotPassword}
-      className="w-full rounded-2xl bg-white px-3 py-2.5 font-semibold text-slate-950"
-    >
-      Send OTP
-    </button>
-  ) : (
-    <button
-      type="submit"
-      className="w-full rounded-2xl bg-white px-3 py-2.5 font-semibold text-slate-950"
-    >
-      {mode === "signup" ? "Continue" : "Log in"}
-    </button>
-  )}
-{mode === "forgot" && (
+{mode === "forgot" ? (
+  <button
+    type="button"
+    onClick={handleForgotPassword}
+    className="w-full rounded-2xl bg-white px-3 py-2.5 font-semibold text-slate-950"
+  >
+    Send OTP
+  </button>
+) : mode === "reset" ? (
+  <button
+    type="button"
+    onClick={handleResetPassword}
+    className="w-full rounded-2xl bg-white px-3 py-2.5 font-semibold text-slate-950"
+  >
+    Reset Password
+  </button>
+) : (
+  <button
+    type="submit"
+    className="w-full rounded-2xl bg-white px-3 py-2.5 font-semibold text-slate-950"
+  >
+    {mode === "signup" ? "Continue" : "Log in"}
+  </button>
+)}{mode === "forgot" && (
   <div className="text-center text-sm mt-2">
     <button
       type="button"
