@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiArrowLeft, FiEdit2, FiSave, FiX } from "react-icons/fi";
 import API_BASE_URL, { SERVER_BASE_URL } from "./api";
 function ProfileDetailsPage({ profileData, email, onBack, onSaveProfile }) {
@@ -140,30 +140,51 @@ useEffect(() => {
   fetchMyProfile();
 }, []);
   const handleSave = async () => {
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    try {
-      let finalProfileImage = formData.profileImage || "";
+  try {
+    let finalProfileImage = formData.profileImage || "";
 
-      if (selectedProfileFile) {
-        finalProfileImage = await uploadProfileImage();
-      }
-
-      if (onSaveProfile) {
-        onSaveProfile({
-          ...formData,
-          profileImage: finalProfileImage,
-        });
-      }
-
-      setSelectedProfileFile(null);
-      setIsEditing(false);
-    } catch (error) {
-      console.error("ProfileDetails image save error:", error);
-      alert(error.message || "Failed to save profile image");
+    if (selectedProfileFile) {
+      finalProfileImage = await uploadProfileImage();
     }
-  };
 
+    const response = await fetch(`${API_BASE_URL}/user/save-profile`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        fullName: formData.fullName,
+        username: formData.username,
+        course: formData.course,
+        year: formData.year,
+        branch: formData.branch,
+        bio: formData.bio,
+        interests: formData.interests,
+        skills: formData.skills,
+        city: formData.city,
+        linkedin: formData.linkedin,
+        github: formData.github,
+        profileImage: finalProfileImage,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to save profile");
+    }
+
+    setSelectedProfileFile(null);
+    setIsEditing(false);
+
+  } catch (error) {
+    console.error("Save error:", error);
+    alert(error.message);
+  }
+};
   const handleCancel = () => {
     setFormData({
       fullName: profileData?.fullName || "",
