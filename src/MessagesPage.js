@@ -3,7 +3,12 @@ import { FiSend, FiSearch, FiMenu } from "react-icons/fi";
 import socket from "./socket";
 import API_BASE_URL, {SERVER_BASE_URL} from "./api";
 import useBreakpoint from "./useBreakpoint";
-
+const glass = {
+  background: "rgba(15, 25, 45, 0.75)",
+  backdropFilter: "blur(14px)",
+  WebkitBackdropFilter: "blur(14px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+};
 
 function MessagesPage({
   currentUserEmail = "",
@@ -472,13 +477,23 @@ setUnreadCounts((prev) => {
 
                 return (
                   <button
-                    key={chat.id}
-                    style={{
-                      ...styles.chatItem,
-                      ...(isActive ? styles.activeChatItem : {}),
-                    }}
-                    onClick={() => handleSelectChat(chat.id)}
-                  >
+  key={chat.id}
+  style={{
+    ...styles.chatItem,
+    ...(isActive ? styles.activeChatItem : {}),
+  }}
+  onClick={() => handleSelectChat(chat.id)}
+  onMouseEnter={(e) => {
+    if (!isActive) {
+      e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+    }
+  }}
+  onMouseLeave={(e) => {
+    if (!isActive) {
+      e.currentTarget.style.background = "transparent";
+    }
+  }}
+>
                     {chat.avatarUrl ? (
                       <img
                         src={chat.avatarUrl}
@@ -680,7 +695,7 @@ const styles = {
     boxSizing: "border-box",
     fontFamily: "Inter, Arial, Helvetica, sans-serif",
     color: "var(--text-primary)",
-    background: "var(--bg-page)",
+    background: "transparent",
     overflow: "hidden",
   },
 
@@ -715,17 +730,16 @@ const styles = {
     cursor: "pointer",
   },
   chatList: {
-    background: "var(--bg-surface)",
-    border: "1px solid var(--border-color)",
-    borderRadius: "20px",
-    padding: "20px",
-    boxSizing: "border-box",
-    height: "100%",
-    minHeight: 0,
-    minWidth: 0,
-    overflowY: "auto",
-  },
-
+  ...glass,
+  borderRadius: "20px",
+  padding: "20px",
+  boxSizing: "border-box",
+  height: "100%",
+  minHeight: 0,
+  minWidth: 0,
+  overflowY: "auto",
+},
+  
   title: {
     margin: "0 0 18px 0",
     fontSize: "28px",
@@ -744,16 +758,17 @@ const styles = {
     fontSize: "15px",
   },
   searchInput: {
-    width: "100%",
-    boxSizing: "border-box",
-    border: "1px solid var(--border-color)",
-    borderRadius: "14px",
-    padding: "12px 14px 12px 38px",
-    outline: "none",
-    fontSize: "14px",
-    background: "var(--bg-surface)",
-    color: "var(--text-primary)",
-  },
+  width: "100%",
+  boxSizing: "border-box",
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: "14px",
+  padding: "12px 14px 12px 38px",
+  outline: "none",
+  fontSize: "14px",
+  background: "rgba(8, 15, 30, 0.6)",
+  color: "var(--text-primary)",
+},
+  
   chatHeaderLeft: {
     display: "flex",
     alignItems: "center",
@@ -804,10 +819,15 @@ const styles = {
     textAlign: "left",
     marginBottom: "8px",
     color: "var(--text-primary)",
+    transition: "all 0.2s ease",
   },
   activeChatItem: {
-    background: "var(--bg-surface-soft)",
-  },
+  background:
+    "linear-gradient(135deg, rgba(99,102,241,0.18), rgba(139,92,246,0.18))",
+  border: "1px solid rgba(99,102,241,0.5)",
+  boxShadow: "0 6px 18px rgba(99,102,241,0.35)",
+  transform: "scale(1.01)",
+},
   avatar: {
     width: "44px",
     height: "44px",
@@ -826,6 +846,7 @@ const styles = {
     borderRadius: "50%",
     objectFit: "cover",
     flexShrink: 0,
+    border: "2px solid rgba(255,255,255,0.08)",
   },
   chatMeta: {
     flex: 1,
@@ -849,7 +870,8 @@ const styles = {
     minWidth: "20px",
     height: "20px",
     borderRadius: "999px",
-    background: "#dc2626",
+    background: "linear-gradient(135deg, #ef4444, #dc2626)",
+boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
     color: "#ffffff",
     fontSize: "11px",
     fontWeight: "700",
@@ -868,16 +890,15 @@ const styles = {
     textOverflow: "ellipsis",
   },
   chatWindow: {
-    background: "var(--bg-surface)",
-    border: "1px solid var(--border-color)",
-    borderRadius: "20px",
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    minHeight: 0,
-    minWidth: 0,
-    overflow: "hidden",
-  },
+  ...glass,
+  borderRadius: "20px",
+  display: "flex",
+  flexDirection: "column",
+  height: "100%",
+  minHeight: 0,
+  minWidth: 0,
+  overflow: "hidden",
+},
   headerUser: {
     display: "flex",
     alignItems: "center",
@@ -925,24 +946,27 @@ const styles = {
     padding: 0,
   },
   messagesArea: {
-    flex: 1,
-    minHeight: 0,
-    padding: "20px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-    background: "var(--bg-page)",
-    overflowY: "auto",
-  },
+  flex: 1,
+  minHeight: 0,
+  padding: "20px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+  background: "transparent",
+  overflowY: "auto",
+},
   messageBubbleOther: {
-    alignSelf: "flex-start",
-    background: "var(--bg-surface-soft)",
-    color: "var(--text-primary)",
-    padding: "12px 14px",
-    borderRadius: "14px",
-    maxWidth: "70%",
-    lineHeight: 1.5,
-  },
+  alignSelf: "flex-start",
+  background: "rgba(255,255,255,0.06)",
+  backdropFilter: "blur(8px)",
+  WebkitBackdropFilter: "blur(8px)",
+  color: "var(--text-primary)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  padding: "12px 14px",
+  borderRadius: "14px",
+  maxWidth: "70%",
+  lineHeight: 1.5,
+},
   messageBubbleMe: {
     alignSelf: "flex-end",
     background: "var(--button-primary)",
@@ -953,24 +977,29 @@ const styles = {
     lineHeight: 1.5,
   },
   inputRow: {
-    display: "flex",
-    gap: "10px",
-    padding: "12px",
-    borderTop: "1px solid var(--border-color)",
-    background: "var(--bg-surface)",
-    alignItems: "center",
-    flexShrink: 0,
-  },
+  display: "flex",
+  gap: "10px",
+  padding: "12px",
+  borderTop: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(20, 30, 50, 0.72)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  alignItems: "center",
+  flexShrink: 0,
+},
+
+  
   input: {
-    flex: 1,
-    border: "1px solid var(--border-color)",
-    borderRadius: "14px",
-    padding: "14px 16px",
-    outline: "none",
-    fontSize: "14px",
-    background: "var(--bg-surface)",
-    color: "var(--text-primary)",
-  },
+  flex: 1,
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: "14px",
+  padding: "14px 16px",
+  outline: "none",
+  fontSize: "14px",
+  background: "rgba(8, 15, 30, 0.6)",
+  color: "var(--text-primary)",
+},
+  
   sendButton: {
     width: "48px",
     minWidth: "48px",
