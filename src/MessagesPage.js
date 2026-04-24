@@ -29,7 +29,7 @@ function MessagesPage({
   const [messages, setMessages] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false);
   // const [unreadCounts, setUnreadCounts] = useState({});
-
+const normalizedCurrentUserEmail = currentUserEmail.toLowerCase().trim();
   const normalizedSelectedChatId =
     selectedChatId !== null ? Number(selectedChatId) : null;
 
@@ -296,14 +296,14 @@ useEffect(() => {
     if (incomingConversationId === Number(normalizedSelectedChatId)) {
   setMessages((prev) => [...prev, message]);
 
-  if (message.sender_email !== currentUserEmail) {
+  if (message.sender_email?.toLowerCase().trim() !== normalizedCurrentUserEmail) {
     setUnreadCounts((prev) => ({
       ...prev,
       [incomingConversationId]: 0,
     }));
   }
 } else {
-  if (message.sender_email !== currentUserEmail) {
+  if (message.sender_email?.toLowerCase().trim() !== normalizedCurrentUserEmail) {
     setUnreadCounts((prev) => ({
       ...prev,
       [incomingConversationId]:
@@ -319,7 +319,7 @@ useEffect(() => {
   return () => {
     socket.off("receive_message", handleReceiveMessage);
   };
-}, [normalizedSelectedChatId, currentUserEmail]);
+}, [normalizedSelectedChatId, normalizedCurrentUserEmail]);
 
   const handleSend = () => {
     if (!messageText.trim() || !normalizedSelectedChatId) return;
@@ -632,7 +632,7 @@ setUnreadCounts((prev) => {
     <div
       key={message.id}
       style={
-        message.sender_email === currentUserEmail
+        message.sender_email?.toLowerCase().trim() === normalizedCurrentUserEmail
           ? styles.messageBubbleMe
           : styles.messageBubbleOther
       }
