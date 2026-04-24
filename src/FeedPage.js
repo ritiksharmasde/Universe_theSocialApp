@@ -951,10 +951,12 @@ redDotSmall: {
   border: "2px solid var(--bg-surface)",
 },
   addFriendButtonMuted: {
-    background: softButtonBg,
-    border: "1px solid var(--border-color)",
-    color: "var(--text-secondary)",
-  },
+  background: isDark ? "rgba(51, 65, 85, 0.95)" : "rgba(0,0,0,0.04)",
+  border: isDark
+    ? "1px solid rgba(148, 163, 184, 0.45)"
+    : "1px solid var(--border-color)",
+  color: isDark ? "#e2e8f0" : "#6b7280",
+},
   };
 };
 
