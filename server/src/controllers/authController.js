@@ -112,6 +112,105 @@ const sendOtp = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email required" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const user = await pool.query(
+      `SELECT * FROM users WHERE email = $1`,
+      [normalizedEmail]
+    );
+
+    if (user.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const otp = generateOtp();
+    const otpHash = await hashOtp(otp);
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await pool.query(
+      `
+      INSERT INTO otp_codes (
+        email,
+        otp_code_hash,
+        expires_at,
+        used,
+        attempt_count
+      )
+      VALUES ($1, $2, $3, FALSE, 0)
+      `,
+      [normalizedEmail, otpHash, expiresAt]
+    );
+
+    // 🔥 send via Resend (you already use it)
+    await transporter.emails.send({
+      from: process.env.MAIL_FROM,
+      to: normalizedEmail,
+      subject: "Reset Password OTP",
+      html: `<h2>Your OTP: ${otp}</h2>`,
+    });
+
+    res.json({ message: "OTP sent for password reset" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const result = await pool.query(
+      `
+      SELECT * FROM otp_codes
+      WHERE email = $1 AND used = FALSE
+      ORDER BY created_at DESC
+      LIMIT 1
+      `,
+      [normalizedEmail]
+    );
+
+    const record = result.rows[0];
+
+    if (!record) {
+      return res.status(400).json({ error: "No OTP found" });
+    }
+
+    if (new Date() > new Date(record.expires_at)) {
+      return res.status(400).json({ error: "OTP expired" });
+    }
+
+    const isMatch = await bcrypt.compare(otp, record.otp_code_hash);
+
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await pool.query(
+      `UPDATE users SET password_hash = $1 WHERE email = $2`,
+      [passwordHash, normalizedEmail]
+    );
+
+    await pool.query(
+      `UPDATE otp_codes SET used = TRUE WHERE id = $1`,
+      [record.id]
+    );
+
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
 const resendOtp = async (req, res) => {
   try {
