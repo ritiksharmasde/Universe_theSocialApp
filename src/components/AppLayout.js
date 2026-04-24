@@ -26,7 +26,17 @@ function AppLayout({
 
   return (
     <div style={styles.page}>
-  <div style={styles.doodleOverlay} />
+  <div
+  style={{
+    ...styles.doodleOverlay,
+    background:
+      theme === "dark"
+        ? "rgba(0, 0, 0, 0.45)"
+        : theme === "grey"
+        ? "rgba(0, 0, 0, 0.2)"
+        : "rgba(255, 255, 255, 0.4)",
+  }}
+/>
       <Sidebar
         currentPage={currentPage}
         onNavigate={onNavigate}
@@ -108,12 +118,6 @@ const styles = {
 doodleOverlay: {
   position: "fixed",
   inset: 0,
-  background:
-    theme === "dark"
-      ? "rgba(0, 0, 0, 0.45)"   // strong for dark mode
-      : theme === "grey"
-      ? "rgba(0, 0, 0, 0.2)"    // medium
-      : "rgba(255, 255, 255, 0.4)", // 🔥 LIGHT MODE FIX
   pointerEvents: "none",
   zIndex: 0,
 },
