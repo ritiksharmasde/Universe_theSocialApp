@@ -101,6 +101,31 @@ const createPost = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const deletePost = async (req, res) => {
+  const { postId } = req.params;
+  const userEmail = req.user.email.toLowerCase().trim();
+
+  try {
+    const result = await pool.query(
+      `
+      DELETE FROM posts
+      WHERE id = $1
+        AND LOWER(email) = LOWER($2)
+      RETURNING *
+      `,
+      [postId, userEmail]
+    );
+
+    if (!result.rows.length) {
+      return res.status(403).json({ error: "You can delete only your own post." });
+    }
+
+    res.json({ success: true, deletedPost: result.rows[0] });
+  } catch (error) {
+    console.error("deletePost error:", error);
+    res.status(500).json({ error: "Failed to delete post" });
+  }
+};
 
 const getPosts = async (req, res) => {
   try {
@@ -368,6 +393,7 @@ module.exports = {
   getPosts,
   likePost,
   unlikePost,
+  deletePost,
   getComments,
   addComment,
 };
