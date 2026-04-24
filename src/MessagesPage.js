@@ -25,6 +25,7 @@ function MessagesPage({
   const [searchText, setSearchText] = useState("");
   const conversationsRef = useRef([]);
   const messagesEndRef = useRef(null);
+  const messagesRef = useRef([]);
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false);
@@ -45,7 +46,9 @@ const normalizedCurrentUserEmail = currentUserEmail.toLowerCase().trim();
   const selectedChat =
     filteredChats.find((chat) => Number(chat.id) === normalizedSelectedChatId) ||
     null;
-
+useEffect(() => {
+  messagesRef.current = messages;
+}, [messages]);
 useEffect(() => {
   if (filteredChats.length === 0) {
     setSelectedChatId(null);
@@ -286,41 +289,60 @@ useEffect(() => {
   }, [normalizedSelectedChatId, currentUserEmail]);
 
 useEffect(() => {
-  if (normalizedSelectedChatId) {
-    socket.emit("join_conversation", normalizedSelectedChatId);
-  }
-
   const handleReceiveMessage = (message) => {
     const incomingConversationId = Number(message.conversation_id);
 
     if (incomingConversationId === Number(normalizedSelectedChatId)) {
-  setMessages((prev) => [...prev, message]);
+      setMessages((prev) => {
+  const exists = prev.some((m) => m.id === message.id);
+  if (exists) return prev; // 🔥 prevent duplicate
 
-  if (message.sender_email?.toLowerCase().trim() !== normalizedCurrentUserEmail) {
-    setUnreadCounts((prev) => ({
-      ...prev,
-      [incomingConversationId]: 0,
-    }));
-  }
-} else {
-  if (message.sender_email?.toLowerCase().trim() !== normalizedCurrentUserEmail) {
-    setUnreadCounts((prev) => ({
-      ...prev,
-      [incomingConversationId]:
-        (prev[incomingConversationId] || 0) + 1,
-    }));
-  }
-}
+  return [...prev, message];
+});
 
-     };
+      if (
+        message.sender_email?.toLowerCase().trim() !==
+        normalizedCurrentUserEmail
+      ) {
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [incomingConversationId]: 0,
+        }));
+      }
+    } else {
+      if (
+        message.sender_email?.toLowerCase().trim() !==
+        normalizedCurrentUserEmail
+      ) {
+       setUnreadCounts((prev) => {
+  // 🔥 guard against duplicate message increments
+  if (
+    messagesRef.current.some((m) => m.id === message.id)
+  ) {
+    return prev;
+  }
+
+  return {
+    ...prev,
+    [incomingConversationId]:
+      (prev[incomingConversationId] || 0) + 1,
+  };
+});
+      }
+    }
+  };
 
   socket.on("receive_message", handleReceiveMessage);
 
   return () => {
     socket.off("receive_message", handleReceiveMessage);
   };
-}, [normalizedSelectedChatId, normalizedCurrentUserEmail]);
-
+}, []); // 🔥 EMPTY dependency
+useEffect(() => {
+  if (normalizedSelectedChatId) {
+    socket.emit("join_conversation", normalizedSelectedChatId);
+  }
+}, [normalizedSelectedChatId]);
   const handleSend = () => {
     if (!messageText.trim() || !normalizedSelectedChatId) return;
 
