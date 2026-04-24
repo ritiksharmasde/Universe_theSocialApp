@@ -23,7 +23,7 @@ function MessagesPage({
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [messageText, setMessageText] = useState("");
-  const [showChatList, setShowChatList] = useState(!isMobile);
+  const [showChatList, setShowChatList] = useState(true);
   const [searchText, setSearchText] = useState("");
   const conversationsRef = useRef([]);
   const messagesEndRef = useRef(null);
@@ -592,7 +592,7 @@ setUnreadCounts((prev) => {
           </div>
         )}
 
-        {(!isMobile || !showChatList) && (
+        {(!isMobile || selectedChat) && !showChatList && (
           <div
             style={{
               ...styles.chatWindow,
@@ -612,9 +612,16 @@ setUnreadCounts((prev) => {
             <div style={styles.chatHeader}>
               <div style={styles.chatHeaderLeft}>
                 {isMobile && (
-                  <button style={styles.mobileMenuButton} onClick={handleOpenChats}>
-                    <FiMenu />
-                  </button>
+                  <button
+  style={styles.mobileMenuButton}
+  onClick={() => {
+    setShowChatList(true);
+    setSelectedChatId(null);
+    setMessages([]);
+  }}
+>
+  <FiMenu />
+</button>
                 )}
 
                 <div
