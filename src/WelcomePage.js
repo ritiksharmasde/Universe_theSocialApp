@@ -6,6 +6,7 @@ export default function UniversitySocialWelcomePage({
   onLoginSuccess,
 }) {
   const [mode, setMode] = useState("signup");
+  
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -15,8 +16,10 @@ export default function UniversitySocialWelcomePage({
   const [message, setMessage] = useState("");
 
   const heading = useMemo(() => {
-    return mode === "signup" ? "Join your campus community" : "Welcome back";
-  }, [mode]);
+  if (mode === "signup") return "Join your campus community";
+  if (mode === "login") return "Welcome back";
+  return "Reset your password";
+}, [mode]);
 
   const subheading = useMemo(() => {
     return mode === "signup"
@@ -39,7 +42,33 @@ export default function UniversitySocialWelcomePage({
 
     setMessage("");
   };
+const handleForgotPassword = async () => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/auth/forgot-password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email.toLowerCase().trim(),
+        }),
+      }
+    );
 
+    const data = await response.json();
+
+    if (!response.ok) {
+      setErrors({ email: data.error });
+      return;
+    }
+
+    setMessage("OTP sent to your email");
+  } catch (err) {
+    console.error(err);
+  }
+};
   const validateForm = () => {
     const nextErrors = {};
 
@@ -54,11 +83,13 @@ export default function UniversitySocialWelcomePage({
         "Use your university email (e.g., ritik.17886@stu.upes.ac.in)";
     }
 
-    if (!formData.password.trim()) {
-      nextErrors.password = "Password is required.";
-    } else if (formData.password.length < 8) {
-      nextErrors.password = "Password must be at least 8 characters.";
-    }
+    if (mode !== "forgot") {
+  if (!formData.password.trim()) {
+    nextErrors.password = "Password is required.";
+  } else if (formData.password.length < 8) {
+    nextErrors.password = "Password must be at least 8 characters.";
+  }
+}
 
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
@@ -194,50 +225,80 @@ export default function UniversitySocialWelcomePage({
             </div>
 
             <form className="space-y-4" onSubmit={handleSubmit}>
-              {mode === "signup" && (
-                <InputField
-                  label="Full Name"
-                  name="fullName"
-                  type="text"
-                  placeholder="Enter your name"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  error={errors.fullName}
-                />
-              )}
 
-              <InputField
-                label="University Email"
-                name="email"
-                type="email"
-                placeholder="you@stu.upes.ac.in"
-                value={formData.email}
-                onChange={handleChange}
-                error={errors.email}
-              />
+  {/* FULL NAME ONLY FOR SIGNUP */}
+  {mode === "signup" && (
+    <InputField
+      label="Full Name"
+      name="fullName"
+      type="text"
+      placeholder="Enter your name"
+      value={formData.fullName}
+      onChange={handleChange}
+      error={errors.fullName}
+    />
+  )}
 
-              <InputField
-                label="Password"
-                name="password"
-                type="password"
-                placeholder={
-                  mode === "signup"
-                    ? "Create a password"
-                    : "Enter your password"
-                }
-                value={formData.password}
-                onChange={handleChange}
-                error={errors.password}
-              />
+  {/* EMAIL (ALWAYS) */}
+  <InputField
+    label="University Email"
+    name="email"
+    type="email"
+    placeholder="you@stu.upes.ac.in"
+    value={formData.email}
+    onChange={handleChange}
+    error={errors.email}
+  />
 
-              <button
-                type="submit"
-                className="w-full rounded-2xl bg-white px-3 py-2.5 font-semibold text-slate-950 transition hover:scale-[1.01]"
-              >
-                {mode === "signup" ? "Continue" : "Log in"}
-              </button>
-            </form>
+  {/* PASSWORD (NOT IN FORGOT) */}
+  {mode !== "forgot" && (
+    <InputField
+      label="Password"
+      name="password"
+      type="password"
+      placeholder={
+        mode === "signup"
+          ? "Create a password"
+          : "Enter your password"
+      }
+      value={formData.password}
+      onChange={handleChange}
+      error={errors.password}
+    />
+  )}
 
+  {/* FORGOT BUTTON (ONLY IN LOGIN) */}
+  {mode === "login" && (
+    <div className="text-right text-sm mt-1">
+      <button
+        type="button"
+        onClick={() => setMode("forgot")}
+        className="text-slate-300 hover:text-white underline"
+      >
+        Forgot password?
+      </button>
+    </div>
+  )}
+
+  {/* MAIN BUTTON */}
+  {mode === "forgot" ? (
+    <button
+      type="button"
+      onClick={handleForgotPassword}
+      className="w-full rounded-2xl bg-white px-3 py-2.5 font-semibold text-slate-950"
+    >
+      Send OTP
+    </button>
+  ) : (
+    <button
+      type="submit"
+      className="w-full rounded-2xl bg-white px-3 py-2.5 font-semibold text-slate-950"
+    >
+      {mode === "signup" ? "Continue" : "Log in"}
+    </button>
+  )}
+
+</form>
             {message && (
               <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
                 {message}
