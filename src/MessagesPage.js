@@ -5,10 +5,10 @@ import socket from "./socket";
 import API_BASE_URL, {SERVER_BASE_URL} from "./api";
 import useBreakpoint from "./useBreakpoint";
 const glass = {
-  background: "rgba(15, 25, 45, 0.75)",
+  background: "var(--glass-bg)",
   backdropFilter: "blur(14px)",
   WebkitBackdropFilter: "blur(14px)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
 };
 
 function MessagesPage({
@@ -544,7 +544,7 @@ setUnreadCounts((prev) => {
   onClick={() => handleSelectChat(chat.id)}
   onMouseEnter={(e) => {
     if (!isActive) {
-      e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+      e.currentTarget.style.background = "var(--bg-surface-soft)";
     }
   }}
   onMouseLeave={(e) => {
@@ -846,12 +846,12 @@ const styles = {
   searchInput: {
   width: "100%",
   boxSizing: "border-box",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
   borderRadius: "14px",
   padding: "12px 14px 12px 38px",
   outline: "none",
   fontSize: "14px",
-  background: "rgba(8, 15, 30, 0.6)",
+  background: "var(--input-bg)",
   color: "var(--text-primary)",
 },
   
@@ -923,8 +923,8 @@ emojiButton: {
   width: "48px",
   height: "48px",
   borderRadius: "14px",
-  background: "rgba(8, 15, 30, 0.6)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  background: "var(--input-bg)",
+  border: "1px solid var(--border-color)",
   color: "var(--text-primary)",
   cursor: "pointer",
   fontSize: "18px",
@@ -1068,11 +1068,11 @@ boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
 },
   messageBubbleOther: {
   alignSelf: "flex-start",
-  background: "rgba(255,255,255,0.06)",
+  background: "var(--bg-surface-soft)",
   backdropFilter: "blur(8px)",
   WebkitBackdropFilter: "blur(8px)",
   color: "var(--text-primary)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
   padding: "12px 14px",
   borderRadius: "14px",
   maxWidth: "70%",
@@ -1092,7 +1092,7 @@ boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
   gap: "10px",
   padding: "12px",
   borderTop: "1px solid rgba(255,255,255,0.08)",
-  background: "rgba(20, 30, 50, 0.72)",
+  background: "var(--glass-bg)",
   backdropFilter: "blur(12px)",
   WebkitBackdropFilter: "blur(12px)",
   alignItems: "center",
@@ -1102,12 +1102,12 @@ boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
   
   input: {
   flex: 1,
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
   borderRadius: "14px",
   padding: "14px 16px",
   outline: "none",
   fontSize: "14px",
-  background: "rgba(8, 15, 30, 0.6)",
+ background: "var(--input-bg)",
   color: "var(--text-primary)",
 },
   
