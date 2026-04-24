@@ -569,9 +569,9 @@ body: JSON.stringify({
 const getStyles = (isMobile, isTablet, isDesktop, isTinyMobile, theme) => {
   const isDarkCard = theme === "dark";
 
-  const cardBg = isDarkCard
-    ? "rgba(20, 30, 50, 0.72)"
-    : "rgba(255, 255, 255, 0.88)";
+ const cardBg = isDark
+  ? "rgba(15, 23, 42, 0.88)"      // dark card
+  : "rgba(255, 255, 255, 0.88)"; // light/grey card
 
   const inputBg = isDarkCard
     ? "rgba(20, 30, 50, 0.72)"
@@ -700,6 +700,7 @@ WebkitBackdropFilter: "blur(12px)",
     boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
     width: "100%",
     maxWidth: "100%",
+    color: cardText,
     boxSizing: "border-box",
     minHeight: "188px",
     
@@ -724,20 +725,20 @@ WebkitBackdropFilter: "blur(12px)",
     margin: 0,
     fontWeight: "700",
     fontSize: "15px",
-    color: "var(--text-primary)",
+    color: cardText,
   },
 
   profileSub: {
     margin: "4px 0 0 0",
-    color: "var(--text-secondary)",
+    color: cardSubText,
     fontSize: "13px",
   },
 
   profileButton: {
     width: "100%",
     border: "none",
-    background: "var(--button-primary)",
-    color: "var(--button-primary-text)",
+    background: isDark ? "#0f172a" : "#f8fafc",
+    color: isDark ? "#f8fafc" : "#111827",
     borderRadius: "14px",
     padding: "12px 14px",
     fontWeight: "700",
@@ -746,6 +747,7 @@ WebkitBackdropFilter: "blur(12px)",
 
   widgetCardLarge: {
     background: cardBg,
+    color: cardText,
 backdropFilter: "blur(12px)",
 WebkitBackdropFilter: "blur(12px)",
     border: "1px solid var(--border-color)",
@@ -768,7 +770,7 @@ WebkitBackdropFilter: "blur(12px)",
   widgetTitle: {
   margin: 0,
   fontSize: isTinyMobile ? "14px" : "16px",
-  color: "var(--text-primary)",
+  color: cardText,
   fontWeight: "700",
 },
 
@@ -847,7 +849,7 @@ suggestionLeft: {
   margin: 0,
   fontSize: "14px",
   fontWeight: "700",
-  color: "var(--text-primary)",
+  color: cardText,
   whiteSpace: "nowrap",
   overflow: "hidden",
   textOverflow: "ellipsis",
@@ -856,7 +858,7 @@ suggestionLeft: {
 suggestionSub: {
   margin: "4px 0 0 0",
   fontSize: "12px",
-  color: "var(--text-secondary)",
+  color: cardSubText,
   whiteSpace: "nowrap",
   overflow: "hidden",
   textOverflow: "ellipsis",
@@ -902,7 +904,7 @@ suggestionSub: {
   width: "100%",
   border: "1px solid var(--border-color)",
   background: softButtonBg,
-  color: "var(--text-primary)",
+  color: cardText,
   borderRadius: "10px",
   padding: "8px 12px",
   cursor: "pointer",
@@ -927,7 +929,7 @@ suggestionSub: {
   width: "100%",
   border: "1px solid var(--border-color)",
   background: softButtonBg,
-  color: "var(--text-primary)",
+  color: cardText,
   borderRadius: "10px",
   padding: "8px 12px",
   cursor: "pointer",
