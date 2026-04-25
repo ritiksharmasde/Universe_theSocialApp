@@ -105,10 +105,18 @@ const getUserConversations = async (req, res) => {
       LEFT JOIN deleted_conversations dc
         ON dc.conversation_id = c.id
        AND LOWER(dc.user_email) = LOWER($1)
+       
+    LEFT JOIN LATERAL (
+  SELECT m.created_at
+  FROM messages m
+  WHERE m.conversation_id = c.id
+  ORDER BY m.created_at DESC
+  LIMIT 1
+) last_message ON TRUE
 
       WHERE (dc.id IS NULL OR dc.is_hidden = FALSE)
 
-      ORDER BY c.created_at DESC
+      ORDER BY COALESCE(last_message.created_at, c.created_at) DESC
       `,
       [email]
     );
