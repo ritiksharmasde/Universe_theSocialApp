@@ -56,26 +56,24 @@ function FeedPage({
       if (!currentUserEmail || validSuggestions.length === 0) return;
 
       try {
-        const statusEntries = await Promise.all(
-          validSuggestions.map(async (item) => {
-            const response = await fetch(
-  `${API_BASE_URL}/user/friend-status?otherUserEmail=${encodeURIComponent(item.email)}`,
-  {
-    headers: authHeaders(false),
-  }
+        const emails = validSuggestions.map((item) =>
+  item.email.toLowerCase().trim()
 );
 
-            const data = await response.json();
+const response = await fetch(`${API_BASE_URL}/user/friend-status/bulk`, {
+  method: "POST",
+  headers: authHeaders(),
+  body: JSON.stringify({ emails }),
+});
 
-            if (!response.ok) {
-              return [item.email.toLowerCase(), "none"];
-            }
+const data = await response.json();
 
-            return [item.email.toLowerCase(), data.status || "none"];
-          })
-        );
+if (!response.ok) {
+  console.error(data.error || "Failed to fetch friend statuses");
+  return;
+}
 
-        setFriendStatuses(Object.fromEntries(statusEntries));
+setFriendStatuses(data);
       } catch (error) {
         console.error("fetch suggestion friend statuses error:", error);
       }
