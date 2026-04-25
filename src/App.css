@@ -224,8 +224,8 @@ option {
   color: #000000;
 }
 .feed-search-input::placeholder {
+  color: black !important;
   opacity: 1;
-  font-weight: 500;
 }
 
 /* Light theme */
