@@ -32,8 +32,8 @@ router.post("/create-post", requireAuth, upload.single("image"), createPost);
 router.post("/friend-request", requireAuth, sendFriendRequest);
 router.post("/friend-request/accept", requireAuth, acceptFriendRequest);
 router.post("/friend-request/reject", requireAuth, rejectFriendRequest);
-router.get("/friend-status", requireAuth, getFriendStatus);
 router.post("/friend-status/bulk", requireAuth, getFriendStatusBulk);
+router.get("/friend-status", requireAuth, getFriendStatus);
 
 router.post("/block", requireAuth, blockUser);
 router.post("/unblock", requireAuth, unblockUser);
