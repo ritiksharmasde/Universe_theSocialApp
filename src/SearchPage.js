@@ -106,29 +106,27 @@ const matchesCourse =
       if (!currentUserEmail || students.length === 0) return;
 
       try {
-        const statusEntries = await Promise.all(
-          students.map(async (student) => {
-            const response = await fetch(
-  `${API_BASE_URL}/user/friend-status?otherUserEmail=${encodeURIComponent(student.email)}`,
-  {
-    headers: authHeaders(false),
-  }
+        const emails = students.map((student) =>
+  student.email.toLowerCase().trim()
 );
 
-            const data = await response.json();
+const response = await fetch(`${API_BASE_URL}/user/friend-status/bulk`, {
+  method: "POST",
+  headers: authHeaders(),
+  body: JSON.stringify({ emails }),
+});
 
-            if (!response.ok) {
-              return [student.email.toLowerCase(), "none"];
-            }
+const data = await response.json();
 
-            return [student.email.toLowerCase(), data.status || "none"];
-          })
-        );
+if (!response.ok) {
+  console.error(data.error || "Failed to fetch friend statuses");
+  return;
+}
 
-        setFriendStatuses((prev) => ({
-          ...prev,
-          ...Object.fromEntries(statusEntries),
-        }));
+setFriendStatuses((prev) => ({
+  ...prev,
+  ...data,
+}));
       } catch (error) {
         console.error("fetch friend statuses error:", error);
       }
