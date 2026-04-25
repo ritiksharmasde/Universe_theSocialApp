@@ -236,8 +236,9 @@ const styles = {
   padding: "14px 16px",
   fontSize: "15px",
   outline: "none",
-  background: "var(--input-bg)",
-  color: "var(--text-primary)",
+  background: "#ffffff",
+color: "#111827",
+WebkitTextFillColor: "#111827",
 },
   fileUploadText: {
     fontSize: "14px",
