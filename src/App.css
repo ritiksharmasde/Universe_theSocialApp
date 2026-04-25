@@ -224,7 +224,7 @@ option {
   color: #000000;
 }
 .feed-search-input::placeholder {
-  color: black !important;
+  color: white !important;
   opacity: 1;
 }
 
