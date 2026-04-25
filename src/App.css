@@ -196,12 +196,34 @@
   --bg-surface: rgba(55, 65, 81, 0.88);
   --bg-surface-soft: rgba(75, 85, 99, 0.9);
 }
+/* Base select */
 select {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+/* Focus fix */
+select:focus,
+select:active {
   background-color: var(--input-bg);
   color: var(--text-primary);
 }
 
+/* 🔥 FORCE dropdown option colors (CRITICAL FIX) */
 option {
-  background-color: var(--input-bg);
-  color: var(--text-primary);
+  background-color: #1e293b;   /* dark fallback */
+  color: #f8fafc;
+}
+
+/* Light mode override */
+[data-theme="light"] option {
+  background-color: #ffffff;
+  color: #111827;
+}
+
+/* Grey mode override */
+[data-theme="grey"] option {
+  background-color: #374151;
+  color: #f9fafb;
 }
