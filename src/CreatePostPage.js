@@ -118,7 +118,7 @@ function CreatePostPage({ onBack, onSubmitPost, profileData }) {
               onChange={handleChange}
               style={styles.select}
             >
-              <option value="discussion">Picture</option>
+              <option value="picture">Picture</option>
               <option value="doubt">Doubt</option>
               <option value="notes">Notes</option>
               <option value="discussion">Discussion</option>
@@ -236,8 +236,8 @@ const styles = {
   padding: "14px 16px",
   fontSize: "15px",
   outline: "none",
-  background: "var(--input-bg)",
-  color: "var(--text-primary)",
+  background: "#ffffff",
+  color: "#111827",
 },
   fileUploadText: {
     fontSize: "14px",
