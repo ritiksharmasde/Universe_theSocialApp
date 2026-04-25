@@ -346,6 +346,16 @@ const response = await fetch(
 
     const user = data.user;
 
+    const isProfileComplete =
+  user.full_name?.trim() &&
+  user.course?.trim() &&
+  user.year?.trim();
+
+if (!isProfileComplete) {
+  navigateTo("profile");
+  return;
+}
+    
     setProfileData({
       email: user.email,
       fullName: user.full_name || "",
@@ -368,7 +378,10 @@ const response = await fetch(
   } catch (error) {
     console.error("Fetch user profile error:", error);
   }
+
+      
 };
+    
     fetchUserProfile();
   }, [email]);
 
