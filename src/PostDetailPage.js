@@ -12,10 +12,10 @@ const authHeaders = (includeJson = true) => ({
   Authorization: `Bearer ${localStorage.getItem("token")}`,
 });
 const glass = {
-  background: "rgba(15, 25, 45, 0.75)",
+  background: "var(--glass-bg)",
   backdropFilter: "blur(14px)",
   WebkitBackdropFilter: "blur(14px)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
 };
 
 function PostDetailPage({
@@ -126,19 +126,19 @@ function PostDetailPage({
                 }}
                 onClick={() => onToggleLike && onToggleLike(post.id, post.isLiked)}
               >
-                <FiHeart color={post.isLiked ? "#dc2626" : "var(--card-icon)"} />
+                <FiHeart color={post.isLiked ? "#dc2626" : "var(--text-secondary)"} />
               </button>
 
               <button style={styles.actionButton}>
-                <FiMessageCircle color="var(--card-icon)" />
+                <FiMessageCircle color="var(--text-secondary)" />
               </button>
 
               <button style={styles.actionButton}>
-                {/* <FiSend color="var(--card-icon)" /> */}
+                {/* <FiSend color="var(--text-secondary)" /> */}
               </button>
 
               <button style={styles.actionButton}>
-                {/* <FiBookmark color="var(--card-icon)" /> */}
+                {/* <FiBookmark color="var(--text-secondary)" /> */}
               </button>
             </div>
 
@@ -229,7 +229,7 @@ const getStyles = (isMobile, isTablet) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  background: "rgba(8, 15, 30, 0.45)",
+  background: "var(--bg-surface-soft)",
   color: "var(--text-secondary)",
   fontWeight: "600",
 },
@@ -238,7 +238,7 @@ const getStyles = (isMobile, isTablet) => ({
   display: "flex",
   flexDirection: "column",
   gap: "16px",
-  background: "rgba(8, 15, 30, 0.45)",
+  background: "transparent",
   backdropFilter: "blur(8px)",
   WebkitBackdropFilter: "blur(8px)",
   minWidth: 0,
@@ -258,12 +258,12 @@ const getStyles = (isMobile, isTablet) => ({
   name: {
     margin: 0,
     fontWeight: "700",
-    color: "var(--card-text)",
+    color: "var(--text-primary)",
   },
   sub: {
     margin: "4px 0 0 0",
     fontSize: "12px",
-    color: "var(--card-subtext)",
+    color: "var(--text-secondary)",
   },
   captionBox: {
     borderTop: "1px solid var(--border-color)",
@@ -271,21 +271,21 @@ const getStyles = (isMobile, isTablet) => ({
   },
   captionText: {
     margin: 0,
-    color: "var(--card-text)",
+    color: "var(--text-primary)",
     lineHeight: 1.6,
   },
   actions: {
     display: "flex",
     gap: "16px",
     fontSize: "22px",
-    color: "var(--card-icon)",
+    color: "var(--text-secondary)",
   },
   actionButton: {
     border: "none",
     background: "transparent",
     cursor: "pointer",
     fontSize: "22px",
-    color: "var(--card-icon)",
+    color: "var(--text-secondary)",
     padding: 0,
     display: "flex",
     alignItems: "center",
@@ -297,7 +297,7 @@ const getStyles = (isMobile, isTablet) => ({
   likesText: {
     margin: 0,
     fontWeight: "700",
-    color: "var(--card-text)",
+    color: "var(--text-primary)",
   },
   comments: {
     flex: 1,
@@ -308,7 +308,7 @@ maxHeight: isMobile ? "200px" : "300px",
     padding: "12px 0",
   },
   emptyComments: {
-    color: "var(--card-subtext)",
+    color: "var(--text-secondary)",
     margin: 0,
   },
   commentItem: {
@@ -318,11 +318,11 @@ maxHeight: isMobile ? "200px" : "300px",
     margin: "0 0 4px 0",
     fontWeight: "700",
     fontSize: "14px",
-    color: "var(--card-text)",
+    color: "var(--text-primary)",
   },
   commentText: {
     margin: 0,
-    color: "var(--card-subtext)",
+    color: "var(--text-secondary)",
     lineHeight: 1.5,
   },
  commentInputRow: {
@@ -337,11 +337,11 @@ maxHeight: isMobile ? "200px" : "300px",
   flex: 1,
   minWidth: 0,
   width: 0,
-  border: "1px solid rgba(255,255,255,0.08)",
+  border: "1px solid var(--border-color)",
+background: "var(--input-bg)",
   borderRadius: "12px",
   padding: isMobile ? "10px 12px" : "12px 14px",
   outline: "none",
-  background: "rgba(8, 15, 30, 0.6)",
   color: "var(--text-primary)",
   boxSizing: "border-box",
 },
