@@ -374,6 +374,62 @@ const getAllUsers = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const getFriendStatusBulk = async (req, res) => {
+  try {
+    const current = req.user.email.toLowerCase().trim();
+    const emails = (req.body.emails || [])
+      .map((e) => e.toLowerCase().trim())
+      .filter((e) => e && e !== current);
+
+    if (emails.length === 0) {
+      return res.json({});
+    }
+
+    const result = await pool.query(
+      `
+      SELECT requester_email, recipient_email, status
+      FROM friendships
+      WHERE
+        (
+          LOWER(requester_email) = LOWER($1)
+          AND LOWER(recipient_email) = ANY($2::text[])
+        )
+        OR
+        (
+          LOWER(recipient_email) = LOWER($1)
+          AND LOWER(requester_email) = ANY($2::text[])
+        )
+      `,
+      [current, emails]
+    );
+
+    const statuses = {};
+
+    emails.forEach((email) => {
+      statuses[email] = "none";
+    });
+
+    result.rows.forEach((row) => {
+      const requester = row.requester_email.toLowerCase();
+      const recipient = row.recipient_email.toLowerCase();
+
+      const other = requester === current ? recipient : requester;
+
+      if (row.status === "accepted") {
+        statuses[other] = "friends";
+      } else if (row.status === "pending") {
+        statuses[other] = requester === current ? "sent" : "received";
+      } else {
+        statuses[other] = row.status || "none";
+      }
+    });
+
+    return res.json(statuses);
+  } catch (error) {
+    console.error("getFriendStatusBulk error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
 
 const getFriendStatus = async (req, res) => {
   try {
@@ -658,6 +714,7 @@ module.exports = {
   sendFriendRequest,
   getMyProfile,
   getFriendStatus,
+  getFriendStatusBulk,
   acceptFriendRequest,
   rejectFriendRequest,
   blockUser,
