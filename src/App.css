@@ -224,19 +224,21 @@ option {
   color: #000000;
 }
 .feed-search-input::placeholder {
-  color: var(--text-secondary);
   opacity: 1;
+  font-weight: 500;
 }
 
-/* Extra strong for visibility */
+/* Light theme */
 [data-theme="light"] .feed-search-input::placeholder {
-  color: #374151;
+  color: #1f2937;   /* darker → visible */
 }
 
+/* Dark theme */
 [data-theme="dark"] .feed-search-input::placeholder {
-  color: #e5e7eb;
+  color: #f9fafb;   /* brighter → visible */
 }
 
+/* Grey theme */
 [data-theme="grey"] .feed-search-input::placeholder {
-  color: #f3f4f6;
+  color: #ffffff;   /* strong white */
 }
