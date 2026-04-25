@@ -322,9 +322,6 @@ const response = await fetch(
     };
 
     fetchPosts();
-    const intervalId = setInterval(fetchPosts, 15000);
-
-    return () => clearInterval(intervalId);
   }, [email]);
 
   useEffect(() => {
