@@ -212,18 +212,14 @@ select:active {
 
 /* 🔥 FORCE dropdown option colors (CRITICAL FIX) */
 option {
-  background-color: #1e293b;   /* dark fallback */
-  color: #f8fafc;
+  background-color: #ffffff;   /* always light background */
+  color: #000000;              /* always black text */
 }
 
-/* Light mode override */
+/* optional: keep consistent across themes */
+[data-theme="dark"] option,
+[data-theme="grey"] option,
 [data-theme="light"] option {
   background-color: #ffffff;
-  color: #111827;
-}
-
-/* Grey mode override */
-[data-theme="grey"] option {
-  background-color: #374151;
-  color: #f9fafb;
+  color: #000000;
 }
