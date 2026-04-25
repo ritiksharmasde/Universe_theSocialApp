@@ -223,3 +223,20 @@ option {
   background-color: #ffffff;
   color: #000000;
 }
+.feed-search-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+/* Extra strong for visibility */
+[data-theme="light"] .feed-search-input::placeholder {
+  color: #374151;
+}
+
+[data-theme="dark"] .feed-search-input::placeholder {
+  color: #e5e7eb;
+}
+
+[data-theme="grey"] .feed-search-input::placeholder {
+  color: #f3f4f6;
+}
