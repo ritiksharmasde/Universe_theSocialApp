@@ -50,7 +50,7 @@ const [showMenu, setShowMenu] = React.useState(false);
       setShowMenu((prev) => !prev);
     }}
   >
-    <FiMoreHorizontal color="var(--card-icon)" />
+    <FiMoreHorizontal color="var(--text-secondary)" />
   </button>
 
   {showMenu && (
@@ -75,9 +75,20 @@ const [showMenu, setShowMenu] = React.useState(false);
     
       </div>
 
-      {post.image ? (
-        <img src={post.image} alt="post" style={styles.postImage} />
-      ) : null}
+      {post.image && post.image.trim() !== "" && (
+  <img
+    src={post.image}
+    alt="post"
+    style={styles.postImage}
+    onError={(e) => (e.currentTarget.style.display = "none")}
+  />
+)}
+{/* ✅ TEXT POST (ONLY WHEN NO IMAGE) */}
+{(!post.image || post.image.trim() === "") && (
+  <div style={styles.textPostBox}>
+    <p style={styles.textPostContent}>{post.caption}</p>
+  </div>
+)}
 
       <div style={styles.postActions}>
         <div style={styles.leftPostActions}>
@@ -91,7 +102,7 @@ const [showMenu, setShowMenu] = React.useState(false);
               onToggleLike && onToggleLike(post.id, post.isLiked);
             }}
           >
-            <FiHeart color={post.isLiked ? "#dc2626" : "var(--card-icon)"} />
+            <FiHeart color={post.isLiked ? "#dc2626" : "var(--text-secondary)"} />
           </button>
 
           <button
@@ -101,20 +112,22 @@ const [showMenu, setShowMenu] = React.useState(false);
               onClick && onClick(post);
             }}
           >
-            <FiMessageCircle color="var(--card-icon)" />
+            <FiMessageCircle color="var(--text-secondary)" />
           </button>
 
           
         </div>
 
-        <FiBookmark color="var(--card-icon)" />
+        <FiBookmark color="var(--text-secondary)" />
       </div>
 
       <div style={styles.postBody}>
         <p style={styles.likesText}>{post.likes} likes</p>
-        <p style={styles.captionText}>
-          <strong>{post.author}</strong> {post.caption}
-        </p>
+        {post.image && post.image.trim() !== "" && (
+  <p style={styles.captionText}>
+    <strong>{post.author}</strong> {post.caption}
+  </p>
+)}
         <p style={styles.commentsText}>
           View all {post.comments} comments
         </p>
@@ -139,7 +152,7 @@ const styles = {
     alignItems: "center",
     padding: "14px 16px",
     position: "relative",
-    background: "var(--bg-surface)",
+    background: "var(--glass-bg)",
   },
   moreWrapper: {
   position: "relative",
@@ -160,18 +173,18 @@ const styles = {
     margin: 0,
     fontWeight: "700",
     cursor: "pointer",
-    color: "var(--card-text)",
+    color: "var(--text-primary)",
   },
   authorSub: {
     margin: "4px 0 0 0",
     fontSize: "12px",
-    color: "var(--card-subtext)",
+    color: "var(--text-secondary)",
   },
   moreButton: {
     border: "none",
     background: "transparent",
     cursor: "pointer",
-    color: "var(--card-icon)",
+    color: "var(--text-secondary)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -189,8 +202,8 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     padding: "12px 16px",
-    background: "var(--bg-surface)",
-    color: "var(--card-icon)",
+    background: "var(--glass-bg)",
+    color: "var(--text-secondary)",
   },
   leftPostActions: {
     display: "flex",
@@ -202,7 +215,7 @@ const styles = {
     background: "transparent",
     fontSize: "20px",
     cursor: "pointer",
-    color: "var(--card-icon)",
+    color: "var(--text-secondary)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -212,7 +225,7 @@ const styles = {
   position: "absolute",
   top: "32px",
   right: 0,
-  background: "var(--bg-surface)",
+  background: "var(--glass-bg)",
   border: "1px solid var(--border-color)",
   borderRadius: "12px",
   boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
@@ -235,26 +248,39 @@ deleteMenuItem: {
   },
   postBody: {
     padding: "0 16px 16px",
-    background: "var(--bg-surface)",
+    background: "var(--glass-bg)",
   },
   likesText: {
     margin: 0,
     fontWeight: "700",
-    color: "var(--card-text)",
+    color: "var(--text-primary)",
   },
+  textPostBox: {
+  padding: "28px 20px",
+  background: "var(--bg-surface-soft)",
+  borderBottom: "1px solid var(--border-color)",
+},
+
+textPostContent: {
+  fontSize: "16px",
+  fontWeight: "500",
+  color: "var(--text-primary)",
+  lineHeight: 1.6,
+},
+  
   captionText: {
     margin: "6px 0",
-    color: "var(--card-text)",
+    color: "var(--text-primary)",
     lineHeight: 1.5,
   },
   commentsText: {
     margin: "6px 0 0 0",
-    color: "var(--card-subtext)",
+    color: "var(--text-secondary)",
   },
   timeText: {
     margin: "8px 0 0 0",
     fontSize: "11px",
-    color: "var(--card-subtext)",
+    color: "var(--text-secondary)",
     textTransform: "uppercase",
     letterSpacing: "0.04em",
   },
