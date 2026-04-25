@@ -112,17 +112,19 @@ function CreatePostPage({ onBack, onSubmitPost, profileData }) {
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.field}>
             <label style={styles.label}>Post Type</label>
-            <select
-              name="type"
-              value={formData.type}
-              onChange={handleChange}
-              style={styles.select}
-            >
-              <option value="picture">Picture</option>
-              <option value="doubt">Doubt</option>
-              <option value="notes">Notes</option>
-              <option value="discussion">Discussion</option>
-            </select>
+            <div style={{ position: "relative", width: "100%" }}>
+  <select
+    name="type"
+    value={formData.type}
+    onChange={handleChange}
+    style={styles.select}
+  >
+    <option value="picture">Picture</option>
+    <option value="doubt">Doubt</option>
+    <option value="notes">Notes</option>
+    <option value="discussion">Discussion</option>
+  </select>
+</div>
             {errors.type ? <p style={styles.error}>{errors.type}</p> : null}
           </div>
 
@@ -236,9 +238,14 @@ const styles = {
   padding: "14px 16px",
   fontSize: "15px",
   outline: "none",
+
   background: "#ffffff",
-color: "#111827",
-WebkitTextFillColor: "#111827",
+  color: "#111827",
+
+  width: "100%",
+  appearance: "none",
+  WebkitAppearance: "none",
+  MozAppearance: "none",
 },
   fileUploadText: {
     fontSize: "14px",
