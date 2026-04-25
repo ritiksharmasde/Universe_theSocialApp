@@ -543,12 +543,13 @@ body: JSON.stringify({
               <FiSearch />
             </span>
             <input
-              type="text"
-              placeholder="Search students, groups, posts..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={styles.searchInput}
-            />
+  className="feed-search-input"
+  type="text"
+  placeholder="Search students, groups, posts..."
+  value={searchText}
+  onChange={(e) => setSearchText(e.target.value)}
+  style={styles.searchInput}
+/>
           </div>
         </div>
 
