@@ -187,6 +187,9 @@ useEffect(() => {
         });
 
         setConversations(mappedConversations);
+        if (mappedConversations.length > 0 && !selectedChatId) {
+  setSelectedChatId(mappedConversations[0].id);
+}
 
         setUnreadCounts((prev) => {
           const next = { ...prev };
