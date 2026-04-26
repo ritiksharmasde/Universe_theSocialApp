@@ -103,9 +103,13 @@ const getUserConversations = async (req, res) => {
         ON current_member.conversation_id = c.id
        AND LOWER(current_member.user_email) = LOWER($1)
 
-      LEFT JOIN conversation_members other_member
-        ON other_member.conversation_id = c.id
-       AND LOWER(other_member.user_email) != LOWER($1)
+      LEFT JOIN LATERAL (
+  SELECT cm.user_email
+  FROM conversation_members cm
+  WHERE cm.conversation_id = c.id
+    AND LOWER(cm.user_email) != LOWER($1)
+  LIMIT 1
+) other_member ON TRUE
 
       LEFT JOIN users u
         ON LOWER(u.email) = LOWER(other_member.user_email)
