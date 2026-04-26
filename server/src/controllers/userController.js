@@ -57,22 +57,19 @@ const saveProfile = async (req, res) => {
       ]
     );
 // ---------------------------------------bot------
-
-    try {
+try {
   const botEmail = "bot@joinuniverse.co.in";
+  const conversationName = [botEmail, email].sort().join("-");
 
-  // check if conversation already exists
   const existing = await pool.query(
     `
-    SELECT c.id
-    FROM conversations c
-    JOIN conversation_members p1 ON c.id = p1.conversation_id
-    JOIN conversation_members p2 ON c.id = p2.conversation_id
-    WHERE LOWER(p1.user_email) = LOWER($1)
-  AND LOWER(p2.user_email) = LOWER($2)
+    SELECT id
+    FROM conversations
+    WHERE is_group = false
+      AND LOWER(name) = LOWER($1)
     LIMIT 1
     `,
-    [botEmail, email]
+    [conversationName]
   );
 
   let conversationId;
@@ -81,37 +78,63 @@ const saveProfile = async (req, res) => {
     conversationId = existing.rows[0].id;
   } else {
     const conv = await pool.query(
-      `INSERT INTO conversations (name, is_group)
-       VALUES ($1, false)
-       RETURNING id`,
-      [`bot-${email}`]
+      `
+      INSERT INTO conversations (name, is_group)
+      VALUES ($1, false)
+      RETURNING id
+      `,
+      [conversationName]
     );
 
     conversationId = conv.rows[0].id;
-
-    await pool.query(
-  `INSERT INTO conversation_members (conversation_id, user_email)
-   VALUES ($1, $2), ($1, $3)
-   ON CONFLICT DO NOTHING`,
-  [conversationId, botEmail, email]
-);
   }
 
   await pool.query(
-    `INSERT INTO messages (conversation_id, sender_email, message_text)
-     VALUES ($1, $2, $3)`,
-    [
-      conversationId,
-      botEmail,
-      "Welcome to UniVerse 👋 Drop your first post!",
-    ]
+    `
+    INSERT INTO conversation_members (conversation_id, user_email)
+    VALUES ($1, $2)
+    ON CONFLICT DO NOTHING
+    `,
+    [conversationId, botEmail]
   );
 
+  await pool.query(
+    `
+    INSERT INTO conversation_members (conversation_id, user_email)
+    VALUES ($1, $2)
+    ON CONFLICT DO NOTHING
+    `,
+    [conversationId, email]
+  );
+
+  const alreadyWelcomed = await pool.query(
+    `
+    SELECT id
+    FROM messages
+    WHERE conversation_id = $1
+      AND LOWER(sender_email) = LOWER($2)
+    LIMIT 1
+    `,
+    [conversationId, botEmail]
+  );
+
+  if (alreadyWelcomed.rows.length === 0) {
+    await pool.query(
+      `
+      INSERT INTO messages (conversation_id, sender_email, message_text)
+      VALUES ($1, $2, $3)
+      `,
+      [
+        conversationId,
+        botEmail,
+        "Welcome to UniVerse 👋 Drop your first post!",
+      ]
+    );
+  }
 } catch (e) {
   console.log("bot failed (ignored):", e.message);
 }
-// ---------------------------------------bot------
-    
+// ---------------------------------------bot------    
     return res.status(200).json({
       message: "Profile saved successfully",
     });
