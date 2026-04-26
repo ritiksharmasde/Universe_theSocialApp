@@ -66,9 +66,10 @@ const saveProfile = async (req, res) => {
     `
     SELECT c.id
     FROM conversations c
-    JOIN conversation_participants p1 ON c.id = p1.conversation_id
-    JOIN conversation_participants p2 ON c.id = p2.conversation_id
-    WHERE p1.user_email = $1 AND p2.user_email = $2
+    JOIN conversation_members p1 ON c.id = p1.conversation_id
+    JOIN conversation_members p2 ON c.id = p2.conversation_id
+    WHERE LOWER(p1.user_email) = LOWER($1)
+  AND LOWER(p2.user_email) = LOWER($2)
     LIMIT 1
     `,
     [botEmail, email]
@@ -89,10 +90,11 @@ const saveProfile = async (req, res) => {
     conversationId = conv.rows[0].id;
 
     await pool.query(
-      `INSERT INTO conversation_participants (conversation_id, user_email)
-       VALUES ($1, $2), ($1, $3)`,
-      [conversationId, botEmail, email]
-    );
+  `INSERT INTO conversation_members (conversation_id, user_email)
+   VALUES ($1, $2), ($1, $3)
+   ON CONFLICT DO NOTHING`,
+  [conversationId, botEmail, email]
+);
   }
 
   await pool.query(
