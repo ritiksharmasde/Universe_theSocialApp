@@ -191,15 +191,12 @@ useEffect(() => {
   setSelectedChatId(mappedConversations[0].id);
 }
 
-        setUnreadCounts((prev) => {
-          const next = { ...prev };
-          mappedConversations.forEach((chat) => {
-            if (typeof next[Number(chat.id)] !== "number") {
-              next[Number(chat.id)] = 0;
-            }
-          });
-          return next;
-        });
+        const counts = {};
+mappedConversations.forEach((chat) => {
+  counts[Number(chat.id)] = Number(chat.unread_count || 0);
+});
+setUnreadCounts(counts);
+        
 
       if (activeConversationId) {
   setSelectedChatId(Number(activeConversationId));
