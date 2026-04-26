@@ -254,3 +254,8 @@ option {
 [data-theme="grey"] .feed-search-input::placeholder {
   color: #ffffff;   /* strong white */
 }
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
