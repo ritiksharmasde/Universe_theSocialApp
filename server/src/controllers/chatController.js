@@ -87,7 +87,7 @@ const getUserConversations = async (req, res) => {
         u.username AS other_username,
         u.profile_image_url AS other_profile_image_url,
         u.course AS other_course,
-        u.year AS other_year
+        u.year AS other_year,
 
 
 (
