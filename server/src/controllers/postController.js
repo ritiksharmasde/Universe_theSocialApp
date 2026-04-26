@@ -101,48 +101,57 @@ const count = await pool.query(
 );
 
 if (parseInt(count.rows[0].count) === 1) {
-  // 👍 BOT LIKE
-  await pool.query(
-    `INSERT INTO post_likes (post_id, user_email)
-     VALUES ($1, $2)
-     ON CONFLICT DO NOTHING`,
-    [postId, "bot@joinuniverse.co.in"]
-  );
+  try {
+    const botEmail = "bot@joinuniverse.co.in";
 
-  // 💬 BOT COMMENT
-  await pool.query(
-    `INSERT INTO post_comments (
-      post_id,
-      user_email,
-      user_name,
-      comment_text
-    )
-     VALUES ($1, $2, $3, $4)`,
-    [
-      postId,
-      "bot@joinuniverse.co.in",
-      "Shanaya",
-      "Nice  👋 keep sharing!"
-    ]
-  );
+    await pool.query(
+      `INSERT INTO post_likes (post_id, user_email)
+       VALUES ($1, $2)
+       ON CONFLICT (post_id, user_email) DO NOTHING`,
+      [postId, botEmail]
+    );
 
-  // 🔄 UPDATE COUNTS
-  await pool.query(
-  `UPDATE posts
-   SET likes_count = (
-     SELECT COUNT(*) FROM post_likes WHERE post_id = $1
-   ),
-   comments_count = (
-     SELECT COUNT(*) FROM post_comments WHERE post_id = $1
-   )
-   WHERE id = $1`,
-  [postId]
-);
+    await pool.query(
+      `INSERT INTO post_comments (
+        post_id,
+        user_email,
+        user_name,
+        user_profile_image_url,
+        comment_text
+      )
+       VALUES ($1, $2, $3, $4, $5)`,
+      [
+        postId,
+        botEmail,
+        "UniVerse Bot",
+        null,
+        "Welcome to UniVerse 👋 first post is live!",
+      ]
+    );
+
+    await pool.query(
+      `UPDATE posts
+       SET likes_count = (
+         SELECT COUNT(*) FROM post_likes WHERE post_id = $1
+       ),
+       comments_count = (
+         SELECT COUNT(*) FROM post_comments WHERE post_id = $1
+       )
+       WHERE id = $1`,
+      [postId]
+    );
+  } catch (botError) {
+    console.log("post bot failed (ignored):", botError.message);
+  }
 }
-
+    
     res.status(201).json({
       message: "Post created successfully",
-      post: result.rows[0],
+      post: {
+  ...post,
+  likes_count: parseInt(count.rows[0].count) === 1 ? 1 : post.likes_count,
+  comments_count: parseInt(count.rows[0].count) === 1 ? 1 : post.comments_count,
+},
     });
   } catch (error) {
     console.error("createPost error:", error);
