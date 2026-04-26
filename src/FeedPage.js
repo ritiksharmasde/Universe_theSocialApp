@@ -592,7 +592,7 @@ body: JSON.stringify({
           {/* College Logo */}
           <div style={styles.collegeLogo}>
             <img
-              src="/UPES-LOGO-01.jpg"
+              src="/logo.png"
               alt="College Logo"
               style={styles.collegeLogoImage}
               title="UPES"
