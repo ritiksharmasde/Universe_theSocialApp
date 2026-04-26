@@ -177,10 +177,10 @@ useEffect(() => {
     displayName,
     otherEmail: chat.other_email,
     avatarUrl: chat.other_profile_image_url
-      ? chat.other_profile_image_url.startsWith("http")
-        ? chat.other_profile_image_url
-        : `${SERVER_BASE_URL}${chat.other_profile_image_url}`
-      : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}`,
+  ? chat.other_profile_image_url.startsWith("http")
+    ? chat.other_profile_image_url
+    : `${SERVER_BASE_URL}${chat.other_profile_image_url}`
+  : "",
     course: chat.other_course || "",
     year: chat.other_year || "",
           };
