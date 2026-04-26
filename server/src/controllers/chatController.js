@@ -89,6 +89,14 @@ const getUserConversations = async (req, res) => {
         u.course AS other_course,
         u.year AS other_year
 
+
+(
+    SELECT COUNT(*)
+    FROM messages m
+    WHERE m.conversation_id = c.id
+      AND LOWER(m.sender_email) != LOWER($1)
+  ) AS unread_count
+
       FROM conversations c
 
       JOIN conversation_members current_member
