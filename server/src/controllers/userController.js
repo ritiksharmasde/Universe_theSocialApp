@@ -56,6 +56,24 @@ const saveProfile = async (req, res) => {
         email,
       ]
     );
+    const existing = await pool.query(
+  `SELECT 1 FROM messages 
+   WHERE sender_email = $1 AND receiver_email = $2 
+   LIMIT 1`,
+  ["bot@joinuniverse.co.in", email]
+);
+
+if (existing.rows.length === 0) {
+  await pool.query(
+    `INSERT INTO messages (sender_email, receiver_email, message_text)
+     VALUES ($1, $2, $3)`,
+    [
+      "bot@joinuniverse.co.in",
+      email,
+      "Welcome to UniVerse 👋\nStart by posting something or joining a group!"
+    ]
+  );
+}
 
     return res.status(200).json({
       message: "Profile saved successfully",
