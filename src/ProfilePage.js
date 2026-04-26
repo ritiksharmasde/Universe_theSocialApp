@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import API_BASE_URL from "./api";
 
+const premiumGlass = {
+  background: "rgba(15, 23, 42, 0.82)",
+  border: "1px solid rgba(148, 163, 184, 0.22)",
+  backdropFilter: "blur(18px)",
+  WebkitBackdropFilter: "blur(18px)",
+  boxShadow: "0 24px 70px rgba(0,0,0,0.35)",
+};
 function ProfilePage({ email, onBack, onComplete }) {
   const [profileImage, setProfileImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -256,15 +263,16 @@ function InputField({ label, error, ...props }) {
 
 const styles = {
   page: {
-    minHeight: "100dvh",
-    background: "transparent",
-    color: "var(--text-primary)",
-    padding: "clamp(14px, 3vw, 28px)",
-    boxSizing: "border-box",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  minHeight: "100dvh",
+  background:
+    "radial-gradient(circle at top left, rgba(139,92,246,0.22), transparent 34%), #0f172a",
+  color: "#f8fafc",
+  padding: "clamp(14px, 3vw, 28px)",
+  boxSizing: "border-box",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+},
 
   shell: {
     width: "100%",
@@ -275,18 +283,11 @@ const styles = {
   },
 
   heroCard: {
-    position: "relative",
-    overflow: "hidden",
-    borderRadius: "30px",
-    padding: "34px 24px",
-    background:
-      "linear-gradient(145deg, rgba(99,102,241,0.28), rgba(139,92,246,0.12)), var(--glass-bg)",
-    border: "1px solid var(--border-color)",
-    backdropFilter: "blur(18px)",
-    WebkitBackdropFilter: "blur(18px)",
-    boxShadow: "0 24px 70px rgba(0,0,0,0.18)",
-    textAlign: "center",
-  },
+  ...premiumGlass,
+  borderRadius: "30px",
+  padding: "34px 24px",
+  textAlign: "center",
+},
 
   badge: {
     display: "inline-flex",
@@ -322,22 +323,21 @@ const styles = {
   },
 
   title: {
-    margin: "0 0 10px",
-    fontSize: "clamp(28px, 4vw, 42px)",
-    lineHeight: 1.05,
-    fontWeight: "900",
-    letterSpacing: "-0.04em",
-    color: "var(--text-primary)",
-  },
+  margin: "0 0 10px",
+  fontSize: "clamp(28px, 4vw, 42px)",
+  lineHeight: 1.05,
+  fontWeight: "900",
+  letterSpacing: "-0.04em",
+  color: "#f8fafc",
+},
 
-  subtitle: {
-    margin: "0 auto 24px",
-    maxWidth: "320px",
-    color: "var(--text-secondary)",
-    lineHeight: 1.65,
-    fontSize: "14px",
-  },
-
+ subtitle: {
+  margin: "0 auto 24px",
+  maxWidth: "320px",
+  color: "#cbd5e1",
+  lineHeight: 1.65,
+  fontSize: "14px",
+},
   uploadButton: {
     display: "inline-flex",
     alignItems: "center",
@@ -359,14 +359,10 @@ const styles = {
   },
 
   formCard: {
-    borderRadius: "30px",
-    padding: "clamp(20px, 4vw, 34px)",
-    background: "var(--glass-bg)",
-    border: "1px solid var(--border-color)",
-    backdropFilter: "blur(18px)",
-    WebkitBackdropFilter: "blur(18px)",
-    boxShadow: "0 24px 70px rgba(0,0,0,0.14)",
-  },
+  ...premiumGlass,
+  borderRadius: "30px",
+  padding: "clamp(20px, 4vw, 34px)",
+},
 
   form: {
     display: "flex",
@@ -394,43 +390,41 @@ const styles = {
   },
 
   label: {
-    fontSize: "13px",
-    fontWeight: "800",
-    color: "var(--text-primary)",
-  },
+  fontSize: "13px",
+  fontWeight: "800",
+  color: "#e5e7eb",
+},
 
   counter: {
-    fontSize: "12px",
-    color: "var(--text-secondary)",
-  },
+  fontSize: "12px",
+  color: "#94a3b8",
+},
 
   input: {
-    width: "100%",
-    padding: "14px 15px",
-    borderRadius: "16px",
-    background: "var(--input-bg)",
-    border: "1px solid var(--border-color)",
-    color: "var(--text-primary)",
-    outline: "none",
-    boxSizing: "border-box",
-    fontSize: "14px",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
-  },
-
+  width: "100%",
+  padding: "14px 15px",
+  borderRadius: "16px",
+  background: "rgba(15, 23, 42, 0.76)",
+  border: "1px solid rgba(148, 163, 184, 0.28)",
+  color: "#f8fafc",
+  outline: "none",
+  boxSizing: "border-box",
+  fontSize: "14px",
+},
   textarea: {
-    width: "100%",
-    minHeight: "132px",
-    padding: "14px 15px",
-    borderRadius: "18px",
-    background: "var(--input-bg)",
-    border: "1px solid var(--border-color)",
-    color: "var(--text-primary)",
-    outline: "none",
-    resize: "vertical",
-    boxSizing: "border-box",
-    fontSize: "14px",
-    lineHeight: 1.6,
-  },
+  width: "100%",
+  minHeight: "132px",
+  padding: "14px 15px",
+  borderRadius: "18px",
+  background: "rgba(15, 23, 42, 0.76)",
+  border: "1px solid rgba(148, 163, 184, 0.28)",
+  color: "#f8fafc",
+  outline: "none",
+  resize: "vertical",
+  boxSizing: "border-box",
+  fontSize: "14px",
+  lineHeight: 1.6,
+},
 
   error: {
     margin: 0,
@@ -452,15 +446,15 @@ const styles = {
     cursor: "pointer",
   },
 
-  backButton: {
-    background: "transparent",
-    border: "none",
-    color: "var(--text-secondary)",
-    cursor: "pointer",
-    fontWeight: "700",
-    fontSize: "14px",
-    padding: "4px",
-  },
+ backButton: {
+  background: "transparent",
+  border: "none",
+  color: "#cbd5e1",
+  cursor: "pointer",
+  fontWeight: "700",
+  fontSize: "14px",
+  padding: "4px",
+},
 };
 
 export default ProfilePage;
