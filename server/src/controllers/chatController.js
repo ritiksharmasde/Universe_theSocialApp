@@ -94,7 +94,8 @@ const getUserConversations = async (req, res) => {
     SELECT COUNT(*)
     FROM messages m
     WHERE m.conversation_id = c.id
-      AND LOWER(m.sender_email) != LOWER($1)
+  AND LOWER(m.sender_email) != LOWER($1)
+  AND m.is_read = FALSE
   ) AS unread_count
 
       FROM conversations c
@@ -159,6 +160,16 @@ const getConversationMessages = async (req, res) => {
     if (memberCheck.rows.length === 0) {
       return res.status(403).json({ error: "You are not part of this conversation." });
     }
+await pool.query(
+      `
+      UPDATE messages
+      SET is_read = TRUE
+      WHERE conversation_id = $1
+        AND LOWER(sender_email) != LOWER($2)
+        AND is_read = FALSE
+      `,
+      [conversationId, userEmail]
+    );
 
     const result = await pool.query(
       `
