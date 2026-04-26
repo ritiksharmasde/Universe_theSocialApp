@@ -589,6 +589,16 @@ body: JSON.stringify({
 
       {!isMobile && (
         <aside style={styles.rightPanel}>
+          {/* College Logo */}
+          <div style={styles.collegeLogo}>
+            <img
+              src="https://upload.wikimedia.org/wikipedia/en/d/d8/UPES_Logo.png"
+              alt="College Logo"
+              style={styles.collegeLogoImage}
+              title="UPES"
+            />
+          </div>
+          
           {profileCardNode}
           {suggestionsNode}
         </aside>
@@ -628,6 +638,29 @@ const cardSubText = "var(--text-secondary)";
     boxSizing: "border-box",
     alignItems: "start",
   },
+
+  collegeLogo: {
+    background: cardBg,
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    border: "1px solid var(--border-color)",
+    borderRadius: "16px",
+    padding: "12px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+    width: "100%",
+    boxSizing: "border-box",
+    height: "80px",
+  },
+
+  collegeLogoImage: {
+    maxWidth: "100%",
+    maxHeight: "100%",
+    objectFit: "contain",
+  },
+
   suggestionAvatarImage: {
     width: "42px",
     height: "42px",
