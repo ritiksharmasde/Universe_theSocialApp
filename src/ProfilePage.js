@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API_BASE_URL from "./api";
-const glass = {
-  background: "rgba(15, 25, 45, 0.75)",
-  backdropFilter: "blur(14px)",
-  WebkitBackdropFilter: "blur(14px)",
-  border: "1px solid rgba(255,255,255,0.08)",
-};
+
 function ProfilePage({ email, onBack, onComplete }) {
   const [profileImage, setProfileImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -18,7 +13,7 @@ function ProfilePage({ email, onBack, onComplete }) {
   });
 
   const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState("");
+
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -37,8 +32,6 @@ function ProfilePage({ email, onBack, onComplete }) {
       ...prev,
       [name]: "",
     }));
-
-    setMessage("");
   };
 
   const handleImageChange = (e) => {
@@ -54,16 +47,15 @@ function ProfilePage({ email, onBack, onComplete }) {
 
     const imageFormData = new FormData();
     imageFormData.append("image", profileImage);
-    
 
     try {
       const response = await fetch(`${API_BASE_URL}/user/upload-profile-image`, {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-  body: imageFormData,
-});
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: imageFormData,
+      });
 
       const data = await response.json();
 
@@ -82,13 +74,8 @@ function ProfilePage({ email, onBack, onComplete }) {
   const validateForm = () => {
     const nextErrors = {};
 
-    if (!formData.fullName.trim()) {
-      nextErrors.fullName = "Full name is required.";
-    }
-
-    if (!formData.course.trim()) {
-      nextErrors.course = "Course is required.";
-    }
+    if (!formData.fullName.trim()) nextErrors.fullName = "Full name is required.";
+    if (!formData.course.trim()) nextErrors.course = "Course is required.";
 
     if (!formData.year.trim()) {
       nextErrors.year = "Year is required.";
@@ -106,17 +93,13 @@ function ProfilePage({ email, onBack, onComplete }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     if (!validateForm()) return;
 
     let imageUrl = null;
 
     if (profileImage) {
       imageUrl = await uploadProfileImage();
-      if (!imageUrl && profileImage) {
-        alert("Image upload failed");
-        return;
-      }
+      if (!imageUrl) return;
     }
 
     try {
@@ -125,10 +108,8 @@ function ProfilePage({ email, onBack, onComplete }) {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-
         },
         body: JSON.stringify({
-          
           fullName: formData.fullName,
           username: formData.username || "",
           course: formData.course,
@@ -167,104 +148,97 @@ function ProfilePage({ email, onBack, onComplete }) {
     }
   };
 
+  const avatarSrc =
+    previewUrl ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      formData.fullName || "User"
+    )}&background=6366f1&color=fff&bold=true`;
+
   return (
     <div style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Complete Your Profile</h1>
-        <p style={styles.subtitle}>
-          Set up your student profile for <strong>{email}</strong>
-        </p>
+      <div style={styles.shell}>
+        <section style={styles.heroCard}>
+          <div style={styles.badge}>Student Profile</div>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <InputField
-            label="Full Name"
-            name="fullName"
-            placeholder="Enter your full name"
-            value={formData.fullName}
-            onChange={handleChange}
-            error={errors.fullName}
-          />
-
-          <InputField
-            label="Course"
-            name="course"
-            placeholder="e.g. B.Tech CSE"
-            value={formData.course}
-            onChange={handleChange}
-            error={errors.course}
-          />
-
-          <InputField
-            label="Year"
-            name="year"
-            placeholder="Enter year (1 to 5)"
-            value={formData.year}
-            onChange={handleChange}
-            error={errors.year}
-          />
-
-          <div style={styles.field}>
-            <label style={styles.label}>Bio</label>
-            <textarea
-              name="bio"
-              placeholder="Write a short bio"
-              value={formData.bio}
-              onChange={handleChange}
-              style={styles.textarea}
-            />
-            {errors.bio ? <p style={styles.error}>{errors.bio}</p> : null}
+          <div style={styles.avatarRing}>
+            <img src={avatarSrc} alt="Profile" style={styles.avatar} />
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Profile Image</label>
-            <div style={styles.imageContainer}>
-              <img
-                src={
-                  previewUrl
-                    ? previewUrl
-                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.fullName || "User")}`
-                }
-                alt="Profile"
-                style={styles.avatar}
+          <h1 style={styles.title}>Complete Your Profile</h1>
+          <p style={styles.subtitle}>
+            Build your campus identity for <strong>{email}</strong>
+          </p>
+
+          <label style={styles.uploadButton}>
+            {profileImage ? "Change Photo" : "Upload Photo"}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: "none" }}
+            />
+          </label>
+
+          {profileImage && <p style={styles.fileName}>{profileImage.name}</p>}
+        </section>
+
+        <section style={styles.formCard}>
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <div style={styles.grid}>
+              <InputField
+                label="Full Name"
+                name="fullName"
+                placeholder="Enter your full name"
+                value={formData.fullName}
+                onChange={handleChange}
+                error={errors.fullName}
               />
 
-              <div style={styles.uploadWrapper}>
-                <label style={styles.uploadButton}>
-                  Upload Image
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    style={{ display: "none" }}
-                  />
-                </label>
+              <InputField
+                label="Course"
+                name="course"
+                placeholder="e.g. B.Tech CSE"
+                value={formData.course}
+                onChange={handleChange}
+                error={errors.course}
+              />
 
-                {profileImage && (
-                  <span style={styles.fileName}>{profileImage.name}</span>
-                )}
+              <InputField
+                label="Year"
+                name="year"
+                placeholder="1 to 5"
+                value={formData.year}
+                onChange={handleChange}
+                error={errors.year}
+              />
+            </div>
+
+            <div style={styles.field}>
+              <div style={styles.labelRow}>
+                <label style={styles.label}>Bio</label>
+                <span style={styles.counter}>{formData.bio.length}/120</span>
               </div>
 
-              
-            </div>
-            {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt="Profile preview"
-                style={styles.previewImage}
+              <textarea
+                name="bio"
+                placeholder="Write a short bio about yourself..."
+                value={formData.bio}
+                onChange={handleChange}
+                style={styles.textarea}
               />
-            ) : null}
-          </div>
 
-          {message ? <p style={styles.success}>{message}</p> : null}
+              {errors.bio && <p style={styles.error}>{errors.bio}</p>}
+            </div>
 
-          <button type="submit" style={styles.primaryButton}>
-            Save Profile
-          </button>
-        </form>
+            <button type="submit" style={styles.primaryButton}>
+              Save Profile
+            </button>
 
-        <button type="button" onClick={onBack} style={styles.linkButton}>
-          Back
-        </button>
+            <button type="button" onClick={onBack} style={styles.backButton}>
+              Back
+            </button>
+          </form>
+        </section>
       </div>
     </div>
   );
@@ -275,7 +249,7 @@ function InputField({ label, error, ...props }) {
     <div style={styles.field}>
       <label style={styles.label}>{label}</label>
       <input {...props} style={styles.input} />
-      {error ? <p style={styles.error}>{error}</p> : null}
+      {error && <p style={styles.error}>{error}</p>}
     </div>
   );
 }
@@ -284,163 +258,208 @@ const styles = {
   page: {
     minHeight: "100dvh",
     background: "transparent",
+    color: "var(--text-primary)",
+    padding: "clamp(14px, 3vw, 28px)",
+    boxSizing: "border-box",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: "20px",
-    color: "var(--text-primary)",
-    fontFamily: "Arial, sans-serif",
   },
-  imageContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "10px",
+
+  shell: {
+    width: "100%",
+    maxWidth: "1060px",
+    display: "grid",
+    gridTemplateColumns: "minmax(280px, 380px) minmax(0, 1fr)",
+    gap: "22px",
+  },
+
+  heroCard: {
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: "30px",
+    padding: "34px 24px",
+    background:
+      "linear-gradient(145deg, rgba(99,102,241,0.28), rgba(139,92,246,0.12)), var(--glass-bg)",
+    border: "1px solid var(--border-color)",
+    backdropFilter: "blur(18px)",
+    WebkitBackdropFilter: "blur(18px)",
+    boxShadow: "0 24px 70px rgba(0,0,0,0.18)",
+    textAlign: "center",
+  },
+
+  badge: {
+    display: "inline-flex",
+    padding: "8px 13px",
+    borderRadius: "999px",
+    background: "rgba(99,102,241,0.16)",
+    color: "var(--text-primary)",
+    border: "1px solid rgba(99,102,241,0.28)",
+    fontSize: "12px",
+    fontWeight: "800",
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
+    marginBottom: "22px",
+  },
+
+  avatarRing: {
+    width: "148px",
+    height: "148px",
+    margin: "0 auto 20px",
+    borderRadius: "50%",
+    padding: "5px",
+    background: "linear-gradient(135deg, #6366f1, #a855f7, #ec4899)",
+    boxShadow: "0 18px 50px rgba(99,102,241,0.35)",
   },
 
   avatar: {
-    width: "clamp(80px, 25vw, 120px)",
-    height: "clamp(80px, 25vw, 120px)",
+    width: "100%",
+    height: "100%",
     borderRadius: "50%",
     objectFit: "cover",
-    border: "2px solid rgba(255,255,255,0.08)",
-  },
-  card: {
-    width: "100%",
-    maxWidth: "560px",
-    ...glass,
-    borderRadius: "24px",
-    padding: "clamp(16px, 4vw, 32px)",
+    border: "5px solid var(--bg-surface)",
     boxSizing: "border-box",
   },
+
   title: {
-    margin: 0,
-    fontSize: "clamp(22px, 5vw, 32px)",
-    marginBottom: "12px",
+    margin: "0 0 10px",
+    fontSize: "clamp(28px, 4vw, 42px)",
+    lineHeight: 1.05,
+    fontWeight: "900",
+    letterSpacing: "-0.04em",
+    color: "var(--text-primary)",
   },
+
   subtitle: {
-    marginTop: 0,
-    marginBottom: "24px",
+    margin: "0 auto 24px",
+    maxWidth: "320px",
     color: "var(--text-secondary)",
-    lineHeight: 1.6,
+    lineHeight: 1.65,
+    fontSize: "14px",
   },
+
+  uploadButton: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "12px 18px",
+    borderRadius: "16px",
+    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+    color: "#fff",
+    fontWeight: "800",
+    cursor: "pointer",
+    boxShadow: "0 14px 30px rgba(99,102,241,0.32)",
+  },
+
+  fileName: {
+    margin: "12px 0 0",
+    fontSize: "12px",
+    color: "var(--text-secondary)",
+    wordBreak: "break-word",
+  },
+
+  formCard: {
+    borderRadius: "30px",
+    padding: "clamp(20px, 4vw, 34px)",
+    background: "var(--glass-bg)",
+    border: "1px solid var(--border-color)",
+    backdropFilter: "blur(18px)",
+    WebkitBackdropFilter: "blur(18px)",
+    boxShadow: "0 24px 70px rgba(0,0,0,0.14)",
+  },
+
   form: {
     display: "flex",
     flexDirection: "column",
+    gap: "18px",
+  },
+
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
     gap: "16px",
   },
+
   field: {
     display: "flex",
     flexDirection: "column",
     gap: "8px",
   },
-  label: {
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "var(--text-primary)"
-  },
-  uploadWrapper: {
+
+  labelRow: {
     display: "flex",
-    flexDirection: "column",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: "8px",
+    gap: "12px",
   },
 
-  uploadButton: {
-    padding: "10px 16px",
-    borderRadius: "10px",
-    background: "#6366f1",
-    color: "#fff",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontSize: "14px",
-    textAlign: "center",
-    transition: "all 0.2s ease",
+  label: {
+    fontSize: "13px",
+    fontWeight: "800",
+    color: "var(--text-primary)",
   },
 
-  fileName: {
+  counter: {
     fontSize: "12px",
-    color: "#94a3b8",
+    color: "var(--text-secondary)",
   },
+
   input: {
     width: "100%",
-    padding: "clamp(10px, 3vw, 14px) clamp(12px, 3vw, 16px)",
-    borderRadius: "14px",
+    padding: "14px 15px",
+    borderRadius: "16px",
     background: "var(--input-bg)",
-border: "1px solid var(--border-color)",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-color: "var(--text-primary)",
-// color: "var(--text-primary)",
+    border: "1px solid var(--border-color)",
+    color: "var(--text-primary)",
     outline: "none",
     boxSizing: "border-box",
+    fontSize: "14px",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
   },
+
   textarea: {
     width: "100%",
-    minHeight: "clamp(80px, 15vw, 120px)",
-    padding: "clamp(10px, 3vw, 14px) clamp(12px, 3vw, 16px)",
-    borderRadius: "14px",
+    minHeight: "132px",
+    padding: "14px 15px",
+    borderRadius: "18px",
     background: "var(--input-bg)",
-border: "1px solid var(--border-color)",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-color: "var(--text-primary)",
+    border: "1px solid var(--border-color)",
+    color: "var(--text-primary)",
     outline: "none",
     resize: "vertical",
     boxSizing: "border-box",
-  },
-  previewImage: {
-    width: "clamp(80px, 25vw, 120px)",
-    height: "clamp(80px, 25vw, 120px)",
-    objectFit: "cover",
-    borderRadius: "12px",
-    marginTop: "8px",
-  },
-  error: {
-    color: "#fda4af",
-    margin: 0,
     fontSize: "14px",
-  },
-  success: {
-    color: "#86efac",
-    margin: 0,
-    fontSize: "14px",
-  },
-  uploadButton: {
-    padding: "10px 18px",
-    borderRadius: "12px",
-    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-    color: "#fff",
-    fontWeight: "600",
-    cursor: "pointer",
-    textAlign: "center",
-    transition: "0.2s",
+    lineHeight: 1.6,
   },
 
-  fileName: {
+  error: {
+    margin: 0,
+    color: "#fb7185",
     fontSize: "13px",
-    color: "var(--text-secondary)"
+    fontWeight: "600",
   },
+
   primaryButton: {
     width: "100%",
-    padding: "14px",
-    borderRadius: "14px",
+    padding: "15px",
+    borderRadius: "18px",
     border: "none",
     background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-color: "#fff",
-boxShadow: "0 4px 12px rgba(99,102,241,0.35)",
-    fontWeight: "bold",
-    fontSize: "16px",
+    color: "#fff",
+    boxShadow: "0 18px 36px rgba(99,102,241,0.35)",
+    fontWeight: "900",
+    fontSize: "15px",
     cursor: "pointer",
-    marginTop: "4px",
   },
-  linkButton: {
-    marginTop: "16px",
+
+  backButton: {
     background: "transparent",
     border: "none",
-    color: "#ffffff",
-    textDecoration: "underline",
+    color: "var(--text-secondary)",
     cursor: "pointer",
+    fontWeight: "700",
     fontSize: "14px",
-    padding: 0,
+    padding: "4px",
   },
 };
 
