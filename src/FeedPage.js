@@ -592,7 +592,7 @@ body: JSON.stringify({
           {/* College Logo */}
           <div style={styles.collegeLogo}>
             <img
-              src="/logo.png"
+              src="https://indiaeducationdiary.in/wp-content/uploads/2022/01/UPES-LOGO-01.jpg"
               alt="College Logo"
               style={styles.collegeLogoImage}
               title="UPES"
