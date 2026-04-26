@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
-import { FiSend, FiSearch, FiMenu, FiSmile  } from "react-icons/fi";
+import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import { FiSend, FiSearch, FiMenu, FiSmile } from "react-icons/fi";
 import EmojiPicker from "emoji-picker-react";
 import socket from "./socket";
-import API_BASE_URL, {SERVER_BASE_URL} from "./api";
+import API_BASE_URL, { SERVER_BASE_URL } from "./api";
 import useBreakpoint from "./useBreakpoint";
+
 const glass = {
   background: "var(--glass-bg)",
   backdropFilter: "blur(14px)",
@@ -25,66 +26,87 @@ function MessagesPage({
   const [messageText, setMessageText] = useState("");
   const [showChatList, setShowChatList] = useState(true);
   const [searchText, setSearchText] = useState("");
+  
+  // Refs for avoiding stale closures
   const conversationsRef = useRef([]);
   const messagesEndRef = useRef(null);
   const messagesRef = useRef([]);
   const receivedMessageIdsRef = useRef(new Set());
   const selectedChatIdRef = useRef(null);
-const currentUserEmailRef = useRef("");
+  const currentUserEmailRef = useRef("");
+  const blockStatusCacheRef = useRef({}); // Cache block statuses
+  const loadingStateRef = useRef({}); // Track which messages are being loaded
+  
+  // State
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false);
-  // const [unreadCounts, setUnreadCounts] = useState({});
-// const currentUserEmailRef.current = currentUserEmail.toLowerCase().trim();
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  
   const normalizedSelectedChatId =
     selectedChatId !== null ? Number(selectedChatId) : null;
 
-  
-
+  // ============ FILTERING ============
   const filteredChats = useMemo(() => {
-  return conversations.filter((chat) => {
-    const text = `${chat.name || ""} ${chat.displayName || ""}`.toLowerCase();
-    return text.includes(searchText.toLowerCase());
-  });
-}, [conversations, searchText]);
+    return conversations.filter((chat) => {
+      const text = `${chat.name || ""} ${chat.displayName || ""}`.toLowerCase();
+      return text.includes(searchText.toLowerCase());
+    });
+  }, [conversations, searchText]);
 
-  
   const selectedChat =
     filteredChats.find((chat) => Number(chat.id) === normalizedSelectedChatId) ||
     null;
-  
-useEffect(() => {
-  messagesRef.current = messages;
-}, [messages]);
-  
-  const handleEmojiClick = (emojiData) => {
-  setMessageText((prev) => prev + emojiData.emoji);
-};
 
-useEffect(() => {
-  selectedChatIdRef.current = normalizedSelectedChatId;
-}, [normalizedSelectedChatId]);
-useEffect(() => {
-  currentUserEmailRef.current = currentUserEmail.toLowerCase().trim();
-}, [currentUserEmail]);
-  
-useEffect(() => {
-  if (filteredChats.length === 0) {
-    setSelectedChatId(null);
-    setMessages([]);
-    return;
-  }
-  
-  const selectedStillExists = filteredChats.some(
-    (chat) => Number(chat.id) === Number(normalizedSelectedChatId)
-  );
+  // ============ REF SYNC ============
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
-  if (!selectedStillExists && normalizedSelectedChatId !== null) {
-    setSelectedChatId(null);
-    setMessages([]);
-  }
-}, [filteredChats, normalizedSelectedChatId]);
+  useEffect(() => {
+    selectedChatIdRef.current = normalizedSelectedChatId;
+  }, [normalizedSelectedChatId]);
 
+  useEffect(() => {
+    currentUserEmailRef.current = currentUserEmail.toLowerCase().trim();
+  }, [currentUserEmail]);
+
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
+
+  // ============ EMOJI PICKER ============
+  const handleEmojiClick = useCallback((emojiData) => {
+    setMessageText((prev) => prev + emojiData.emoji);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = () => setShowEmojiPicker(false);
+    if (showEmojiPicker) {
+      window.addEventListener("click", handleClickOutside);
+    }
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, [showEmojiPicker]);
+
+  // ============ CHAT SELECTION & FILTERING ============
+  useEffect(() => {
+    if (filteredChats.length === 0) {
+      setSelectedChatId(null);
+      setMessages([]);
+      return;
+    }
+
+    const selectedStillExists = filteredChats.some(
+      (chat) => Number(chat.id) === Number(normalizedSelectedChatId)
+    );
+
+    if (!selectedStillExists && normalizedSelectedChatId !== null) {
+      setSelectedChatId(null);
+      setMessages([]);
+    }
+  }, [filteredChats, normalizedSelectedChatId]);
+
+  // ============ ACTIVE CONVERSATION ID EFFECT ============
   useEffect(() => {
     if (activeConversationId) {
       setSelectedChatId(Number(activeConversationId));
@@ -99,6 +121,7 @@ useEffect(() => {
     }
   }, [activeConversationId, isMobile]);
 
+  // ============ BLOCK STATUS (WITH CACHING) ============
   useEffect(() => {
     const fetchBlockStatus = async () => {
       if (!selectedChat?.otherEmail || !currentUserEmail) {
@@ -106,99 +129,105 @@ useEffect(() => {
         return;
       }
 
+      const cacheKey = selectedChat.otherEmail.toLowerCase();
+
+      // Check cache first
+      if (blockStatusCacheRef.current[cacheKey] !== undefined) {
+        setIsBlocked(blockStatusCacheRef.current[cacheKey]);
+        return;
+      }
+
       try {
         const response = await fetch(
-  `${API_BASE_URL}/user/block-status?otherUserEmail=${encodeURIComponent(selectedChat.otherEmail)}`,
-  {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  }
-);
-        const data = await response.json();
-
+          `${API_BASE_URL}/user/block-status?otherUserEmail=${encodeURIComponent(
+            selectedChat.otherEmail
+          )}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        
         if (!response.ok) {
+          console.error("Failed to fetch block status");
           return;
         }
 
-        setIsBlocked(Boolean(data.isBlocked));
+        const data = await response.json();
+        const blocked = Boolean(data.isBlocked);
+        
+        // Cache it
+        blockStatusCacheRef.current[cacheKey] = blocked;
+        setIsBlocked(blocked);
       } catch (error) {
         console.error("fetch block status error:", error);
       }
     };
 
     fetchBlockStatus();
-  }, [selectedChat, currentUserEmail]);
+  }, [selectedChat?.otherEmail, currentUserEmail]);
 
+  // ============ FETCH CONVERSATIONS (ONLY ON MOUNT OR WHEN NEEDED) ============
   useEffect(() => {
     const fetchConversations = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-});
-        const data = await response.json();
-
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        
         if (!response.ok) {
-          console.error(data.error || "Failed to fetch conversations");
+          console.error("Failed to fetch conversations");
           return;
         }
 
+        const data = await response.json();
+
         const mappedConversations = (data.conversations || []).map((chat) => {
-  if (chat.is_group) {
-    return {
-      ...chat,
-      id: Number(chat.id),
-      displayName: chat.name || "Group Chat",
-      otherEmail: null,
-      avatarUrl: "",
-    };
-  }
+          if (chat.is_group) {
+            return {
+              ...chat,
+              id: Number(chat.id),
+              displayName: chat.name || "Group Chat",
+              otherEmail: null,
+              avatarUrl: "",
+            };
+          }
 
-  const displayName =
-    chat.other_full_name ||
-    chat.other_username ||
-    chat.other_email?.split("@")[0] ||
-    "Conversation";
-          
-
-          // const parts = (chat.name || "").split("-");
-          // const otherEmail =
-          //   parts.find(
-          //     (part) => part.toLowerCase() !== currentUserEmail.toLowerCase()
-          //   ) || "";
-
-          // const shortName = otherEmail ? otherEmail.split("@")[0] : "Conversation";
+          const displayName =
+            chat.other_full_name ||
+            chat.other_username ||
+            chat.other_email?.split("@")[0] ||
+            "Conversation";
 
           return {
             ...chat,
-    id: Number(chat.id),
-    displayName,
-    otherEmail: chat.other_email,
-    avatarUrl: chat.other_profile_image_url
-  ? chat.other_profile_image_url.startsWith("http")
-    ? chat.other_profile_image_url
-    : `${SERVER_BASE_URL}${chat.other_profile_image_url}`
-  : "",
-    course: chat.other_course || "",
-    year: chat.other_year || "",
+            id: Number(chat.id),
+            displayName,
+            otherEmail: chat.other_email,
+            avatarUrl: chat.other_profile_image_url
+              ? chat.other_profile_image_url.startsWith("http")
+                ? chat.other_profile_image_url
+                : `${SERVER_BASE_URL}${chat.other_profile_image_url}`
+              : "",
+            course: chat.other_course || "",
+            year: chat.other_year || "",
           };
         });
 
         setConversations(mappedConversations);
-        
 
         const counts = {};
-mappedConversations.forEach((chat) => {
-  counts[Number(chat.id)] = Number(chat.unread_count || 0);
-});
-setUnreadCounts(counts);
-        
+        mappedConversations.forEach((chat) => {
+          counts[Number(chat.id)] = Number(chat.unread_count || 0);
+        });
+        setUnreadCounts(counts);
 
-      if (activeConversationId) {
-  setSelectedChatId(Number(activeConversationId));
-}
+        if (activeConversationId) {
+          setSelectedChatId(Number(activeConversationId));
+        }
       } catch (error) {
         console.error("fetchConversations error:", error);
       }
@@ -207,104 +236,35 @@ setUnreadCounts(counts);
     if (currentUserEmail) {
       fetchConversations();
     }
-  }, [currentUserEmail, activeConversationId]);
-  useEffect(() => {
-  conversationsRef.current = conversations;
-}, [conversations]);
+  }, [currentUserEmail]); // Only fetch when currentUserEmail changes (not on every render)
 
-//   useEffect(() => {
-//     const enrichConversations = async () => {
-//       try {
-//         const updated = await Promise.all(
-//           conversations.map(async (chat) => {
-//             if (chat.is_group || !chat.otherEmail) {
-//               return chat;
-//             }
-
-//             try {
-//               const response = await fetch(
-//   `${API_BASE_URL}/user/public/${encodeURIComponent(chat.otherEmail)}`,
-//   {
-//     headers: {
-//       Authorization: `Bearer ${localStorage.getItem("token")}`,
-//     },
-//   }
-// );
-//               if (!response.ok) {
-//                 return {
-//                   ...chat,
-//                   displayName: chat.displayName || chat.otherEmail.split("@")[0],
-//                   avatarUrl: chat.avatarUrl || "",
-//                   course: chat.course || "",
-//                   year: chat.year || "",
-//                 };
-//               }
-
-//               const data = await response.json();
-
-//               return {
-//                 ...chat,
-//                 displayName:
-//                   data?.user?.full_name ||
-//                   data?.user?.username ||
-//                   chat.displayName ||
-//                   chat.otherEmail.split("@")[0],
-//                 avatarUrl: data?.user?.profile_image_url
-//                   ? data.user.profile_image_url.startsWith("http")
-//                     ? data.user.profile_image_url
-//                     : `${SERVER_BASE_URL}${data.user.profile_image_url}`
-//                   : `https://ui-avatars.com/api/?name=${encodeURIComponent(data?.user?.full_name || chat.otherEmail.split("@")[0])}`,
-//                 course: data?.user?.course || chat.course || "",
-//                 year: data?.user?.year || chat.year || "",
-//               };
-//             } catch {
-//               return {
-//                 ...chat,
-//                 displayName: chat.displayName || chat.otherEmail.split("@")[0],
-//                 avatarUrl: chat.avatarUrl || "",
-//                 course: chat.course || "",
-//                 year: chat.year || "",
-//               };
-//             }
-//           })
-//         );
-
-//         const changed =
-//           JSON.stringify(updated) !== JSON.stringify(conversations);
-
-//         if (changed) {
-//           setConversations(updated);
-//         }
-//       } catch (error) {
-//         console.error("enrichConversations error:", error);
-//       }
-//     };
-
-//     if (conversations.length > 0) {
-//       enrichConversations();
-//     }
-//   }, [conversations]);
-
+  // ============ FETCH MESSAGES ============
   useEffect(() => {
     const fetchMessages = async () => {
       if (!normalizedSelectedChatId) return;
 
+      // Prevent duplicate loads
+      if (loadingStateRef.current[normalizedSelectedChatId]) return;
+      
+      loadingStateRef.current[normalizedSelectedChatId] = true;
+      setIsLoadingMessages(true);
+
       try {
         const response = await fetch(
-  `${API_BASE_URL}/chat/messages/${normalizedSelectedChatId}`,
-  {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  }
-);
-        const data = await response.json();
+          `${API_BASE_URL}/chat/messages/${normalizedSelectedChatId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (!response.ok) {
-          console.error(data.error || "Failed to fetch messages");
+          console.error("Failed to fetch messages");
           return;
         }
 
+        const data = await response.json();
         setMessages(data.messages || []);
         setUnreadCounts((prev) => ({
           ...prev,
@@ -312,90 +272,102 @@ setUnreadCounts(counts);
         }));
       } catch (error) {
         console.error("fetchMessages error:", error);
+      } finally {
+        loadingStateRef.current[normalizedSelectedChatId] = false;
+        setIsLoadingMessages(false);
       }
     };
 
     fetchMessages();
-  }, [normalizedSelectedChatId, currentUserEmail]);
+  }, [normalizedSelectedChatId]);
 
-  
+  // ============ SOCKET EVENTS ============
+  useEffect(() => {
+    const handleReceiveMessage = (message) => {
+      const messageKey =
+        message.id ||
+        `${message.conversation_id}-${message.sender_email}-${message.message_text}`;
 
-useEffect(() => {
-  const handleReceiveMessage = (message) => {
-  const messageKey = message.id || `${message.conversation_id}-${message.sender_email}-${message.message_text}`;
+      if (receivedMessageIdsRef.current.has(messageKey)) return;
+      receivedMessageIdsRef.current.add(messageKey);
 
-  if (receivedMessageIdsRef.current.has(messageKey)) return;
-  receivedMessageIdsRef.current.add(messageKey);
+      const incomingConversationId = Number(message.conversation_id);
+      const isMine =
+        message.sender_email?.toLowerCase().trim() === currentUserEmailRef.current;
 
-  const incomingConversationId = Number(message.conversation_id);
-  const isMine =
-    message.sender_email?.toLowerCase().trim() === currentUserEmailRef.current;
-setConversations((prev) => {
-  const target = prev.find(
-    (chat) => Number(chat.id) === incomingConversationId
-  );
+      // Move conversation to top
+      setConversations((prev) => {
+        const target = prev.find(
+          (chat) => Number(chat.id) === incomingConversationId
+        );
 
-  if (!target) return prev;
+        if (!target) return prev;
 
-  const rest = prev.filter(
-    (chat) => Number(chat.id) !== incomingConversationId
-  );
+        const rest = prev.filter(
+          (chat) => Number(chat.id) !== incomingConversationId
+        );
 
-  return [target, ...rest];
-});
-  if (incomingConversationId === Number(selectedChatIdRef.current)) {
-    setMessages((prev) => [...prev, message]);
+        return [target, ...rest];
+      });
 
-    if (!isMine) {
-      setUnreadCounts((prev) => ({
-        ...prev,
-        [incomingConversationId]: 0,
-      }));
+      // If viewing this conversation, add message
+      if (incomingConversationId === Number(selectedChatIdRef.current)) {
+        setMessages((prev) => [...prev, message]);
+
+        if (!isMine) {
+          setUnreadCounts((prev) => ({
+            ...prev,
+            [incomingConversationId]: 0,
+          }));
+        }
+        return;
+      }
+
+      // If not viewing, increment unread count
+      if (!isMine) {
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [incomingConversationId]: (prev[incomingConversationId] || 0) + 1,
+        }));
+      }
+    };
+
+    socket.on("receive_message", handleReceiveMessage);
+
+    return () => {
+      socket.off("receive_message", handleReceiveMessage);
+    };
+  }, []); // Empty dependency array is correct here
+
+  // ============ JOIN CONVERSATION ============
+  useEffect(() => {
+    if (normalizedSelectedChatId) {
+      socket.emit("join_conversation", normalizedSelectedChatId);
     }
+  }, [normalizedSelectedChatId]);
 
-    return;
-  }
+  // ============ AUTO-SCROLL ============
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+  }, [messages]);
 
-  if (!isMine) {
-    setUnreadCounts((prev) => ({
-      ...prev,
-      [incomingConversationId]: (prev[incomingConversationId] || 0) + 1,
-    }));
-  }
-};
+  // ============ SEND MESSAGE ============
+  const handleSend = useCallback(() => {
+    const text = messageText.trim();
 
-  socket.on("receive_message", handleReceiveMessage);
+    if (!text || !normalizedSelectedChatId) return;
 
-  return () => {
-    socket.off("receive_message", handleReceiveMessage);
-  };
-}, []); // 🔥 EMPTY dependency
-  
-useEffect(() => {
-  if (normalizedSelectedChatId) {
-    socket.emit("join_conversation", normalizedSelectedChatId);
-  }
-}, [normalizedSelectedChatId]);
-  
-  const handleSend = () => {
-  const text = messageText.trim();
+    socket.emit("send_message", {
+      conversationId: normalizedSelectedChatId,
+      messageText: text,
+    });
 
-  if (!text || !normalizedSelectedChatId) return;
+    setMessageText("");
+    setShowEmojiPicker(false);
+  }, [messageText, normalizedSelectedChatId]);
 
-  socket.emit("send_message", {
-    conversationId: normalizedSelectedChatId,
-    messageText: text,
-  });
-
-  setMessageText("");
-setShowEmojiPicker(false);
-};
-  
-useEffect(() => {
-  messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-}, [messages]);
-  
-  const handleSelectChat = (chatId) => {
+  // ============ SELECT CHAT ============
+  const handleSelectChat = useCallback((chatId) => {
     const numericId = Number(chatId);
     setSelectedChatId(numericId);
     setUnreadCounts((prev) => ({
@@ -406,9 +378,10 @@ useEffect(() => {
     if (isMobile) {
       setShowChatList(false);
     }
-  };
+  }, [isMobile]);
 
-  const handleBlockUser = async () => {
+  // ============ BLOCK USER ============
+  const handleBlockUser = useCallback(async () => {
     if (!selectedChat?.otherEmail) return;
 
     const action = isBlocked ? "unblock" : "block";
@@ -420,106 +393,108 @@ useEffect(() => {
 
     try {
       const response = await fetch(`${API_BASE_URL}/user/${action}`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-  body: JSON.stringify({
-    blockedEmail: selectedChat.otherEmail,
-  }),
-});
-
-      const data = await response.json();
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          blockedEmail: selectedChat.otherEmail,
+        }),
+      });
 
       if (!response.ok) {
+        const data = await response.json();
         alert(data.error || `Failed to ${action} user`);
         return;
       }
 
-      setIsBlocked(!isBlocked);
-      alert(isBlocked ? "User unblocked successfully." : "User blocked successfully.");
+      const newBlockStatus = !isBlocked;
+      setIsBlocked(newBlockStatus);
+      
+      // Update cache
+      blockStatusCacheRef.current[selectedChat.otherEmail.toLowerCase()] = newBlockStatus;
+      
+      alert(
+        newBlockStatus
+          ? "User blocked successfully."
+          : "User unblocked successfully."
+      );
     } catch (error) {
       console.error(`${action} user error:`, error);
       alert("Server error");
     }
-  };
+  }, [isBlocked, selectedChat?.otherEmail]);
 
-  const handleDeleteChat = async () => {
-  if (!selectedChat) return;
+  // ============ DELETE CHAT ============
+  const handleDeleteChat = useCallback(async () => {
+    if (!selectedChat) return;
 
-  if (
-    !window.confirm(
-      "Delete this chat for you? The other person will still keep their chat."
-    )
-  ) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/chat/delete-for-me`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-  body: JSON.stringify({
-    conversationId: selectedChat.id,
-  }),
-});
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.error || "Failed to delete chat");
+    if (
+      !window.confirm(
+        "Delete this chat for you? The other person will still keep their chat."
+      )
+    ) {
       return;
     }
 
-    setConversations((prev) => {
-  const updated = prev.filter(
-    (chat) => Number(chat.id) !== Number(selectedChat.id)
-  );
+    try {
+      const response = await fetch(`${API_BASE_URL}/chat/delete-for-me`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          conversationId: selectedChat.id,
+        }),
+      });
 
-  setSelectedChatId(null);
-  setMessages([]);
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.error || "Failed to delete chat");
+        return;
+      }
 
-  return updated;
-});
+      setConversations((prev) => {
+        const updated = prev.filter(
+          (chat) => Number(chat.id) !== Number(selectedChat.id)
+        );
 
-setUnreadCounts((prev) => {
-  const next = { ...prev };
-  delete next[Number(selectedChat.id)];
-  return next;
-});
+        setSelectedChatId(null);
+        setMessages([]);
 
-    if (isMobile) {
-      setShowChatList(true);
+        return updated;
+      });
+
+      setUnreadCounts((prev) => {
+        const next = { ...prev };
+        delete next[Number(selectedChat.id)];
+        return next;
+      });
+
+      if (isMobile) {
+        setShowChatList(true);
+      }
+    } catch (error) {
+      console.error("delete chat error:", error);
+      alert("Server error");
     }
-  } catch (error) {
-    console.error("delete chat error:", error);
-    alert("Server error");
-  }
-};
-  useEffect(() => {
-  const handleClickOutside = () => setShowEmojiPicker(false);
+  }, [selectedChat, isMobile]);
 
-  if (showEmojiPicker) {
-    window.addEventListener("click", handleClickOutside);
-  }
-
-  return () => window.removeEventListener("click", handleClickOutside);
-}, [showEmojiPicker]);
-
-  const handleOpenChats = () => {
+  const handleOpenChats = useCallback(() => {
     setShowChatList(true);
-  };
+  }, []);
 
+  // ============ RENDER ============
   return (
     <div style={styles.page}>
       <div
         style={{
           ...styles.layout,
-          gridTemplateColumns: isMobile ? "1fr" : "minmax(280px, 360px) minmax(0, 1fr)",
+          gridTemplateColumns: isMobile
+            ? "1fr"
+            : "minmax(280px, 360px) minmax(0, 1fr)",
         }}
       >
         {(!isMobile || showChatList) && (
@@ -546,23 +521,23 @@ setUnreadCounts((prev) => {
 
                 return (
                   <button
-  key={chat.id}
-  style={{
-    ...styles.chatItem,
-    ...(isActive ? styles.activeChatItem : {}),
-  }}
-  onClick={() => handleSelectChat(chat.id)}
-  onMouseEnter={(e) => {
-    if (!isActive) {
-      e.currentTarget.style.background = "var(--bg-surface-soft)";
-    }
-  }}
-  onMouseLeave={(e) => {
-    if (!isActive) {
-      e.currentTarget.style.background = "transparent";
-    }
-  }}
->
+                    key={chat.id}
+                    style={{
+                      ...styles.chatItem,
+                      ...(isActive ? styles.activeChatItem : {}),
+                    }}
+                    onClick={() => handleSelectChat(chat.id)}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = "var(--bg-surface-soft)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.background = "transparent";
+                      }
+                    }}
+                  >
                     {chat.avatarUrl ? (
                       <img
                         src={chat.avatarUrl}
@@ -591,8 +566,8 @@ setUnreadCounts((prev) => {
                         {chat.is_group
                           ? "Group chat"
                           : chat.course
-                            ? `${chat.course} • Year ${chat.year || ""}`
-                            : "Direct message"}
+                          ? `${chat.course} • Year ${chat.year || ""}`
+                          : "Direct message"}
                       </p>
                     </div>
                   </button>
@@ -623,15 +598,15 @@ setUnreadCounts((prev) => {
               <div style={styles.chatHeaderLeft}>
                 {isMobile && (
                   <button
-  style={styles.mobileMenuButton}
-  onClick={() => {
-    setShowChatList(true);
-    setSelectedChatId(null);
-    setMessages([]);
-  }}
->
-  <FiMenu />
-</button>
+                    style={styles.mobileMenuButton}
+                    onClick={() => {
+                      setShowChatList(true);
+                      setSelectedChatId(null);
+                      setMessages([]);
+                    }}
+                  >
+                    <FiMenu />
+                  </button>
                 )}
 
                 <div
@@ -653,7 +628,9 @@ setUnreadCounts((prev) => {
                     />
                   ) : (
                     <div style={styles.headerAvatarFallback}>
-                      {(selectedChat?.displayName || "C").charAt(0).toUpperCase()}
+                      {(selectedChat?.displayName || "C")
+                        .charAt(0)
+                        .toUpperCase()}
                     </div>
                   )}
                   <div style={styles.headerRow}>
@@ -664,7 +641,9 @@ setUnreadCounts((prev) => {
                         <button
                           style={{
                             ...styles.smallButton,
-                            ...(isBlocked ? styles.unblockUserButton : styles.blockUserButton),
+                            ...(isBlocked
+                              ? styles.unblockUserButton
+                              : styles.blockUserButton),
                           }}
                           onClick={handleBlockUser}
                         >
@@ -682,7 +661,6 @@ setUnreadCounts((prev) => {
                   </div>
                 </div>
               </div>
-
             </div>
 
             <div
@@ -695,30 +673,35 @@ setUnreadCounts((prev) => {
                   : {}),
               }}
             >
-              {!selectedChat ? (
-  <div style={styles.emptyStateCenter}>
-    <p style={styles.emptyText}>Select a chat to view messages.</p>
-  </div>
-) : messages.length === 0 ? (
-  <div style={styles.emptyStateCenter}>
-    <p style={styles.emptyText}>No messages yet.</p>
-  </div>
-) : (
-  messages.map((message) => (
-    <div
-      key={message.id}
-      style={
-        message.sender_email?.toLowerCase().trim() === currentUserEmailRef.current
-          ? styles.messageBubbleMe
-          : styles.messageBubbleOther
-      }
-    >
-      {message.message_text}
-    </div>
-  ))
-)}         
-<div ref={messagesEndRef} />
-  </div>
+              {isLoadingMessages ? (
+                <div style={styles.emptyStateCenter}>
+                  <p style={styles.emptyText}>Loading messages...</p>
+                </div>
+              ) : !selectedChat ? (
+                <div style={styles.emptyStateCenter}>
+                  <p style={styles.emptyText}>Select a chat to view messages.</p>
+                </div>
+              ) : messages.length === 0 ? (
+                <div style={styles.emptyStateCenter}>
+                  <p style={styles.emptyText}>No messages yet.</p>
+                </div>
+              ) : (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    style={
+                      message.sender_email?.toLowerCase().trim() ===
+                      currentUserEmailRef.current
+                        ? styles.messageBubbleMe
+                        : styles.messageBubbleOther
+                    }
+                  >
+                    {message.message_text}
+                  </div>
+                ))
+              )}
+              <div ref={messagesEndRef} />
+            </div>
 
             <div
               style={{
@@ -733,33 +716,33 @@ setUnreadCounts((prev) => {
                   : {}),
               }}
             >
-          <div style={styles.emojiWrapper}>
-  <button
-    type="button"
-    style={styles.emojiButton}
-    onClick={(e) => {
-  e.stopPropagation();
-  setShowEmojiPicker((prev) => !prev);
-}}
-  >
-    <FiSmile />
-  </button>
+              <div style={styles.emojiWrapper}>
+                <button
+                  type="button"
+                  style={styles.emojiButton}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowEmojiPicker((prev) => !prev);
+                  }}
+                >
+                  <FiSmile />
+                </button>
 
-  {showEmojiPicker && (
-    <div
-  style={styles.emojiPickerBox}
-  onClick={(e) => e.stopPropagation()}
->
-      <EmojiPicker
-        onEmojiClick={handleEmojiClick}
-        theme="auto"
-        width={300}
-        height={350}
-      />
-    </div>
-  )}
-</div>
-              
+                {showEmojiPicker && (
+                  <div
+                    style={styles.emojiPickerBox}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <EmojiPicker
+                      onEmojiClick={handleEmojiClick}
+                      theme="auto"
+                      width={300}
+                      height={350}
+                    />
+                  </div>
+                )}
+              </div>
+
               <input
                 type="text"
                 value={messageText}
@@ -770,7 +753,9 @@ setUnreadCounts((prev) => {
                     handleSend();
                   }
                 }}
-                placeholder={isBlocked ? "You have blocked this user." : "Type a message..."}
+                placeholder={
+                  isBlocked ? "You have blocked this user." : "Type a message..."
+                }
                 disabled={!selectedChat || isBlocked}
                 style={styles.input}
               />
@@ -813,45 +798,29 @@ const styles = {
     maxWidth: "100%",
     minWidth: 0,
   },
-  headerActions: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    flexWrap: "wrap",
-  },
-  unblockUserButton: {
-    border: "1px solid #16a34a",
-    color: "#16a34a",
-  },
-  deleteChatButton: {
-    border: "1px solid #6b7280",
-    background: "transparent",
-    color: "#374151",
-    borderRadius: "12px",
-    padding: "8px 12px",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
+
   chatList: {
-  ...glass,
-  borderRadius: "20px",
-  padding: "20px",
-  boxSizing: "border-box",
-  height: "100%",
-  minHeight: 0,
-  minWidth: 0,
-  overflowY: "auto",
-},
-  
+    ...glass,
+    borderRadius: "20px",
+    padding: "20px",
+    boxSizing: "border-box",
+    height: "100%",
+    minHeight: 0,
+    minWidth: 0,
+    overflowY: "auto",
+  },
+
   title: {
     margin: "0 0 18px 0",
     fontSize: "28px",
     color: "var(--text-primary)",
   },
+
   searchBox: {
     position: "relative",
     marginBottom: "16px",
   },
+
   searchIcon: {
     position: "absolute",
     left: "12px",
@@ -860,62 +829,19 @@ const styles = {
     color: "var(--text-secondary)",
     fontSize: "15px",
   },
+
   searchInput: {
-  width: "100%",
-  boxSizing: "border-box",
-  border: "1px solid var(--border-color)",
-  borderRadius: "14px",
-  padding: "12px 14px 12px 38px",
-  outline: "none",
-  fontSize: "14px",
-  background: "var(--input-bg)",
-  color: "var(--text-primary)",
-},
-  
-  chatHeaderLeft: {
-  display: "flex",
-  alignItems: "flex-start",
-  gap: "10px",
-  width: "100%",
-  minWidth: 0,
-},
-  blockUserButton: {
-    border: "1px solid #dc2626",
-    background: "transparent",
-    color: "#dc2626",
-    borderRadius: "12px",
-    padding: "8px 12px",
-    fontWeight: "700",
-    cursor: "pointer",
-    marginLeft: "auto",
+    width: "100%",
+    boxSizing: "border-box",
+    border: "1px solid var(--border-color)",
+    borderRadius: "14px",
+    padding: "12px 14px 12px 38px",
+    outline: "none",
+    fontSize: "14px",
+    background: "var(--input-bg)",
+    color: "var(--text-primary)",
   },
-  headerRow: {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "flex-start",
-  gap: "8px",
-  minWidth: 0,
-  flex: 1,
-},
 
-  inlineActions: {
-  display: "flex",
-  gap: "8px",
-  flexWrap: "wrap",
-  width: "100%",
-},
-
-  smallButton: {
-  border: "1px solid var(--border-color)",
-  background: "var(--bg-surface-soft)",
-  color: "var(--text-primary)",
-  borderRadius: "12px",
-  padding: "9px 12px",
-  fontSize: "13px",
-  fontWeight: "700",
-  cursor: "pointer",
-  whiteSpace: "nowrap",
-},
   chatItem: {
     width: "100%",
     border: "none",
@@ -931,38 +857,15 @@ const styles = {
     color: "var(--text-primary)",
     transition: "all 0.2s ease",
   },
+
   activeChatItem: {
-  background:
-    "linear-gradient(135deg, rgba(99,102,241,0.18), rgba(139,92,246,0.18))",
-  border: "1px solid rgba(99,102,241,0.5)",
-  boxShadow: "0 6px 18px rgba(99,102,241,0.35)",
-  transform: "scale(1.01)",
-},
-  emojiWrapper: {
-  position: "relative",
-  flexShrink: 0,
-},
+    background:
+      "linear-gradient(135deg, rgba(99,102,241,0.18), rgba(139,92,246,0.18))",
+    border: "1px solid rgba(99,102,241,0.5)",
+    boxShadow: "0 6px 18px rgba(99,102,241,0.35)",
+    transform: "scale(1.01)",
+  },
 
-emojiButton: {
-  width: "48px",
-  height: "48px",
-  borderRadius: "14px",
-  background: "var(--input-bg)",
-  border: "1px solid var(--border-color)",
-  color: "var(--text-primary)",
-  cursor: "pointer",
-  fontSize: "18px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-},
-
-emojiPickerBox: {
-  position: "absolute",
-  bottom: "58px",
-  left: 0,
-  zIndex: 50,
-},
   avatar: {
     width: "44px",
     height: "44px",
@@ -975,6 +878,7 @@ emojiPickerBox: {
     fontWeight: "700",
     flexShrink: 0,
   },
+
   avatarImage: {
     width: "44px",
     height: "44px",
@@ -983,16 +887,19 @@ emojiPickerBox: {
     flexShrink: 0,
     border: "2px solid rgba(255,255,255,0.08)",
   },
+
   chatMeta: {
     flex: 1,
     minWidth: 0,
   },
+
   chatNameRow: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: "8px",
   },
+
   chatName: {
     margin: 0,
     fontWeight: "700",
@@ -1001,12 +908,13 @@ emojiPickerBox: {
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
+
   unreadBadge: {
     minWidth: "20px",
     height: "20px",
     borderRadius: "999px",
     background: "linear-gradient(135deg, #ef4444, #dc2626)",
-boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
+    boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
     color: "#ffffff",
     fontSize: "11px",
     fontWeight: "700",
@@ -1016,6 +924,7 @@ boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
     padding: "0 6px",
     flexShrink: 0,
   },
+
   chatPreview: {
     margin: "4px 0 0 0",
     fontSize: "13px",
@@ -1024,23 +933,55 @@ boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
     overflow: "hidden",
     textOverflow: "ellipsis",
   },
+
   chatWindow: {
-  ...glass,
-  borderRadius: "20px",
-  display: "flex",
-  flexDirection: "column",
-  height: "100%",
-  minHeight: 0,
-  minWidth: 0,
-  overflow: "hidden",
-},
+    ...glass,
+    borderRadius: "20px",
+    display: "flex",
+    flexDirection: "column",
+    height: "100%",
+    minHeight: 0,
+    minWidth: 0,
+    overflow: "hidden",
+  },
+
+  chatHeader: {
+    padding: "12px",
+    borderBottom: "1px solid var(--border-color)",
+    color: "var(--text-primary)",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "10px",
+    flexWrap: "nowrap",
+  },
+
+  chatHeaderLeft: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "10px",
+    width: "100%",
+    minWidth: 0,
+  },
+
+  mobileMenuButton: {
+    border: "none",
+    background: "transparent",
+    color: "var(--text-primary)",
+    cursor: "pointer",
+    fontSize: "18px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 0,
+  },
+
   headerUser: {
-  display: "flex",
-  alignItems: "flex-start",
-  gap: "10px",
-  minWidth: 0,
-  width: "100%",
-},
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "10px",
+    minWidth: 0,
+    width: "100%",
+  },
 
   headerAvatarImage: {
     width: "36px",
@@ -1048,6 +989,7 @@ boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
     borderRadius: "50%",
     objectFit: "cover",
   },
+
   headerAvatarFallback: {
     width: "36px",
     height: "36px",
@@ -1060,48 +1002,82 @@ boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
     fontWeight: "700",
     flexShrink: 0,
   },
-  chatHeader: {
-  padding: "12px",
-  borderBottom: "1px solid var(--border-color)",
-  color: "var(--text-primary)",
-  display: "flex",
-  alignItems: "flex-start",
-  gap: "10px",
-  flexWrap: "nowrap",
-},
-  mobileMenuButton: {
-    border: "none",
+
+  headerRow: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: "8px",
+    minWidth: 0,
+    flex: 1,
+  },
+
+  inlineActions: {
+    display: "flex",
+    gap: "8px",
+    flexWrap: "wrap",
+    width: "100%",
+  },
+
+  blockUserButton: {
+    border: "1px solid #dc2626",
     background: "transparent",
-    color: "var(--text-primary)",
+    color: "#dc2626",
+    borderRadius: "12px",
+    padding: "8px 12px",
+    fontWeight: "700",
     cursor: "pointer",
-    fontSize: "18px",
+    marginLeft: "auto",
+  },
+
+  unblockUserButton: {
+    border: "1px solid #16a34a",
+    color: "#16a34a",
+  },
+
+  smallButton: {
+    border: "1px solid var(--border-color)",
+    background: "var(--bg-surface-soft)",
+    color: "var(--text-primary)",
+    borderRadius: "12px",
+    padding: "9px 12px",
+    fontSize: "13px",
+    fontWeight: "700",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  },
+
+  messagesArea: {
+    flex: 1,
+    minHeight: 0,
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+    background: "transparent",
+    overflowY: "auto",
+  },
+
+  emptyStateCenter: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: 0,
+    height: "100%",
   },
-  messagesArea: {
-  flex: 1,
-  minHeight: 0,
-  padding: "20px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "12px",
-  background: "transparent",
-  overflowY: "auto",
-},
+
   messageBubbleOther: {
-  alignSelf: "flex-start",
-  background: "var(--bg-surface-soft)",
-  backdropFilter: "blur(8px)",
-  WebkitBackdropFilter: "blur(8px)",
-  color: "var(--text-primary)",
-  border: "1px solid var(--border-color)",
-  padding: "12px 14px",
-  borderRadius: "14px",
-  maxWidth: "70%",
-  lineHeight: 1.5,
-},
+    alignSelf: "flex-start",
+    background: "var(--bg-surface-soft)",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
+    color: "var(--text-primary)",
+    border: "1px solid var(--border-color)",
+    padding: "12px 14px",
+    borderRadius: "14px",
+    maxWidth: "70%",
+    lineHeight: 1.5,
+  },
+
   messageBubbleMe: {
     alignSelf: "flex-end",
     background: "var(--button-primary)",
@@ -1111,32 +1087,32 @@ boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
     maxWidth: "70%",
     lineHeight: 1.5,
   },
- inputRow: {
-  display: "grid",
-  gridTemplateColumns: "48px minmax(0, 1fr) 48px",
-  gap: "10px",
-  padding: "12px",
-  borderTop: "1px solid var(--border-color)",
-  background: "var(--glass-bg)",
-  backdropFilter: "blur(12px)",
-  WebkitBackdropFilter: "blur(12px)",
-  alignItems: "center",
-  boxSizing: "border-box",
-  width: "100%",
-},
 
-  
+  inputRow: {
+    display: "grid",
+    gridTemplateColumns: "48px minmax(0, 1fr) 48px",
+    gap: "10px",
+    padding: "12px",
+    borderTop: "1px solid var(--border-color)",
+    background: "var(--glass-bg)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    alignItems: "center",
+    boxSizing: "border-box",
+    width: "100%",
+  },
+
   input: {
-  flex: 1,
-  border: "1px solid var(--border-color)",
-  borderRadius: "14px",
-  padding: "14px 16px",
-  outline: "none",
-  fontSize: "14px",
- background: "var(--input-bg)",
-  color: "var(--text-primary)",
-},
-  
+    flex: 1,
+    border: "1px solid var(--border-color)",
+    borderRadius: "14px",
+    padding: "14px 16px",
+    outline: "none",
+    fontSize: "14px",
+    background: "var(--input-bg)",
+    color: "var(--text-primary)",
+  },
+
   sendButton: {
     width: "48px",
     minWidth: "48px",
@@ -1151,6 +1127,33 @@ boxShadow: "0 2px 8px rgba(239,68,68,0.4)",
     alignItems: "center",
     justifyContent: "center",
   },
+
+  emojiWrapper: {
+    position: "relative",
+    flexShrink: 0,
+  },
+
+  emojiButton: {
+    width: "48px",
+    height: "48px",
+    borderRadius: "14px",
+    background: "var(--input-bg)",
+    border: "1px solid var(--border-color)",
+    color: "var(--text-primary)",
+    cursor: "pointer",
+    fontSize: "18px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  emojiPickerBox: {
+    position: "absolute",
+    bottom: "58px",
+    left: 0,
+    zIndex: 50,
+  },
+
   emptyText: {
     margin: 0,
     color: "var(--text-secondary)",
