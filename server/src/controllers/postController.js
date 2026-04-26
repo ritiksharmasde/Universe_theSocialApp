@@ -64,6 +64,7 @@ const createPost = async (req, res) => {
     const authorProfileImageUrl = user?.profile_image_url || null;
 
     const result = await pool.query(
+
       `
       INSERT INTO posts (
         email,
@@ -91,6 +92,53 @@ const createPost = async (req, res) => {
         imageUrl,
       ]
     );
+    const post = result.rows[0];
+const postId = post.id;
+    // 🔥 CHECK IF THIS IS USER'S FIRST POST
+const count = await pool.query(
+  `SELECT COUNT(*) FROM posts WHERE LOWER(email) = LOWER($1)`,
+  [email]
+);
+
+if (parseInt(count.rows[0].count) === 1) {
+  // 👍 BOT LIKE
+  await pool.query(
+    `INSERT INTO post_likes (post_id, user_email)
+     VALUES ($1, $2)
+     ON CONFLICT DO NOTHING`,
+    [postId, "bot@joinuniverse.co.in"]
+  );
+
+  // 💬 BOT COMMENT
+  await pool.query(
+    `INSERT INTO post_comments (
+      post_id,
+      user_email,
+      user_name,
+      comment_text
+    )
+     VALUES ($1, $2, $3, $4)`,
+    [
+      postId,
+      "bot@joinuniverse.co.in",
+      "Shanaya",
+      "Nice  👋 keep sharing!"
+    ]
+  );
+
+  // 🔄 UPDATE COUNTS
+  await pool.query(
+  `UPDATE posts
+   SET likes_count = (
+     SELECT COUNT(*) FROM post_likes WHERE post_id = $1
+   ),
+   comments_count = (
+     SELECT COUNT(*) FROM post_comments WHERE post_id = $1
+   )
+   WHERE id = $1`,
+  [postId]
+);
+}
 
     res.status(201).json({
       message: "Post created successfully",
