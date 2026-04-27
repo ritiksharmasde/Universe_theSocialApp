@@ -390,19 +390,30 @@ useEffect(() => {
   }, [messages]);
 
   // ============ SEND MESSAGE ============
-  const handleSend = useCallback(() => {
-    const text = messageText.trim();
+// ============ SEND MESSAGE ============
+const handleSend = useCallback(() => {
+  const text = messageText.trim();
 
-    if (!text || !normalizedSelectedChatId) return;
+  if (!text || !normalizedSelectedChatId) return;
 
-    socket.emit("send_message", {
-      conversationId: normalizedSelectedChatId,
-      messageText: text,
-    });
+  const tempMessage = {
+    id: `temp-${Date.now()}`,
+    conversation_id: normalizedSelectedChatId,
+    sender_email: currentUserEmailRef.current,
+    message_text: text,
+  };
 
-    setMessageText("");
-    setShowEmojiPicker(false);
-  }, [messageText, normalizedSelectedChatId]);
+  // ✅ Show your message instantly
+  setMessages((prev) => [...prev, tempMessage]);
+
+  socket.emit("send_message", {
+    conversationId: normalizedSelectedChatId,
+    messageText: text,
+  });
+
+  setMessageText("");
+  setShowEmojiPicker(false);
+}, [messageText, normalizedSelectedChatId]);
 
   // ============ SELECT CHAT ============
   const handleSelectChat = useCallback((chatId) => {
