@@ -182,84 +182,89 @@ function MessagesPage({
   }, [selectedChat?.otherEmail, currentUserEmail]);
 
   // ============ FETCH CONVERSATIONS (OPTIMIZED) ============
-  useEffect(() => {
-    // ✅ If parent provided conversations, skip fetch (fixes the delay!)
-    if (propConversations.length > 0) {
-      console.log("✅ Using conversations from parent - no fetch needed");
-      return;
-    }
+  // ============ FETCH CONVERSATIONS (OPTIMIZED + FIX) ============
+useEffect(() => {
+  const activeId = activeConversationId ? Number(activeConversationId) : null;
 
-    // ❌ Only fetch if parent didn't provide conversations (fallback)
-    const fetchConversations = async () => {
-      if (!currentUserEmail) return;
+  const activeConversationExists =
+    !activeId ||
+    conversations.some((chat) => Number(chat.id) === activeId);
 
-      try {
-        const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        
-        if (!response.ok) {
-          console.error("Failed to fetch conversations");
-          return;
-        }
+  // ✅ Use cache if it already contains the needed chat
+  if (propConversations.length > 0 && activeConversationExists) {
+    return;
+  }
 
-        const data = await response.json();
+  const fetchConversations = async () => {
+    if (!currentUserEmail) return;
 
-        const mappedConversations = (data.conversations || []).map((chat) => {
-          if (chat.is_group) {
-            return {
-              ...chat,
-              id: Number(chat.id),
-              displayName: chat.name || "Group Chat",
-              otherEmail: null,
-              avatarUrl: "",
-            };
-          }
+    try {
+      const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-          const displayName =
-            chat.other_full_name ||
-            chat.other_username ||
-            chat.other_email?.split("@")[0] ||
-            "Conversation";
+      if (!response.ok) {
+        console.error("Failed to fetch conversations");
+        return;
+      }
 
+      const data = await response.json();
+
+      const mappedConversations = (data.conversations || []).map((chat) => {
+        if (chat.is_group) {
           return {
             ...chat,
             id: Number(chat.id),
-            displayName,
-            otherEmail: chat.other_email,
-            avatarUrl: chat.other_profile_image_url
-              ? chat.other_profile_image_url.startsWith("http")
-                ? chat.other_profile_image_url
-                : `${SERVER_BASE_URL}${chat.other_profile_image_url}`
-              : "",
-            course: chat.other_course || "",
-            year: chat.other_year || "",
+            displayName: chat.name || "Group Chat",
+            otherEmail: null,
+            avatarUrl: "",
           };
-        });
-
-        if (!isMountedRef.current) return;
-
-        setLocalConversations(mappedConversations);
-
-        const counts = {};
-        mappedConversations.forEach((chat) => {
-          counts[Number(chat.id)] = Number(chat.unread_count || 0);
-        });
-        setUnreadCounts(counts);
-
-        if (activeConversationId) {
-          setSelectedChatId(Number(activeConversationId));
         }
-      } catch (error) {
-        console.error("fetchConversations error:", error);
+
+        const displayName =
+          chat.other_full_name ||
+          chat.other_username ||
+          chat.other_email?.split("@")[0] ||
+          "Conversation";
+
+        return {
+          ...chat,
+          id: Number(chat.id),
+          displayName,
+          otherEmail: chat.other_email,
+          avatarUrl: chat.other_profile_image_url
+            ? chat.other_profile_image_url.startsWith("http")
+              ? chat.other_profile_image_url
+              : `${SERVER_BASE_URL}${chat.other_profile_image_url}`
+            : "",
+          course: chat.other_course || "",
+          year: chat.other_year || "",
+        };
+      });
+
+      if (!isMountedRef.current) return;
+
+      setConversations(mappedConversations);
+
+      const counts = {};
+      mappedConversations.forEach((chat) => {
+        counts[Number(chat.id)] = Number(chat.unread_count || 0);
+      });
+      setUnreadCounts(counts);
+
+      if (activeId) {
+        setSelectedChatId(activeId);
       }
-    };
+    } catch (error) {
+      console.error("fetchConversations error:", error);
+    }
+  };
 
-    fetchConversations();
-  }, [currentUserEmail, propConversations]); // ✅ FIXED: Added propConversations to deps
-
+  fetchConversations();
+}, [currentUserEmail, activeConversationId, propConversations.length]);
+  
   // ============ FETCH MESSAGES ============
   useEffect(() => {
     const fetchMessages = async () => {
