@@ -395,66 +395,80 @@ function App() {
     fetchPosts();
   }, [email]);
 
-  // ============ FETCH USER PROFILE ============
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!email) return;
-
-      try {
-        const token = localStorage.getItem("token");
-
-        const response = await fetch(`${API_BASE_URL}/user/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          console.error(data.error || "Failed to fetch user profile");
-          return;
-        }
-
-        const user = data.user;
-
-        const isProfileComplete =
-          user.full_name?.trim() &&
-          user.course?.trim() &&
-          user.year?.trim();
-
-        if (!isProfileComplete) {
-          navigateTo("profile");
-          return;
-        }
-
-        setProfileData({
-          email: user.email,
-          fullName: user.full_name || "",
-          username: user.username || "",
-          course: user.course || "",
-          year: user.year || "",
-          branch: user.branch || "",
-          bio: user.bio || "",
-          interests: user.interests || "",
-          skills: user.skills || "",
-          city: user.city || "",
-          linkedin: user.linkedin || "",
-          github: user.github || "",
-          profileImage: user.profile_image_url
-            ? user.profile_image_url.startsWith("http")
-              ? user.profile_image_url
-              : `${SERVER_BASE_URL}${user.profile_image_url}`
-            : "",
-        });
-      } catch (error) {
-        console.error("Fetch user profile error:", error);
+  // ============ FETCH USER PROFILE (ENHANCED) ============
+useEffect(() => {
+  const fetchUserProfile = async () => {
+    if (!email) return;
+ 
+    try {
+      const token = localStorage.getItem("token");
+ 
+      const response = await fetch(`${API_BASE_URL}/user/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+ 
+      const data = await response.json();
+ 
+      if (!response.ok) {
+        console.error(data.error || "Failed to fetch user profile");
+        return;
       }
-    };
-
-    fetchUserProfile();
-  }, [email]);
-
+ 
+      const user = data.user;
+ 
+      // ✅ STRICT validation - ALL required fields must be filled
+      const isProfileComplete =
+        user.full_name?.trim() &&                    // Has full name
+        user.username?.trim() &&                     // Has username
+        user.course?.trim() &&                       // ✅ Has course
+        user.year?.trim() &&                         // ✅ Has year
+        user.course !== "Year" &&                    // ✅ Not a dummy value
+        user.year !== "Year" &&                      // ✅ Not a dummy value
+        user.course.toLowerCase() !== "not specified" &&  // ✅ Not default
+        user.year.toLowerCase() !== "not specified";      // ✅ Not default
+ 
+      if (!isProfileComplete) {
+        console.warn("Incomplete profile detected, redirecting to profile setup");
+        console.warn("Missing fields:", {
+          fullName: user.full_name,
+          username: user.username,
+          course: user.course,
+          year: user.year,
+        });
+        navigateTo("profile");
+        return;
+      }
+ 
+      // ✅ Profile is complete - set data
+      setProfileData({
+        email: user.email,
+        fullName: user.full_name || "",
+        username: user.username || "",
+        course: user.course || "",
+        year: user.year || "",
+        branch: user.branch || "",
+        bio: user.bio || "",
+        interests: user.interests || "",
+        skills: user.skills || "",
+        city: user.city || "",
+        linkedin: user.linkedin || "",
+        github: user.github || "",
+        profileImage: user.profile_image_url
+          ? user.profile_image_url.startsWith("http")
+            ? user.profile_image_url
+            : `${SERVER_BASE_URL}${user.profile_image_url}`
+          : "",
+      });
+    } catch (error) {
+      console.error("Fetch user profile error:", error);
+    }
+  };
+ 
+  fetchUserProfile();
+}, [email]);
+  
   // ============ LOGOUT ============
   const handleLogout = () => {
     localStorage.removeItem("userEmail");
