@@ -682,7 +682,9 @@ const handleSend = useCallback(() => {
                     </div>
                   )}
                   <div style={styles.headerRow}>
-                    <span>{selectedChat?.displayName || "Select a chat"}</span>
+                    <span style={styles.headerName}>
+  {selectedChat?.displayName || "Select a chat"}
+</span>
 
                     {selectedChat?.otherEmail && (
                       <div style={styles.inlineActions}>
@@ -1052,31 +1054,27 @@ const styles = {
   },
 
   headerRow: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: "8px",
-    minWidth: 0,
-    flex: 1,
-  },
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+  width: "100%",
+  minWidth: 0,
+},
 
   inlineActions: {
-    display: "flex",
-    gap: "8px",
-    flexWrap: "wrap",
-    width: "100%",
-  },
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  flexShrink: 0,
+},
 
   blockUserButton: {
-    border: "1px solid #dc2626",
-    background: "transparent",
-    color: "#dc2626",
-    borderRadius: "12px",
-    padding: "8px 12px",
-    fontWeight: "700",
-    cursor: "pointer",
-    marginLeft: "auto",
-  },
+  border: "1px solid #dc2626",
+  background: "transparent",
+  color: "#dc2626",
+  fontWeight: "700",
+},
 
   unblockUserButton: {
     border: "1px solid #16a34a",
@@ -1084,16 +1082,20 @@ const styles = {
   },
 
   smallButton: {
-    border: "1px solid var(--border-color)",
-    background: "var(--bg-surface-soft)",
-    color: "var(--text-primary)",
-    borderRadius: "12px",
-    padding: "9px 12px",
-    fontSize: "13px",
-    fontWeight: "700",
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-  },
+  padding: "6px 10px",
+  borderRadius: "10px",
+  border: "1px solid var(--border-color)",
+  background: "var(--bg-surface)",
+  cursor: "pointer",
+  whiteSpace: "nowrap", // ✅ THIS FIXES WRAPPING
+},
+  headerName: {
+  fontWeight: "600",
+  fontSize: "16px",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+},
 
   messagesArea: {
     flex: 1,
