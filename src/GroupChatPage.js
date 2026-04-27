@@ -428,7 +428,7 @@ useEffect(() => {
                 <div
                     style={{
                         ...styles.membersPanel,
-                        width: isSmallMobile ? "calc(100vw - 16px)" : isMobile ? "88vw" : "360px",
+                        width: isMobile ? "auto" : "360px",
                         ...(showMembersPanel ? styles.membersPanelOpen : {}),
                     }}
                 >
@@ -735,27 +735,30 @@ emojiPickerBox: {
     },
 
     membersPanel: {
-        position: "fixed",
-        top: "76px",
-        right: "8px",
-         bottom: "12px",
-        height: "auto",
-        maxWidth: "100vw",
-        background: "var(--glass-bg-strong)",
+  position: "absolute",
+  top: "88px",
+  left: "12px",
+  right: "12px",
+  bottom: "76px",
+  height: "auto",
+  width: "auto",
+  maxWidth: "none",
+  background: "var(--glass-bg-strong)",
   backdropFilter: "blur(16px)",
   WebkitBackdropFilter: "blur(16px)",
-        borderLeft: "1px solid var(--border-color)",
-        transform: "translateX(100%)",
-        transition: "transform 0.25s ease",
-        zIndex: 30,
-        display: "flex",
-        flexDirection: "column",
-        boxShadow: "-10px 0 30px rgba(0,0,0,0.12)",
-    },
+  border: "1px solid var(--border-color)",
+  borderRadius: "20px",
+  transform: "translateY(120%)",
+  transition: "transform 0.25s ease",
+  zIndex: 30,
+  display: "flex",
+  flexDirection: "column",
+  boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+},
 
     membersPanelOpen: {
-        transform: "translateX(0)",
-    },
+  transform: "translateY(0)",
+},
 
     membersHeader: {
         display: "flex",
