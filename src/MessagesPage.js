@@ -18,6 +18,8 @@ function MessagesPage({
   unreadCounts,
   setUnreadCounts,
   onOpenUserProfile,
+  conversations: propConversations = [], // ✅ NEW: Accept conversations from parent
+  setConversations: propSetConversations, // ✅ NEW: Accept setter from parent
 }) {
   const { isMobile, isTablet } = useBreakpoint();
 
@@ -34,11 +36,15 @@ function MessagesPage({
   const receivedMessageIdsRef = useRef(new Set());
   const selectedChatIdRef = useRef(null);
   const currentUserEmailRef = useRef("");
-  const blockStatusCacheRef = useRef({}); // Cache block statuses
-  const loadingStateRef = useRef({}); // Track which messages are being loaded
+  const blockStatusCacheRef = useRef({});
+  const loadingStateRef = useRef({});
+  const isMountedRef = useRef(true); // ✅ NEW: Track if component is mounted
   
-  // State
-  const [conversations, setConversations] = useState([]);
+  // State - use prop if provided, otherwise local state
+  const [localConversations, setLocalConversations] = useState([]);
+  const conversations = propConversations.length > 0 ? propConversations : localConversations;
+  const setConversations = propSetConversations || setLocalConversations;
+  
   const [messages, setMessages] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
@@ -74,6 +80,13 @@ function MessagesPage({
   useEffect(() => {
     conversationsRef.current = conversations;
   }, [conversations]);
+
+  // ============ CLEANUP ON UNMOUNT ============
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false; // Mark unmounted to prevent state updates
+    };
+  }, []);
 
   // ============ EMOJI PICKER ============
   const handleEmojiClick = useCallback((emojiData) => {
@@ -131,7 +144,6 @@ function MessagesPage({
 
       const cacheKey = selectedChat.otherEmail.toLowerCase();
 
-      // Check cache first
       if (blockStatusCacheRef.current[cacheKey] !== undefined) {
         setIsBlocked(blockStatusCacheRef.current[cacheKey]);
         return;
@@ -157,9 +169,10 @@ function MessagesPage({
         const data = await response.json();
         const blocked = Boolean(data.isBlocked);
         
-        // Cache it
         blockStatusCacheRef.current[cacheKey] = blocked;
-        setIsBlocked(blocked);
+        if (isMountedRef.current) {
+          setIsBlocked(blocked);
+        }
       } catch (error) {
         console.error("fetch block status error:", error);
       }
@@ -168,9 +181,18 @@ function MessagesPage({
     fetchBlockStatus();
   }, [selectedChat?.otherEmail, currentUserEmail]);
 
-  // ============ FETCH CONVERSATIONS (ONLY ON MOUNT OR WHEN NEEDED) ============
+  // ============ FETCH CONVERSATIONS (OPTIMIZED) ============
   useEffect(() => {
+    // ✅ If parent provided conversations, skip fetch (fixes the delay!)
+    if (propConversations.length > 0) {
+      console.log("✅ Using conversations from parent - no fetch needed");
+      return;
+    }
+
+    // ❌ Only fetch if parent didn't provide conversations (fallback)
     const fetchConversations = async () => {
+      if (!currentUserEmail) return;
+
       try {
         const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
           headers: {
@@ -217,7 +239,9 @@ function MessagesPage({
           };
         });
 
-        setConversations(mappedConversations);
+        if (!isMountedRef.current) return;
+
+        setLocalConversations(mappedConversations);
 
         const counts = {};
         mappedConversations.forEach((chat) => {
@@ -233,17 +257,14 @@ function MessagesPage({
       }
     };
 
-    if (currentUserEmail) {
-      fetchConversations();
-    }
-  }, [currentUserEmail]); // Only fetch when currentUserEmail changes (not on every render)
+    fetchConversations();
+  }, [currentUserEmail, propConversations]); // ✅ FIXED: Added propConversations to deps
 
   // ============ FETCH MESSAGES ============
   useEffect(() => {
     const fetchMessages = async () => {
       if (!normalizedSelectedChatId) return;
 
-      // Prevent duplicate loads
       if (loadingStateRef.current[normalizedSelectedChatId]) return;
       
       loadingStateRef.current[normalizedSelectedChatId] = true;
@@ -265,6 +286,9 @@ function MessagesPage({
         }
 
         const data = await response.json();
+        
+        if (!isMountedRef.current) return;
+
         setMessages(data.messages || []);
         setUnreadCounts((prev) => ({
           ...prev,
@@ -274,7 +298,9 @@ function MessagesPage({
         console.error("fetchMessages error:", error);
       } finally {
         loadingStateRef.current[normalizedSelectedChatId] = false;
-        setIsLoadingMessages(false);
+        if (isMountedRef.current) {
+          setIsLoadingMessages(false);
+        }
       }
     };
 
@@ -291,9 +317,16 @@ function MessagesPage({
       if (receivedMessageIdsRef.current.has(messageKey)) return;
       receivedMessageIdsRef.current.add(messageKey);
 
+      // ✅ Limit Set size to prevent memory leak
+      if (receivedMessageIdsRef.current.size > 5000) {
+        receivedMessageIdsRef.current.clear();
+      }
+
       const incomingConversationId = Number(message.conversation_id);
       const isMine =
         message.sender_email?.toLowerCase().trim() === currentUserEmailRef.current;
+
+      if (!isMountedRef.current) return;
 
       // Move conversation to top
       setConversations((prev) => {
@@ -337,7 +370,7 @@ function MessagesPage({
     return () => {
       socket.off("receive_message", handleReceiveMessage);
     };
-  }, []); // Empty dependency array is correct here
+  }, []);
 
   // ============ JOIN CONVERSATION ============
   useEffect(() => {
@@ -410,9 +443,10 @@ function MessagesPage({
       }
 
       const newBlockStatus = !isBlocked;
-      setIsBlocked(newBlockStatus);
+      if (isMountedRef.current) {
+        setIsBlocked(newBlockStatus);
+      }
       
-      // Update cache
       blockStatusCacheRef.current[selectedChat.otherEmail.toLowerCase()] = newBlockStatus;
       
       alert(
@@ -456,6 +490,8 @@ function MessagesPage({
         return;
       }
 
+      if (!isMountedRef.current) return;
+
       setConversations((prev) => {
         const updated = prev.filter(
           (chat) => Number(chat.id) !== Number(selectedChat.id)
@@ -481,10 +517,6 @@ function MessagesPage({
       alert("Server error");
     }
   }, [selectedChat, isMobile]);
-
-  const handleOpenChats = useCallback(() => {
-    setShowChatList(true);
-  }, []);
 
   // ============ RENDER ============
   return (
