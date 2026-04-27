@@ -6,6 +6,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const app = require("./app");
 const { initializeSocket } = require("./socket");
+const pool = require("./config/db");
 
 const PORT = process.env.PORT || 5000;
 
@@ -13,6 +14,24 @@ const server = http.createServer(app);
 app.get("/ping", (req, res) => {
   res.send("OK");
 });
+app.get("/api/health", async (req, res) => {
+  try {
+    await pool.query("SELECT 1");
+
+    res.json({
+      ok: true,
+      backend: "awake",
+      database: "connected",
+      time: new Date(),
+    });
+  } catch (err) {
+    res.status(500).json({
+      ok: false,
+      error: err.message,
+    });
+  }
+});
+
 const allowedOrigins = [
   "http://localhost:3000",
   "https://joinuniverse.co.in",
