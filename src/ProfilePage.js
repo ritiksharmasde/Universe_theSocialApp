@@ -14,9 +14,10 @@ function ProfilePage({ email, onBack, onComplete }) {
 
   const [formData, setFormData] = useState({
     fullName: "",
-    course: "",
-    year: "",
-    bio: "",
+  username: "", 
+  course: "",
+  year: "",
+  bio: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -82,6 +83,7 @@ function ProfilePage({ email, onBack, onComplete }) {
     const nextErrors = {};
 
     if (!formData.fullName.trim()) nextErrors.fullName = "Full name is required.";
+    if (!formData.username.trim()) nextErrors.username = "Username is required.";
     if (!formData.course.trim()) nextErrors.course = "Course is required.";
 
     if (!formData.year.trim()) {
@@ -200,6 +202,14 @@ function ProfilePage({ email, onBack, onComplete }) {
                 onChange={handleChange}
                 error={errors.fullName}
               />
+                <InputField
+    label="Username"
+    name="username"
+    placeholder="e.g. john_doe"
+    value={formData.username}
+    onChange={handleChange}
+    error={errors.username}
+  />
 
               <InputField
                 label="Course"
