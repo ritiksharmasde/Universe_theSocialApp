@@ -6,7 +6,7 @@ const streamifier = require("streamifier");
 const saveProfile = async (req, res) => {
   try {
     const email = req.user.email.toLowerCase().trim();
-
+ 
     const {
       fullName,
       username,
@@ -21,7 +21,43 @@ const saveProfile = async (req, res) => {
       github,
       profileImage,
     } = req.body;
-
+ 
+    // ✅ VALIDATION: Check all required fields
+    // Check 1: Full Name
+    if (!fullName?.trim()) {
+      return res.status(400).json({ 
+        error: "Full name is required." 
+      });
+    }
+ 
+    // Check 2: Username
+    if (!username?.trim()) {
+      return res.status(400).json({ 
+        error: "Username is required." 
+      });
+    }
+ 
+    // Check 3: Course (NEW - CRITICAL)
+    if (!course?.trim()) {
+      return res.status(400).json({ 
+        error: "Course is required." 
+      });
+    }
+ 
+    // Check 4: Year (NEW - CRITICAL)
+    if (!year?.trim()) {
+      return res.status(400).json({ 
+        error: "Year is required." 
+      });
+    }
+ 
+    // ✅ Trim all values to prevent whitespace-only entries
+    const trimmedFullName = fullName.trim();
+    const trimmedUsername = username.trim();
+    const trimmedCourse = course.trim();
+    const trimmedYear = year.trim();
+ 
+    // ✅ Save to database with validated values
     await pool.query(
       `
       UPDATE users
@@ -41,24 +77,25 @@ const saveProfile = async (req, res) => {
       WHERE LOWER(email) = LOWER($13)
       `,
       [
-        fullName,
-        username,
-        course,
-        year,
-        branch,
-        bio,
-        interests,
-        skills,
-        city,
-        linkedin,
-        github,
-        profileImage,
+        trimmedFullName,
+        trimmedUsername,
+        trimmedCourse,
+        trimmedYear,
+        branch?.trim() || null,
+        bio?.trim() || null,
+        interests?.trim() || null,
+        skills?.trim() || null,
+        city?.trim() || null,
+        linkedin?.trim() || null,
+        github?.trim() || null,
+        profileImage || null,
         email,
       ]
     );
-// ---------------------------------------bot------
+ 
     return res.status(200).json({
       message: "Profile saved successfully",
+      success: true,
     });
   } catch (error) {
     console.error("saveProfile error:", error);
