@@ -17,6 +17,7 @@ import CreateGroupPage from "./CreateGroupPage";
 import useBreakpoint from "./useBreakpoint";
 import GroupChatPage from "./GroupChatPage";
 import FeedbackPage from "./FeedbackPage";
+
 function App() {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [currentPage, setCurrentPage] = useState("welcome");
@@ -31,10 +32,13 @@ function App() {
   const [isRouteReady, setIsRouteReady] = useState(false);
   const [conversationIdsByEmail, setConversationIdsByEmail] = useState({});
   const [unreadCounts, setUnreadCounts] = useState({});
-  // const [unreadCounts, setUnreadCounts] = useState({});
+  
+  // ✅ NEW: Fetch conversations at App level (fixes the 28s delay!)
+  const [conversations, setConversations] = useState([]);
+
   const hasUnreadMessages = Object.values(unreadCounts || {}).some(
-  (count) => count > 0
-);
+    (count) => count > 0
+  );
 
   const { isMobile } = useBreakpoint();
 
@@ -82,25 +86,29 @@ function App() {
         return "/";
     }
   };
+
+  // ============ SOCKET CONNECTION ============
   useEffect(() => {
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-  if (!token || !email) return;
+    if (!token || !email) return;
 
-  socket.auth = {
-    token,
-  };
+    socket.auth = {
+      token,
+    };
 
-  if (!socket.connected) {
-    socket.connect();
-  }
-}, [email]);
+    if (!socket.connected) {
+      socket.connect();
+    }
+  }, [email]);
 
+  // ============ THEME ============
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  // ============ LOAD SAVED EMAIL ============
   useEffect(() => {
     const savedEmail = localStorage.getItem("userEmail");
     if (savedEmail) {
@@ -108,6 +116,7 @@ function App() {
     }
   }, []);
 
+  // ============ ROUTE INITIALIZATION ============
   useEffect(() => {
     const path = window.location.pathname;
     const savedEmail = localStorage.getItem("userEmail");
@@ -141,53 +150,68 @@ function App() {
 
     setIsRouteReady(true);
   }, []);
+
+  // ============ FETCH CONVERSATIONS (APP LEVEL) ============
+  // ✅ NEW: This fixes the 28s delay by fetching conversations once at App level
   useEffect(() => {
-  if (!currentUserEmail) return;
+    if (!currentUserEmail) return;
 
-  const joinUserConversations = async () => {
-    try {
-      const token = localStorage.getItem("token");
+    const fetchConversations = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-const response = await fetch(
-  `${API_BASE_URL}/chat/conversations`,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
-      const data = await response.json();
+        const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      if (!response.ok || !data.conversations) return;
+        if (!response.ok) {
+          console.error("Failed to fetch conversations");
+          return;
+        }
 
-      const nextConversationIdsByEmail = {};
+        const data = await response.json();
+        setConversations(data.conversations || []);
 
-data.conversations.forEach((chat) => {
-  const conversationId = Number(chat.id);
-  socket.emit("join_conversation", conversationId);
+        // Build unread counts map
+        const counts = {};
+        (data.conversations || []).forEach((chat) => {
+          counts[Number(chat.id)] = Number(chat.unread_count || 0);
+        });
+        setUnreadCounts(counts);
 
-  if (!chat.is_group && chat.name) {
-    const parts = chat.name.split("-");
-    const otherEmail =
-      parts.find(
-        (part) => part.toLowerCase() !== currentUserEmail.toLowerCase()
-      ) || "";
+        // Build email -> conversationId map
+        const nextConversationIdsByEmail = {};
+        (data.conversations || []).forEach((chat) => {
+          const conversationId = Number(chat.id);
+          socket.emit("join_conversation", conversationId);
 
-    if (otherEmail) {
-      nextConversationIdsByEmail[otherEmail.toLowerCase()] = conversationId;
-    }
-  }
-});
+          if (!chat.is_group && chat.name) {
+            const parts = chat.name.split("-");
+            const otherEmail =
+              parts.find(
+                (part) =>
+                  part.toLowerCase() !== currentUserEmail.toLowerCase()
+              ) || "";
 
-setConversationIdsByEmail(nextConversationIdsByEmail);
-    } catch (error) {
-      console.error("join conversations error:", error);
-    }
-  };
+            if (otherEmail) {
+              nextConversationIdsByEmail[otherEmail.toLowerCase()] =
+                conversationId;
+            }
+          }
+        });
 
-  joinUserConversations();
-}, [currentUserEmail]);
+        setConversationIdsByEmail(nextConversationIdsByEmail);
+      } catch (error) {
+        console.error("fetchConversations error:", error);
+      }
+    };
 
+    fetchConversations();
+  }, [currentUserEmail]);
+
+  // ============ HISTORY PUSH STATE ============
   useEffect(() => {
     if (!isRouteReady) return;
 
@@ -206,6 +230,7 @@ setConversationIdsByEmail(nextConversationIdsByEmail);
     }
   }, [isRouteReady, currentPage, selectedUserEmail, activeConversationId]);
 
+  // ============ POP STATE HANDLER ============
   useEffect(() => {
     const handlePopState = (event) => {
       const state = event.state;
@@ -246,42 +271,64 @@ setConversationIdsByEmail(nextConversationIdsByEmail);
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
-useEffect(() => {
-  if (!currentUserEmail) return;
 
-  const handleReceiveMessage = async (message) => {
-    const incomingConversationId = Number(message.conversation_id);
+  // ============ SOCKET: RECEIVE MESSAGE ============
+  // ✅ UPDATED: Now updates both conversations list AND unread counts
+  useEffect(() => {
+    if (!currentUserEmail) return;
 
-    if (message.sender_email === currentUserEmail) return;
+    const handleReceiveMessage = (message) => {
+      const incomingConversationId = Number(message.conversation_id);
 
-    setUnreadCounts((prev) => ({
-      ...prev,
-      [incomingConversationId]: (prev[incomingConversationId] || 0) + 1,
-    }));
-  };
+      if (message.sender_email?.toLowerCase() === currentUserEmail.toLowerCase())
+        return;
 
-  socket.on("receive_message", handleReceiveMessage);
+      // Move conversation to top
+      setConversations((prev) => {
+        const target = prev.find(
+          (chat) => Number(chat.id) === incomingConversationId
+        );
 
-  return () => {
-    socket.off("receive_message", handleReceiveMessage);
-  };
-}, [currentUserEmail]);
+        if (!target) return prev;
+
+        const rest = prev.filter(
+          (chat) => Number(chat.id) !== incomingConversationId
+        );
+
+        return [target, ...rest];
+      });
+
+      // Update unread count
+      setUnreadCounts((prev) => ({
+        ...prev,
+        [incomingConversationId]: (prev[incomingConversationId] || 0) + 1,
+      }));
+    };
+
+    socket.on("receive_message", handleReceiveMessage);
+
+    return () => {
+      socket.off("receive_message", handleReceiveMessage);
+    };
+  }, [currentUserEmail]);
+
+  // ============ FETCH POSTS ============
   useEffect(() => {
     if (!email) return;
 
     const fetchPosts = async () => {
       try {
         setPostsLoading(true);
-       const token = localStorage.getItem("token");
+        const token = localStorage.getItem("token");
 
-const response = await fetch(
-  `${API_BASE_URL}/posts?limit=10&offset=0`,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
+        const response = await fetch(
+          `${API_BASE_URL}/posts?limit=10&offset=0`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const data = await response.json();
 
         if (!response.ok) {
@@ -295,15 +342,15 @@ const response = await fetch(
           author: post.full_name || post.author_name,
           subtitle: `${post.author_course || ""} • Year ${post.author_year || ""}`,
           avatar: post.profile_image_url
-  ? post.profile_image_url.startsWith("http")
-    ? post.profile_image_url
-    : `${SERVER_BASE_URL}${post.profile_image_url}`
-  : "https://picsum.photos/50?default-user",
+            ? post.profile_image_url.startsWith("http")
+              ? post.profile_image_url
+              : `${SERVER_BASE_URL}${post.profile_image_url}`
+            : "https://picsum.photos/50?default-user",
           image: post.image_url
-  ? post.image_url.startsWith("http")
-    ? post.image_url
-    : `${SERVER_BASE_URL}${post.image_url}`
-  : "",
+            ? post.image_url.startsWith("http")
+              ? post.image_url
+              : `${SERVER_BASE_URL}${post.image_url}`
+            : "",
           likes: post.likes_count || 0,
           comments: post.comments_count || 0,
           caption: post.caption,
@@ -315,111 +362,113 @@ const response = await fetch(
         setPosts(mappedPosts);
       } catch (error) {
         console.error("Fetch posts error:", error);
-      }finally {
-    setPostsLoading(false);
-  }
-      
+      } finally {
+        setPostsLoading(false);
+      }
     };
 
     fetchPosts();
   }, [email]);
 
+  // ============ FETCH USER PROFILE ============
   useEffect(() => {
     const fetchUserProfile = async () => {
-  if (!email) return;
+      if (!email) return;
 
-  try {
-    const token = localStorage.getItem("token");
+      try {
+        const token = localStorage.getItem("token");
 
-    const response = await fetch(`${API_BASE_URL}/user/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+        const response = await fetch(`${API_BASE_URL}/user/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-    const data = await response.json();
+        const data = await response.json();
 
-    if (!response.ok) {
-      console.error(data.error || "Failed to fetch user profile");
-      return;
-    }
+        if (!response.ok) {
+          console.error(data.error || "Failed to fetch user profile");
+          return;
+        }
 
-    const user = data.user;
+        const user = data.user;
 
-    const isProfileComplete =
-  user.full_name?.trim() &&
-  user.course?.trim() &&
-  user.year?.trim();
+        const isProfileComplete =
+          user.full_name?.trim() &&
+          user.course?.trim() &&
+          user.year?.trim();
 
-if (!isProfileComplete) {
-  navigateTo("profile");
-  return;
-}
-    
-    setProfileData({
-      email: user.email,
-      fullName: user.full_name || "",
-      username: user.username || "",
-      course: user.course || "",
-      year: user.year || "",
-      branch: user.branch || "",
-      bio: user.bio || "",
-      interests: user.interests || "",
-      skills: user.skills || "",
-      city: user.city || "",
-      linkedin: user.linkedin || "",
-      github: user.github || "",
-      profileImage: user.profile_image_url
-        ? user.profile_image_url.startsWith("http")
-          ? user.profile_image_url
-          : `${SERVER_BASE_URL}${user.profile_image_url}`
-        : "",
-    });
-  } catch (error) {
-    console.error("Fetch user profile error:", error);
-  }
+        if (!isProfileComplete) {
+          navigateTo("profile");
+          return;
+        }
 
-      
-};
-    
+        setProfileData({
+          email: user.email,
+          fullName: user.full_name || "",
+          username: user.username || "",
+          course: user.course || "",
+          year: user.year || "",
+          branch: user.branch || "",
+          bio: user.bio || "",
+          interests: user.interests || "",
+          skills: user.skills || "",
+          city: user.city || "",
+          linkedin: user.linkedin || "",
+          github: user.github || "",
+          profileImage: user.profile_image_url
+            ? user.profile_image_url.startsWith("http")
+              ? user.profile_image_url
+              : `${SERVER_BASE_URL}${user.profile_image_url}`
+            : "",
+        });
+      } catch (error) {
+        console.error("Fetch user profile error:", error);
+      }
+    };
+
     fetchUserProfile();
   }, [email]);
 
+  // ============ LOGOUT ============
   const handleLogout = () => {
-  localStorage.removeItem("userEmail");
-  localStorage.removeItem("token");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("token");
 
-  socket.disconnect();
+    socket.disconnect();
 
-  setEmail("");
-  setProfileData(null);
-  setActiveConversationId(null);
-  setSelectedUserEmail("");
-  setPosts([]);
-  setSelectedGroup(null);
-  navigateTo("welcome");
-};
+    setEmail("");
+    setProfileData(null);
+    setActiveConversationId(null);
+    setSelectedUserEmail("");
+    setPosts([]);
+    setSelectedGroup(null);
+    setConversations([]); // ✅ NEW: Clear conversations on logout
+    setUnreadCounts({}); // ✅ NEW: Clear unread counts on logout
+    navigateTo("welcome");
+  };
 
+  // ============ PAGE RENDERING ============
   if (currentPage === "otp") {
     return (
       <OtpPage
         email={email}
         onBack={() => navigateTo("welcome")}
         onVerify={(data) => {
-  localStorage.setItem("token", data.token);
-  localStorage.setItem("userEmail", email.toLowerCase().trim());
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("userEmail", email.toLowerCase().trim());
 
-  socket.auth = {
-    token: localStorage.getItem("token"),
-  };
-  socket.connect();
+          socket.auth = {
+            token: localStorage.getItem("token"),
+          };
+          socket.connect();
 
-  if (data?.needsProfileSetup) {
-    navigateTo("profile");
-  } else {
-    navigateTo("feed");
-  }
-}}
+          if (data?.needsProfileSetup) {
+            navigateTo("profile");
+          } else {
+            navigateTo("feed");
+          }
+        }}
       />
     );
   }
@@ -448,17 +497,15 @@ if (!isProfileComplete) {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
-          hasUnreadMessages={hasUnreadMessages}
+        hasUnreadMessages={hasUnreadMessages}
       >
         <FeedPage
           profileData={profileData}
           customPosts={posts}
-    postsLoading={postsLoading}
-    unreadCounts={unreadCounts}
-    conversationIdsByEmail={conversationIdsByEmail}
-    
+          postsLoading={postsLoading}
+          unreadCounts={unreadCounts}
+          conversationIdsByEmail={conversationIdsByEmail}
           onCreatePost={() => navigateTo("create-post")}
-    
           onOpenProfile={() => navigateTo("profile-details")}
           onOpenUserProfile={(userEmail) => {
             navigateTo("public-profile", { selectedUserEmail: userEmail });
@@ -478,15 +525,13 @@ if (!isProfileComplete) {
         currentPage={currentPage}
         onNavigate={navigateTo}
         theme={theme}
-    hasUnreadMessages={hasUnreadMessages}
+        hasUnreadMessages={hasUnreadMessages}
         onThemeChange={setTheme}
-    
         onLogout={handleLogout}
       >
         <PublicProfilePage
           currentUserEmail={email}
           viewedUserEmail={selectedUserEmail}
-    
           onBack={() => navigateTo("feed")}
           onStartChat={(conversationId) => {
             navigateTo("messages", { activeConversationId: conversationId });
@@ -504,8 +549,7 @@ if (!isProfileComplete) {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
-          hasUnreadMessages={hasUnreadMessages}
-          
+        hasUnreadMessages={hasUnreadMessages}
       >
         {selectedGroup ? (
           <GroupChatPage
@@ -533,7 +577,7 @@ if (!isProfileComplete) {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
-          hasUnreadMessages={hasUnreadMessages}
+        hasUnreadMessages={hasUnreadMessages}
       >
         <CreateGroupPage
           currentUserEmail={email}
@@ -552,13 +596,15 @@ if (!isProfileComplete) {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
-          hasUnreadMessages={hasUnreadMessages}
+        hasUnreadMessages={hasUnreadMessages}
       >
         <MessagesPage
           currentUserEmail={email}
           activeConversationId={activeConversationId}
-    unreadCounts={unreadCounts}
-    setUnreadCounts={setUnreadCounts}
+          unreadCounts={unreadCounts}
+          setUnreadCounts={setUnreadCounts}
+          conversations={conversations} // ✅ NEW: Pass conversations from App
+          setConversations={setConversations} // ✅ NEW: Pass setter
           onOpenUserProfile={(userEmail) => {
             navigateTo("public-profile", { selectedUserEmail: userEmail });
           }}
@@ -575,7 +621,7 @@ if (!isProfileComplete) {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
-          hasUnreadMessages={hasUnreadMessages}
+        hasUnreadMessages={hasUnreadMessages}
       >
         <ProfileDetailsPage
           profileData={profileData}
@@ -585,27 +631,30 @@ if (!isProfileComplete) {
             try {
               const token = localStorage.getItem("token");
 
-const response = await fetch(`${API_BASE_URL}/user/save-profile`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  },
-  body: JSON.stringify({
-    fullName: updatedData.fullName || "",
-    username: updatedData.username || "",
-    course: updatedData.course || "",
-    year: updatedData.year || "",
-    branch: updatedData.branch || "",
-    bio: updatedData.bio || "",
-    interests: updatedData.interests || "",
-    skills: updatedData.skills || "",
-    city: updatedData.city || "",
-    linkedin: updatedData.linkedin || "",
-    github: updatedData.github || "",
-    profileImage: updatedData.profileImage || "",
-  }),
-});
+              const response = await fetch(
+                `${API_BASE_URL}/user/save-profile`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    fullName: updatedData.fullName || "",
+                    username: updatedData.username || "",
+                    course: updatedData.course || "",
+                    year: updatedData.year || "",
+                    branch: updatedData.branch || "",
+                    bio: updatedData.bio || "",
+                    interests: updatedData.interests || "",
+                    skills: updatedData.skills || "",
+                    city: updatedData.city || "",
+                    linkedin: updatedData.linkedin || "",
+                    github: updatedData.github || "",
+                    profileImage: updatedData.profileImage || "",
+                  }),
+                }
+              );
               const data = await response.json();
 
               if (!response.ok) {
@@ -637,7 +686,7 @@ const response = await fetch(`${API_BASE_URL}/user/save-profile`, {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
-          hasUnreadMessages={hasUnreadMessages}
+        hasUnreadMessages={hasUnreadMessages}
       >
         <CreatePostPage
           profileData={profileData}
@@ -647,17 +696,20 @@ const response = await fetch(`${API_BASE_URL}/user/save-profile`, {
               id: newPost.id,
               email: newPost.email,
               author: newPost.author_name,
-              subtitle: `${newPost.author_course || ""} • Year ${newPost.author_year || ""}`,
+              subtitle: `${newPost.author_course || ""} • Year ${
+                newPost.author_year || ""
+              }`,
               avatar: newPost.profile_image_url
-  ? newPost.profile_image_url.startsWith("http")
-    ? newPost.profile_image_url
-    : `${SERVER_BASE_URL}${newPost.profile_image_url}`
-  : (profileData?.profileImage || "https://picsum.photos/50?default-user"),
+                ? newPost.profile_image_url.startsWith("http")
+                  ? newPost.profile_image_url
+                  : `${SERVER_BASE_URL}${newPost.profile_image_url}`
+                : profileData?.profileImage ||
+                  "https://picsum.photos/50?default-user",
               image: newPost.image_url
-  ? newPost.image_url.startsWith("http")
-    ? newPost.image_url
-    : `${SERVER_BASE_URL}${newPost.image_url}`
-  : "",
+                ? newPost.image_url.startsWith("http")
+                  ? newPost.image_url
+                  : `${SERVER_BASE_URL}${newPost.image_url}`
+                : "",
               likes: newPost.likes_count || 0,
               comments: newPost.comments_count || 0,
               caption: newPost.caption,
@@ -682,7 +734,7 @@ const response = await fetch(`${API_BASE_URL}/user/save-profile`, {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
-          hasUnreadMessages={hasUnreadMessages}
+        hasUnreadMessages={hasUnreadMessages}
       >
         <SearchPage
           currentUserEmail={email}
@@ -705,12 +757,13 @@ const response = await fetch(`${API_BASE_URL}/user/save-profile`, {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
-          hasUnreadMessages={hasUnreadMessages}
+        hasUnreadMessages={hasUnreadMessages}
       >
         <NotificationsPage currentUserEmail={email} />
       </AppLayout>
     );
   }
+
   if (currentPage === "feedback") {
     return (
       <AppLayout
@@ -719,7 +772,7 @@ const response = await fetch(`${API_BASE_URL}/user/save-profile`, {
         theme={theme}
         onThemeChange={setTheme}
         onLogout={handleLogout}
-          hasUnreadMessages={hasUnreadMessages}
+        hasUnreadMessages={hasUnreadMessages}
       >
         <FeedbackPage currentUserEmail={email} />
       </AppLayout>
@@ -735,24 +788,24 @@ const response = await fetch(`${API_BASE_URL}/user/save-profile`, {
         navigateTo("otp");
       }}
       onLoginSuccess={(userEmail, data) => {
-  const normalizedEmail = userEmail.toLowerCase();
+        const normalizedEmail = userEmail.toLowerCase();
 
-  localStorage.setItem("token", data.token);
-  localStorage.setItem("userEmail", normalizedEmail);
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userEmail", normalizedEmail);
 
-  socket.auth = {
-    token: localStorage.getItem("token"),
-  };
-  socket.connect();
+        socket.auth = {
+          token: localStorage.getItem("token"),
+        };
+        socket.connect();
 
-  setEmail(normalizedEmail);
+        setEmail(normalizedEmail);
 
-  if (data?.needsProfileSetup) {
-    navigateTo("profile");
-  } else {
-    navigateTo("feed");
-  }
-}}
+        if (data?.needsProfileSetup) {
+          navigateTo("profile");
+        } else {
+          navigateTo("feed");
+        }
+      }}
     />
   );
 }
