@@ -172,33 +172,58 @@ function App() {
         }
 
         const data = await response.json();
-        setConversations(data.conversations || []);
+
+        // ✅ Map conversations with proper display names (FIX FOR "Conversation" text)
+        const mappedConversations = (data.conversations || []).map((chat) => {
+          if (chat.is_group) {
+            return {
+              ...chat,
+              id: Number(chat.id),
+              displayName: chat.name || "Group Chat",
+              otherEmail: null,
+              avatarUrl: "",
+            };
+          }
+
+          const displayName =
+            chat.other_full_name ||
+            chat.other_username ||
+            chat.other_email?.split("@")[0] ||
+            "Conversation";
+
+          return {
+            ...chat,
+            id: Number(chat.id),
+            displayName,
+            otherEmail: chat.other_email,
+            avatarUrl: chat.other_profile_image_url
+              ? chat.other_profile_image_url.startsWith("http")
+                ? chat.other_profile_image_url
+                : `${SERVER_BASE_URL}${chat.other_profile_image_url}`
+              : "",
+            course: chat.other_course || "",
+            year: chat.other_year || "",
+          };
+        });
+
+        setConversations(mappedConversations);
 
         // Build unread counts map
         const counts = {};
-        (data.conversations || []).forEach((chat) => {
+        mappedConversations.forEach((chat) => {
           counts[Number(chat.id)] = Number(chat.unread_count || 0);
         });
         setUnreadCounts(counts);
 
         // Build email -> conversationId map
         const nextConversationIdsByEmail = {};
-        (data.conversations || []).forEach((chat) => {
+        mappedConversations.forEach((chat) => {
           const conversationId = Number(chat.id);
           socket.emit("join_conversation", conversationId);
 
-          if (!chat.is_group && chat.name) {
-            const parts = chat.name.split("-");
-            const otherEmail =
-              parts.find(
-                (part) =>
-                  part.toLowerCase() !== currentUserEmail.toLowerCase()
-              ) || "";
-
-            if (otherEmail) {
-              nextConversationIdsByEmail[otherEmail.toLowerCase()] =
-                conversationId;
-            }
+          if (!chat.is_group && chat.otherEmail) {
+            nextConversationIdsByEmail[chat.otherEmail.toLowerCase()] =
+              conversationId;
           }
         });
 
