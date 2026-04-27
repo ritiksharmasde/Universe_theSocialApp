@@ -350,7 +350,24 @@ useEffect(() => {
 
       // If viewing this conversation, add message
       if (incomingConversationId === Number(selectedChatIdRef.current)) {
-        setMessages((prev) => [...prev, message]);
+        setMessages((prev) => {
+  const tempIndex = prev.findIndex(
+    (m) =>
+      String(m.id).startsWith("temp-") &&
+      m.message_text === message.message_text &&
+      m.sender_email === message.sender_email
+  );
+
+  // 🔁 If temp message exists → replace it
+  if (tempIndex !== -1) {
+    const updated = [...prev];
+    updated[tempIndex] = message;
+    return updated;
+  }
+
+  // ➕ Otherwise add normally
+  return [...prev, message];
+});
 
         if (!isMine) {
           setUnreadCounts((prev) => ({
