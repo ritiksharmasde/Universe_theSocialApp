@@ -428,7 +428,7 @@ useEffect(() => {
                 <div
                     style={{
                         ...styles.membersPanel,
-                        width: isSmallMobile ? "100vw" : isMobile ? "88vw" : "360px",
+                        width: isSmallMobile ? "calc(100vw - 16px)" : isMobile ? "88vw" : "360px",
                         ...(showMembersPanel ? styles.membersPanelOpen : {}),
                     }}
                 >
@@ -736,9 +736,10 @@ emojiPickerBox: {
 
     membersPanel: {
         position: "fixed",
-        top: 0,
-        right: 0,
-        height: "100dvh",
+        top: "76px",
+        right: "8px",
+         bottom: "12px",
+        height: "auto",
         maxWidth: "100vw",
         background: "var(--glass-bg-strong)",
   backdropFilter: "blur(16px)",
