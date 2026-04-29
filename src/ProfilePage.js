@@ -11,6 +11,7 @@ const premiumGlass = {
 function ProfilePage({ email, onBack, onComplete }) {
   const [profileImage, setProfileImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -103,12 +104,16 @@ function ProfilePage({ email, onBack, onComplete }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!validateForm()) return;
+    setIsLoading(true); // ← ADD at top
 
     let imageUrl = null;
 
     if (profileImage) {
       imageUrl = await uploadProfileImage();
-      if (!imageUrl) return;
+       if (!imageUrl) {
+      setIsLoading(false); // ← ADD
+      return;
+    }
     }
 
     try {
@@ -137,6 +142,7 @@ function ProfilePage({ email, onBack, onComplete }) {
       const data = await response.json();
 
       if (!response.ok) {
+        setIsLoading(false);
         alert(data.error || "Failed to save profile");
         return;
       }
@@ -152,6 +158,7 @@ function ProfilePage({ email, onBack, onComplete }) {
         });
       }
     } catch (error) {
+      setIsLoading(false); // ← ADD
       console.error("Profile save frontend error:", error);
       alert("Server error");
     }
@@ -247,9 +254,17 @@ function ProfilePage({ email, onBack, onComplete }) {
               {errors.bio && <p style={styles.error}>{errors.bio}</p>}
             </div>
 
-            <button type="submit" style={styles.primaryButton}>
-              Save Profile
-            </button>
+            <button
+  type="submit"
+  style={{
+    ...styles.primaryButton,
+    opacity: isLoading ? 0.7 : 1,
+    cursor: isLoading ? "not-allowed" : "pointer",
+  }}
+  disabled={isLoading}
+>
+  {isLoading ? "Please wait..." : "Save Profile"}
+</button>
 
             <button type="button" onClick={onBack} style={styles.backButton}>
               Back
