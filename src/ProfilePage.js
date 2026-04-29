@@ -212,7 +212,7 @@ function ProfilePage({ email, onBack, onComplete }) {
                 <InputField
     label="Username"
     name="username"
-    placeholder="e.g. john_doe"
+    placeholder="e.g. ritik_sharma"
     value={formData.username}
     onChange={handleChange}
     error={errors.username}
