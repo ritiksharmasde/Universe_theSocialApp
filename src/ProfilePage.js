@@ -288,49 +288,51 @@ function InputField({ label, error, ...props }) {
 
 const styles = {
   page: {
-  minHeight: "100dvh",
-  background:
-    "radial-gradient(circle at top left, rgba(139,92,246,0.22), transparent 34%), #0f172a",
-  color: "#f8fafc",
-  padding: "clamp(14px, 3vw, 28px)",
-  boxSizing: "border-box",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-},
+    minHeight: "100dvh",
+    background:
+      "radial-gradient(circle at top left, rgba(139,92,246,0.22), transparent 34%), #0f172a",
+    color: "#f8fafc",
+    padding: "clamp(12px, 4vw, 32px)",
+    boxSizing: "border-box",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    overflowX: "hidden",
+  },
 
   shell: {
     width: "100%",
     maxWidth: "1060px",
     display: "grid",
-    gridTemplateColumns: "minmax(280px, 380px) minmax(0, 1fr)",
-    gap: "22px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
+    gap: "clamp(16px, 3vw, 24px)",
+    alignItems: "stretch",
   },
 
   heroCard: {
-  ...premiumGlass,
-  borderRadius: "30px",
-  padding: "34px 24px",
-  textAlign: "center",
-},
+    ...premiumGlass,
+    borderRadius: "clamp(22px, 4vw, 30px)",
+    padding: "clamp(24px, 5vw, 36px) clamp(16px, 4vw, 26px)",
+    textAlign: "center",
+  },
 
   badge: {
     display: "inline-flex",
     padding: "8px 13px",
     borderRadius: "999px",
     background: "rgba(99,102,241,0.16)",
-    color: "var(--text-primary)",
+    color: "#f8fafc",
     border: "1px solid rgba(99,102,241,0.28)",
     fontSize: "12px",
     fontWeight: "800",
     letterSpacing: "0.04em",
     textTransform: "uppercase",
-    marginBottom: "22px",
+    marginBottom: "clamp(16px, 4vw, 22px)",
   },
 
   avatarRing: {
-    width: "148px",
-    height: "148px",
+    width: "clamp(108px, 24vw, 148px)",
+    height: "clamp(108px, 24vw, 148px)",
     margin: "0 auto 20px",
     borderRadius: "50%",
     padding: "5px",
@@ -343,30 +345,33 @@ const styles = {
     height: "100%",
     borderRadius: "50%",
     objectFit: "cover",
-    border: "5px solid var(--bg-surface)",
+    border: "5px solid #0f172a",
     boxSizing: "border-box",
   },
 
   title: {
-  margin: "0 0 10px",
-  fontSize: "clamp(28px, 4vw, 42px)",
-  lineHeight: 1.05,
-  fontWeight: "900",
-  letterSpacing: "-0.04em",
-  color: "#f8fafc",
-},
+    margin: "0 0 10px",
+    fontSize: "clamp(26px, 7vw, 42px)",
+    lineHeight: 1.05,
+    fontWeight: "900",
+    letterSpacing: "-0.04em",
+    color: "#f8fafc",
+  },
 
- subtitle: {
-  margin: "0 auto 24px",
-  maxWidth: "320px",
-  color: "#cbd5e1",
-  lineHeight: 1.65,
-  fontSize: "14px",
-},
+  subtitle: {
+    margin: "0 auto 24px",
+    maxWidth: "320px",
+    color: "#cbd5e1",
+    lineHeight: 1.65,
+    fontSize: "clamp(13px, 2.5vw, 14px)",
+    overflowWrap: "anywhere",
+  },
+
   uploadButton: {
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
+    width: "min(100%, 180px)",
     padding: "12px 18px",
     borderRadius: "16px",
     background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
@@ -379,15 +384,16 @@ const styles = {
   fileName: {
     margin: "12px 0 0",
     fontSize: "12px",
-    color: "var(--text-secondary)",
+    color: "#cbd5e1",
     wordBreak: "break-word",
   },
 
   formCard: {
-  ...premiumGlass,
-  borderRadius: "30px",
-  padding: "clamp(20px, 4vw, 34px)",
-},
+    ...premiumGlass,
+    borderRadius: "clamp(22px, 4vw, 30px)",
+    padding: "clamp(18px, 5vw, 34px)",
+    minWidth: 0,
+  },
 
   form: {
     display: "flex",
@@ -397,7 +403,7 @@ const styles = {
 
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
     gap: "16px",
   },
 
@@ -405,6 +411,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "8px",
+    minWidth: 0,
   },
 
   labelRow: {
@@ -415,41 +422,43 @@ const styles = {
   },
 
   label: {
-  fontSize: "13px",
-  fontWeight: "800",
-  color: "#e5e7eb",
-},
+    fontSize: "13px",
+    fontWeight: "800",
+    color: "#e5e7eb",
+  },
 
   counter: {
-  fontSize: "12px",
-  color: "#94a3b8",
-},
+    fontSize: "12px",
+    color: "#94a3b8",
+  },
 
   input: {
-  width: "100%",
-  padding: "14px 15px",
-  borderRadius: "16px",
-  background: "rgba(15, 23, 42, 0.76)",
-  border: "1px solid rgba(148, 163, 184, 0.28)",
-  color: "#f8fafc",
-  outline: "none",
-  boxSizing: "border-box",
-  fontSize: "14px",
-},
+    width: "100%",
+    minHeight: "48px",
+    padding: "14px 15px",
+    borderRadius: "16px",
+    background: "rgba(15, 23, 42, 0.76)",
+    border: "1px solid rgba(148, 163, 184, 0.28)",
+    color: "#f8fafc",
+    outline: "none",
+    boxSizing: "border-box",
+    fontSize: "16px",
+  },
+
   textarea: {
-  width: "100%",
-  minHeight: "132px",
-  padding: "14px 15px",
-  borderRadius: "18px",
-  background: "rgba(15, 23, 42, 0.76)",
-  border: "1px solid rgba(148, 163, 184, 0.28)",
-  color: "#f8fafc",
-  outline: "none",
-  resize: "vertical",
-  boxSizing: "border-box",
-  fontSize: "14px",
-  lineHeight: 1.6,
-},
+    width: "100%",
+    minHeight: "132px",
+    padding: "14px 15px",
+    borderRadius: "18px",
+    background: "rgba(15, 23, 42, 0.76)",
+    border: "1px solid rgba(148, 163, 184, 0.28)",
+    color: "#f8fafc",
+    outline: "none",
+    resize: "vertical",
+    boxSizing: "border-box",
+    fontSize: "16px",
+    lineHeight: 1.6,
+  },
 
   error: {
     margin: 0,
@@ -460,6 +469,7 @@ const styles = {
 
   primaryButton: {
     width: "100%",
+    minHeight: "50px",
     padding: "15px",
     borderRadius: "18px",
     border: "none",
@@ -471,15 +481,15 @@ const styles = {
     cursor: "pointer",
   },
 
- backButton: {
-  background: "transparent",
-  border: "none",
-  color: "#cbd5e1",
-  cursor: "pointer",
-  fontWeight: "700",
-  fontSize: "14px",
-  padding: "4px",
-},
+  backButton: {
+    background: "transparent",
+    border: "none",
+    color: "#cbd5e1",
+    cursor: "pointer",
+    fontWeight: "700",
+    fontSize: "14px",
+    padding: "8px",
+  },
 };
 
 export default ProfilePage;
