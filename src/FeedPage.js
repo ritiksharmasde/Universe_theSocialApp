@@ -16,6 +16,7 @@ function FeedPage({
   onOpenProfile,
   onOpenUserProfile,
   onStartChat,
+  onOpenSearchPage,
   postsLoading = false,
   customPosts = [],
   unreadCounts = {},
