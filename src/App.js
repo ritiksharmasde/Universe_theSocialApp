@@ -552,6 +552,7 @@ useEffect(() => {
           onStartChat={(conversationId) => {
             navigateTo("messages", { activeConversationId: conversationId });
           }}
+          onOpenSearchPage={() => navigateTo("search")} 
           isMobile={isMobile}
         />
       </AppLayout>
