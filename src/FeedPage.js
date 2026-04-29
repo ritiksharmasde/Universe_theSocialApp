@@ -422,7 +422,12 @@ body: JSON.stringify({
     <div style={styles.widgetCardLarge}>
       <div style={styles.widgetHeader}>
         <h3 style={styles.widgetTitle}>Suggestions for you</h3>
-        {!isTinyMobile && <button style={styles.smallLinkButton}>See all</button>}      </div>
+        {!isTinyMobile && <button
+  style={styles.smallLinkButton}
+  onClick={onOpenSearchPage}
+>
+  See all
+</button>      </div>
 
       {loadingSuggestions ? (
         <p style={styles.emptyText}>Loading suggestions...</p>
