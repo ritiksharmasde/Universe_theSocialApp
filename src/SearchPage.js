@@ -355,6 +355,7 @@ setFriendStatuses((prev) => ({
               <option value="mca">MCA</option>
               <option value="btech">BTech</option>
               <option value="bba">BBA</option>
+                <option value="mba">MBA</option>
                  <option value="bca">BCA</option>
               <option value="bdes">BDes</option>
               <option value="mdes">MDes</option>
